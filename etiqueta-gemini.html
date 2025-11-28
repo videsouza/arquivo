@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Impressor de Etiquetas Automático</title>
+    <title>Impressor de Etiquetas Automático - Pro Otimizado (9x9cm)</title>
     <style>
         /* --- ESTILOS GERAIS DO SISTEMA (MANTIDOS) --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -151,21 +151,25 @@
         .preview-section.show { display: block; }
         .preview-controls { margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; background: #f7fafc; padding: 15px; border-radius: 8px; }
 
-        /* --- ESTILOS DAS ETIQUETAS (DESIGN FINAL) --- */
+        /* --- ESTILOS DAS ETIQUETAS (DESIGN FINAL 9x9cm) --- */
         .etiquetas-page {
             background: white;
             width: 210mm; /* A4 */
             min-height: 297mm;
             margin: 0 auto;
-            padding: 10mm;
+            /* Margem de 15mm para centralizar a grade 18x27cm (21-18=3cm, 3/2=1.5cm) */
+            padding: 15mm; 
             box-shadow: 0 0 15px rgba(0,0,0,0.1);
             display: grid;
-            grid-template-columns: 1fr 1fr; /* 2 colunas */
-            grid-template-rows: repeat(3, 1fr); /* 3 linhas (6 etiquetas por pág) */
-            gap: 5mm; /* Espaço entre etiquetas para corte */
+            grid-template-columns: 90mm 90mm; /* 2 colunas de 9cm */
+            grid-template-rows: repeat(3, 90mm); /* 3 linhas de 9cm */
+            gap: 0; /* Gap removido para o ajuste de margem ser feito apenas pelo padding da página */
             box-sizing: border-box;
+            /* O tamanho total da grade será 180mm x 270mm. A A4 é 210mm x 297mm.
+               Isso deixa 15mm de margem em volta (Top: 15mm, Bottom: 12mm, Left/Right: 15mm)
+            */
         }
-
+        
         .etiqueta {
             border: 2px solid #2d3748;
             border-radius: 8px;
@@ -173,7 +177,8 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            height: 90mm; /* Altura fixa para garantir uniformidade */
+            width: 90mm; /* Largura 9cm */
+            height: 90mm; /* Altura 9cm */
             position: relative;
         }
 
@@ -304,54 +309,22 @@
             
             @page {
                 size: A4;
-                /* Remove as margens default da impressora */
+                /* Remove as margens default da impressora para dar mais controle */
                 margin: 0mm; 
             }
             
             .etiquetas-page {
-                /* Padding de 10mm top/left era o padrão */
-                /* Novo Padding: Top (10mm - 15mm = -5mm) | Right (10mm) | Bottom (10mm) | Left (10mm - 15mm = -5mm) */
-                /* Usamos margin para deslocar o elemento, mas para maior compatibilidade, ajustamos o padding da página: */
-                
-                /* Margens originais: Top: 10mm, Left: 10mm. */
-                /* Queremos: Top: -15mm (subir), Left: -15mm (esquerda). */
-                /* O padding inicial de 10mm será substituído por uma margem negativa para puxar o conteúdo. */
-                
-                /* ⚠️ A forma mais eficaz de mover a grade é usando margem negativa no elemento .etiquetas-page */
-                margin-top: -15mm !important; 
-                margin-left: -15mm !important;
-                margin-right: 0 !important;
-                margin-bottom: 0 !important;
-
+                /* Centraliza a grade 180x270mm dentro da A4 210x297mm. */
+                /* O padding de 15mm fará com que a grade comece 1.5cm de cima/esquerda, 
+                   garantindo o alinhamento centralizado no papel A4. */
+                padding: 15mm; 
+                margin: 0;
                 box-shadow: none;
                 page-break-after: always;
                 width: 210mm;
                 height: 297mm;
-                /* Redefinimos o padding para 0 para o ajuste ser feito apenas pelo margin */
-                padding: 10mm; 
-                padding-top: 25mm; /* Compensação de 15mm no topo */
-                padding-left: 25mm; /* Compensação de 15mm na esquerda */
-                
-                /* Novo Ajuste (Melhor e mais direto): */
-                margin: 0;
-                /* A Margem de Segurança da Impressora de 10mm (0) será ajustada para os novos valores: */
-                padding-top: 0mm !important; /* Subir 1.5cm */
-                padding-left: 0mm !important; /* Esquerda 1.5cm */
-                
-                /* Trocando para PADDING e garantindo 0 na lateral direita/inferior */
-                padding: 0mm 0mm 0mm 0mm !important; /* Zera tudo */
-                /* E usar transform para deslocamento mais preciso se necessário, mas MARGIN/PADDING é o padrão */
-                
-                /* Método Final Ajustado: Usar uma margem negativa no body ou no page */
-                margin: -15mm 0 0 -15mm !important; /* Sobe 1.5cm e move para esquerda 1.5cm */
-
-                /* Revertendo para o padrão, o ajuste deve ser feito nas margens do CSS de impressão, 
-                   mas margens negativas podem ser imprevisíveis. Vamos ao MARGIN: */
-                margin: -15mm 0 0 -15mm !important; 
-                padding: 10mm; /* Mantém o espaçamento interno entre os elementos */
-
             }
-            
+
             .etiqueta {
                 border-color: #000;
                 -webkit-print-color-adjust: exact;
@@ -392,7 +365,7 @@
                     <div class="tipo-card" data-tipo="eliminacao" onclick="selecionarTipo('eliminacao')">
                         <div class="tipo-icon">🗑️</div>
                         <div style="font-weight: bold; font-size: 1.1em; margin-bottom: 5px;">Eliminação</div>
-                        <div style="color: #718096; font-size: 0.9em;">Documentos temporários com data de descarte.</div>
+                        <div style="color: #718096; font-size: 0.9em;">Documentos temporários com data de eliminação.</div>
                     </div>
                     
                     <div class="tipo-card" data-tipo="permanente" onclick="selecionarTipo('permanente')">
@@ -527,6 +500,7 @@
 
             const isPerm = tipoSelecionado === 'permanente';
             const footerClass = isPerm ? 'status-permanente' : 'status-eliminacao';
+            // Ajuste no placeholder
             const footerText = isPerm ? 'GUARDA PERMANENTE' : `ELIMINAÇÃO: 31/12/ _ _ _ _`; 
             
             const unidadeCodigo = unidadeSelecionada.codigo;
@@ -546,7 +520,7 @@
                     <div class="etiqueta-body">
                         <div class="etiqueta-row">
                             <span class="etiqueta-label">Destinatário:</span>
-                            <span class="etiqueta-value">1344- SECRETARIA DE EDUCAÇÃO</span>
+                            <span class="etiqueta-value">ARQUIVO GERAL MUNICIPAL</span>
                         </div>
 
                         <div class="etiqueta-row" style="padding-bottom: 0;">
