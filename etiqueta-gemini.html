@@ -154,15 +154,15 @@
         /* --- ESTILOS DAS ETIQUETAS (DESIGN FINAL 9x9cm) --- */
         .etiquetas-page {
             background: white;
-            width: 210mm; /* A4 */
-            min-height: 297mm;
+            width: 180mm; /* A4 */
+            height: 270mm;
             margin: 0 auto;
             /* Margem de 15mm para centralizar a grade 18x27cm (21-18=3cm, 3/2=1.5cm) */
             padding: 15mm; 
             box-shadow: 0 0 15px rgba(0,0,0,0.1);
             display: grid;
-            grid-template-columns: 90mm 90mm; /* 2 colunas de 9cm */
-            grid-template-rows: repeat(3, 90mm); /* 3 linhas de 9cm */
+            grid-template-columns: repeat(2, 90mm);
+            grid-template-rows: repeat(3, 90mm);
             gap: 0; /* Gap removido para o ajuste de margem ser feito apenas pelo padding da página */
             box-sizing: border-box;
             /* O tamanho total da grade será 180mm x 270mm. A A4 é 210mm x 297mm.
@@ -310,19 +310,19 @@
             @page {
                 size: A4;
                 /* Remove as margens default da impressora para dar mais controle */
-                margin: 0mm; 
+                margin: 12mm; 
             }
             
             .etiquetas-page {
                 /* Centraliza a grade 180x270mm dentro da A4 210x297mm. */
                 /* O padding de 15mm fará com que a grade comece 1.5cm de cima/esquerda, 
                    garantindo o alinhamento centralizado no papel A4. */
-                padding: 15mm; 
+                padding: 0mm; 
                 margin: 0;
                 box-shadow: none;
                 page-break-after: always;
-                width: 210mm;
-                height: 297mm;
+                width: auto;
+                height: auto;
             }
 
             .etiqueta {
