@@ -3,18 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Etiquetas Full Page</title>
+    <title>Etiquetas - Arquivo</title>
     <style>
+        /* --- RESET GERAL --- */
         * { box-sizing: border-box; }
         
         body { 
-            font-family: Arial, sans-serif; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0; 
             padding: 20px;
             background: #f0f2f5;
         }
 
-        /* --- Interface de Controle (não sai na impressão) --- */
+        /* --- INTERFACE DE CONTROLE (Web View) --- */
         .no-print {
             background: white;
             padding: 20px;
@@ -25,41 +26,35 @@
             text-align: center;
         }
 
-        .inputs-row {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        input, select, button {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-
-        button {
-            background: #007bff;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            border: none;
-        }
-
-        button:hover { background: #0056b3; }
+        .inputs-row { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+        input, select, button { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; }
+        button { background: #667eea; color: white; font-weight: bold; cursor: pointer; border: none; }
+        button:hover { background: #5a6de0; }
         
         .aviso-print {
-            background: #fff3cd;
-            color: #856404;
+            background: #e6f7ff;
+            color: #0056b3;
             padding: 10px;
             border-radius: 4px;
             margin-bottom: 15px;
-            border: 1px solid #ffeeba;
+            border: 1px solid #b3e6ff;
+            font-weight: 600;
         }
 
-        /* --- FOLHA A4 --- */
+        /* --- ESTRUTURA DA PÁGINA A4 (Otimização) --- */
+        
+        /* OBRIGATÓRIO PARA MARGEM ZERO */
+        @media print {
+            @page {
+                size: A4;
+                margin: 0mm; 
+            }
+            body { margin: 0; padding: 0; background: white; }
+            .no-print { display: none; }
+            /* Forçar impressão de cores de fundo */
+            .etiqueta-header, .etiqueta-footer { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+
         .page {
             width: 210mm;
             height: 297mm;
@@ -67,112 +62,124 @@
             margin: 0 auto;
             display: flex;
             flex-wrap: wrap;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
-            /* Garante que não quebre página no meio */
+            box-shadow: 0 0 10px rgba(0,0,0,0.5); /* Sombra só para visualização na tela */
             page-break-after: always; 
-            overflow: hidden; /* Corta qualquer excesso */
+            overflow: hidden; 
         }
 
-        /* --- A ETIQUETA --- */
+        /* --- A ETIQUETA COM DESIGN OTIMIZADO --- */
         .etiqueta {
-            /* Largura exata: 50% da página */
             width: 50%;
-            /* Altura exata: 33.33% da página (1/3) */
-            height: 33.333%; 
-            /* Altura fixa em mm para garantir: 297mm / 3 = 99mm */
+            /* Altura de 99mm garante que 3 cabem exatamente em 297mm (A4) */
             height: 99mm; 
             
-            border-right: 1px dashed #999; /* Linha de corte vertical */
-            border-bottom: 1px dashed #999; /* Linha de corte horizontal */
-            padding: 10mm; /* Margem interna para o texto não colar na borda */
+            border: 2px solid #000; /* Borda externa sólida e elegante */
+            
+            /* Usamos borda interna para guia de corte */
+            border-right: 1px dashed #ccc; 
+            border-bottom: 1px dashed #ccc; 
+            
+            padding: 0; /* O padding será aplicado dentro do corpo */
             
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            
+            /* Remove a borda da última coluna e linha para evitar duplicação e quebras */
             position: relative;
         }
 
-        /* Remove bordas das últimas etiquetas para não duplicar */
-        .etiqueta:nth-child(2n) { border-right: none; } /* Remove borda direita da 2ª coluna */
-        .etiqueta:nth-last-child(-n+2) { border-bottom: none; } /* Remove borda inferior da última linha */
-
-        /* Conteúdo Interno */
-        .header-unit {
-            font-size: 14pt;
-            font-weight: 900;
-            text-transform: uppercase;
-            border-bottom: 2px solid #000;
-            padding-bottom: 5px;
-            margin-bottom: 10px;
-            line-height: 1.1;
-        }
-
-        .row {
-            display: flex;
-            margin-bottom: 8px;
-            align-items: baseline;
-        }
-
-        .label {
-            font-weight: bold;
-            font-size: 10pt;
-            min-width: 90px;
-            color: #333;
-        }
-
-        .value {
-            border-bottom: 1px dotted #000;
-            flex: 1;
-            font-size: 11pt;
-            font-family: 'Courier New', Courier, monospace;
-            min-height: 18px;
-        }
-
-        .footer {
-            margin-top: auto;
+        /* Removendo bordas das extremidades do layout */
+        .etiqueta:nth-child(2n) { border-right: 2px solid #000; } /* Mantém a borda sólida da direita */
+        .etiqueta:nth-last-child(-n+2) { border-bottom: 2px solid #000; } /* Mantém a borda sólida de baixo */
+        
+        /* Cabeçalho */
+        .etiqueta-header {
+            background-color: #667eea; /* Tarja colorida */
+            color: white;
+            padding: 8px 10px;
             text-align: center;
-            font-weight: bold;
-            font-size: 12pt;
-            padding: 5px;
-            border: 2px solid #000;
-            text-transform: uppercase;
+            height: 20%; /* Ocupa 20% da altura total da etiqueta */
+            min-height: 20mm;
+            border-bottom: 2px solid #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         
-        .footer.perm { background: black; color: white; }
-        .footer.elim { background: white; color: black; }
-
-        /* --- MODO DE IMPRESSÃO --- */
-        @media print {
-            @page {
-                size: A4;
-                margin: 0mm; /* OBRIGATÓRIO: Zera margem da impressora */
-            }
-
-            body {
-                margin: 0;
-                padding: 0;
-                background: white;
-            }
-
-            .no-print { display: none; }
-            .page { box-shadow: none; margin: 0; width: 210mm; height: 297mm; }
-            
-            /* Forçar impressão de cores de fundo */
-            .footer { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .etiqueta-header-title {
+            font-size: 8pt;
+            font-weight: 600;
+            opacity: 0.9;
         }
+
+        .etiqueta-header-unit {
+            font-size: 11pt;
+            font-weight: 800;
+            line-height: 1.2;
+            text-transform: uppercase;
+        }
+
+        /* Corpo */
+        .etiqueta-body {
+            padding: 8px 10mm; /* Padding de 10mm para o texto não colar na borda interna */
+            flex: 1; /* Ocupa o espaço restante */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .etiqueta-row {
+            display: flex;
+            align-items: baseline;
+            padding: 3px 0;
+            border-bottom: 1px dotted #ccc;
+        }
+        
+        .etiqueta-row:last-of-type { border-bottom: none; }
+
+        .etiqueta-label {
+            font-size: 8pt;
+            font-weight: 700;
+            color: #2d3748;
+            min-width: 85px;
+        }
+
+        .etiqueta-value {
+            font-size: 10pt;
+            font-family: monospace;
+            font-weight: 600;
+            color: #000;
+            flex: 1;
+        }
+        
+        /* Rodapé / Status */
+        .etiqueta-footer {
+            height: 15%; /* Ocupa 15% da altura total da etiqueta */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-top: 2px solid #000;
+            font-weight: 800;
+            font-size: 10pt;
+            text-transform: uppercase;
+        }
+
+        .status-permanente { background-color: #000; color: white; }
+        .status-eliminacao { background-color: #f8f8f8; color: #333; }
+
     </style>
 </head>
 <body>
 
     <div class="no-print">
         <div class="aviso-print">
-            ⚠️ <strong>ATENÇÃO:</strong> Ao imprimir (Ctrl+P), nas configurações, defina <strong>Margens</strong> como <strong>"Nenhuma"</strong>.
+            ⚠️ <strong>Margens Zero:</strong> Ao imprimir (Ctrl+P), defina <strong>Margens</strong> como <strong>"Nenhuma"</strong> para o encaixe perfeito.
         </div>
 
-        <h2>Gerador de Etiquetas Full Page</h2>
+        <h2>Gerador de Etiquetas (Layout Elegante)</h2>
         
         <div class="inputs-row">
-            <input type="text" id="inputUnidade" placeholder="Nome da Unidade (ex: Recursos Humanos)" style="width: 300px;">
+            <input type="text" id="inputUnidade" placeholder="Nome da Unidade (ex: Arquivo Central)" style="width: 300px;">
             <select id="selectTipo">
                 <option value="perm">Guarda Permanente</option>
                 <option value="elim">Eliminação</option>
@@ -186,8 +193,9 @@
     <div id="printArea"></div>
 
     <script>
+        // Funções JavaScript (Mantidas do código anterior)
         function gerar() {
-            const unidade = document.getElementById('inputUnidade').value || "UNIDADE PADRÃO";
+            const unidade = document.getElementById('inputUnidade').value || "SECRETARIA MUNICIPAL DE EDUCAÇÃO";
             const tipo = document.getElementById('selectTipo').value;
             const copias = parseInt(document.getElementById('inputCopias').value) || 6;
             const container = document.getElementById('printArea');
@@ -203,11 +211,11 @@
                 const loop = Math.min(etiquetasPorPagina, restante);
 
                 for(let i = 0; i < etiquetasPorPagina; i++) {
-                    // Se ainda tiver cópias, preenche. Se não, cria etiqueta em branco pra manter grade
+                    // Preenche ou deixa invisível para manter a grade 2x3
                     if(i < loop) {
                         html += criarEtiqueta(unidade, tipo);
                     } else {
-                        html += '<div class="etiqueta" style="border-color: transparent;"></div>';
+                        html += '<div class="etiqueta" style="border-color: #f0f2f5;"></div>'; 
                     }
                 }
                 html += '</div>';
@@ -218,46 +226,50 @@
 
         function criarEtiqueta(unidade, tipo) {
             const isPerm = tipo === 'perm';
-            const footerClass = isPerm ? 'perm' : 'elim';
+            const footerClass = isPerm ? 'status-permanente' : 'status-eliminacao';
             const footerText = isPerm ? 'GUARDA PERMANENTE' : 'ELIMINAÇÃO: 31/12/______';
 
             return `
                 <div class="etiqueta">
-                    <div class="header-unit">${unidade}</div>
-                    
-                    <div class="row">
-                        <span class="label">Destinatário:</span>
-                        <span class="value">ARQUIVO CENTRAL</span>
+                    <div class="etiqueta-header">
+                        <div class="etiqueta-header-title">Unidade Produtora</div>
+                        <div class="etiqueta-header-unit">${unidade}</div>
                     </div>
                     
-                    <div class="row">
-                        <span class="label">Cód / Assunto:</span>
-                        <span class="value"></span>
+                    <div class="etiqueta-body">
+                        <div class="etiqueta-row">
+                            <span class="etiqueta-label">Destino:</span>
+                            <span class="etiqueta-value">ARQUIVO CENTRAL</span>
+                        </div>
+                        
+                        <div class="etiqueta-row">
+                            <span class="etiqueta-label">Assunto/Cód:</span>
+                            <span class="etiqueta-value"></span>
+                        </div>
+
+                        <div class="etiqueta-row">
+                            <span class="etiqueta-label">Datas:</span>
+                            <span class="etiqueta-value">____/____ a ____/____</span>
+                        </div>
+
+                        <div class="etiqueta-row" style="flex: 1; align-items: flex-start;">
+                            <span class="etiqueta-label">Descrição:</span>
+                            <span class="etiqueta-value" style="height: 100%; border-bottom: 1px dotted #000;"></span>
+                        </div>
+
+                        <div class="etiqueta-row">
+                            <span class="etiqueta-label">Nº CX / DOC:</span>
+                            <span class="etiqueta-value"></span>
+                        </div>
                     </div>
 
-                    <div class="row">
-                        <span class="label">Data Doc.:</span>
-                        <span class="value" style="width: 50%;">___/___/____</span>
-                    </div>
-
-                    <div class="row" style="flex: 1; align-items: flex-start;">
-                        <span class="label">Descrição:</span>
-                        <span class="value" style="height: 100%; border-bottom: 1px dotted #000;"></span>
-                    </div>
-
-                    <div class="row">
-                        <span class="label">Nº CX/DOC:</span>
-                        <span class="value"></span>
-                    </div>
-
-                    <div class="footer ${footerClass}">
+                    <div class="etiqueta-footer ${footerClass}">
                         ${footerText}
                     </div>
                 </div>
             `;
         }
 
-        // Gera inicial
         window.onload = gerar;
     </script>
 </body>
