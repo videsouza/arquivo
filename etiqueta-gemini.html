@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Impressor de Etiquetas Automático</title>
     <style>
-        /* --- ESTILOS GERAIS DO SISTEMA --- */
+        /* --- ESTILOS GERAIS DO SISTEMA (MANTIDOS) --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
@@ -201,7 +201,7 @@
             margin-top: 4px;
         }
         .etiqueta-header-unit strong {
-            font-size: 13pt; /* Código maior */
+            font-size: 13pt; 
             margin-right: 5px;
             color: #000;
         }
@@ -219,7 +219,7 @@
             display: flex;
             align-items: baseline;
             padding: 6px 0;
-            border-bottom: 1px dotted #cbd5e0; /* Linha pontilhada clara */
+            border-bottom: 1px dotted #cbd5e0; 
         }
         
         .etiqueta-row:last-child { border-bottom: none; }
@@ -243,13 +243,12 @@
         /* Área de Descrição Aprimorada */
         .descricao-box {
             border-bottom: 1px dotted #cbd5e0;
-            height: 30px; /* Altura mínima para preenchimento */
+            height: 30px; 
             flex-grow: 1;
             margin-top: 5px; 
             font-size: 9pt;
             color: #2d3748;
         }
-
 
         /* Status Badge (Permanente vs Eliminação) */
         .etiqueta-footer {
@@ -296,7 +295,7 @@
             border-radius: 10px;
         }
 
-        /* Ajustes para Impressão */
+        /* --- AJUSTES FINAIS PARA IMPRESSÃO --- */
         @media print {
             body { background: white; padding: 0; margin: 0; }
             .container { box-shadow: none; width: 100%; max-width: none; border-radius: 0; }
@@ -305,18 +304,54 @@
             
             @page {
                 size: A4;
+                /* Remove as margens default da impressora */
                 margin: 0mm; 
             }
             
             .etiquetas-page {
-                margin: 0;
+                /* Padding de 10mm top/left era o padrão */
+                /* Novo Padding: Top (10mm - 15mm = -5mm) | Right (10mm) | Bottom (10mm) | Left (10mm - 15mm = -5mm) */
+                /* Usamos margin para deslocar o elemento, mas para maior compatibilidade, ajustamos o padding da página: */
+                
+                /* Margens originais: Top: 10mm, Left: 10mm. */
+                /* Queremos: Top: -15mm (subir), Left: -15mm (esquerda). */
+                /* O padding inicial de 10mm será substituído por uma margem negativa para puxar o conteúdo. */
+                
+                /* ⚠️ A forma mais eficaz de mover a grade é usando margem negativa no elemento .etiquetas-page */
+                margin-top: -15mm !important; 
+                margin-left: -15mm !important;
+                margin-right: 0 !important;
+                margin-bottom: 0 !important;
+
                 box-shadow: none;
                 page-break-after: always;
                 width: 210mm;
                 height: 297mm;
+                /* Redefinimos o padding para 0 para o ajuste ser feito apenas pelo margin */
                 padding: 10mm; 
-            }
+                padding-top: 25mm; /* Compensação de 15mm no topo */
+                padding-left: 25mm; /* Compensação de 15mm na esquerda */
+                
+                /* Novo Ajuste (Melhor e mais direto): */
+                margin: 0;
+                /* A Margem de Segurança da Impressora de 10mm (0) será ajustada para os novos valores: */
+                padding-top: 0mm !important; /* Subir 1.5cm */
+                padding-left: 0mm !important; /* Esquerda 1.5cm */
+                
+                /* Trocando para PADDING e garantindo 0 na lateral direita/inferior */
+                padding: 0mm 0mm 0mm 0mm !important; /* Zera tudo */
+                /* E usar transform para deslocamento mais preciso se necessário, mas MARGIN/PADDING é o padrão */
+                
+                /* Método Final Ajustado: Usar uma margem negativa no body ou no page */
+                margin: -15mm 0 0 -15mm !important; /* Sobe 1.5cm e move para esquerda 1.5cm */
 
+                /* Revertendo para o padrão, o ajuste deve ser feito nas margens do CSS de impressão, 
+                   mas margens negativas podem ser imprevisíveis. Vamos ao MARGIN: */
+                margin: -15mm 0 0 -15mm !important; 
+                padding: 10mm; /* Mantém o espaçamento interno entre os elementos */
+
+            }
+            
             .etiqueta {
                 border-color: #000;
                 -webkit-print-color-adjust: exact;
@@ -355,7 +390,7 @@
                 <h2>2. Tipo de Etiqueta</h2>
                 <div class="tipo-grid">
                     <div class="tipo-card" data-tipo="eliminacao" onclick="selecionarTipo('eliminacao')">
-                        <div class="tipo-icon">♻️</div>
+                        <div class="tipo-icon">🗑️</div>
                         <div style="font-weight: bold; font-size: 1.1em; margin-bottom: 5px;">Eliminação</div>
                         <div style="color: #718096; font-size: 0.9em;">Documentos temporários com data de descarte.</div>
                     </div>
@@ -390,7 +425,7 @@
     </div>
 
     <script>
-        // --- DADOS (Mesma base de dados) ---
+        // --- DADOS ---
         const unidades = [
             { codigo: "1", nome: "GABINETE DO PREFEITO" },
             { codigo: "2", nome: "SECRETARIA MUNICIPAL DE GOVERNO" },
@@ -492,7 +527,6 @@
 
             const isPerm = tipoSelecionado === 'permanente';
             const footerClass = isPerm ? 'status-permanente' : 'status-eliminacao';
-            // Ajuste no placeholder para garantir que os traços apareçam na impressão (traços separados)
             const footerText = isPerm ? 'GUARDA PERMANENTE' : `ELIMINAÇÃO: 31/12/ _ _ _ _`; 
             
             const unidadeCodigo = unidadeSelecionada.codigo;
