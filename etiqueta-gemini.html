@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Impressor de Etiquetas Automático - Pro</title>
+    <title>Impressor de Etiquetas Automático - Pro Otimizado</title>
     <style>
-        /* --- ESTILOS GERAIS DO SISTEMA (Mantidos e Melhorados) --- */
+        /* --- ESTILOS GERAIS DO SISTEMA (Mantidos) --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
@@ -151,7 +151,7 @@
         .preview-section.show { display: block; }
         .preview-controls { margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; background: #f7fafc; padding: 15px; border-radius: 8px; }
 
-        /* --- NOVO DESIGN DAS ETIQUETAS (CSS Melhorado) --- */
+        /* --- NOVO DESIGN DAS ETIQUETAS (CSS OTIMIZADO) --- */
         .etiquetas-page {
             background: white;
             width: 210mm; /* A4 */
@@ -179,7 +179,8 @@
 
         /* Cabeçalho da Etiqueta */
         .etiqueta-header {
-            background-color: #f7fafc;
+            /* Mantido o fundo claro, mas reforço o contraste */
+            background-color: #f0f0f0; 
             padding: 8px 12px;
             border-bottom: 2px solid #2d3748;
             text-align: center;
@@ -192,13 +193,19 @@
             letter-spacing: 1px;
             font-weight: 700;
         }
-
+        
+        /* Melhoria: Código da unidade com fonte maior e bold */
         .etiqueta-header-unit {
             font-size: 11pt;
             font-weight: 800;
             color: #1a202c;
             line-height: 1.2;
             margin-top: 4px;
+        }
+        .etiqueta-header-unit strong {
+            font-size: 13pt; /* Código maior */
+            margin-right: 5px;
+            color: #000;
         }
 
         /* Corpo da Etiqueta */
@@ -214,6 +221,7 @@
             display: flex;
             align-items: baseline;
             padding: 6px 0;
+            /* Linha pontilhada clara */
             border-bottom: 1px dotted #cbd5e0;
         }
         
@@ -229,11 +237,23 @@
 
         .etiqueta-value {
             font-size: 10pt;
-            font-family: 'Courier New', Courier, monospace; /* Fonte mono para dados manuscritos/digitados */
+            /* Fonte mono para dados a serem preenchidos */
+            font-family: 'Courier New', Courier, monospace; 
             font-weight: 600;
             color: #2d3748;
             flex: 1;
         }
+        
+        /* Área de Descrição Aprimorada: Usamos uma div interna para forçar a altura */
+        .descricao-box {
+            border-bottom: 1px dotted #cbd5e0;
+            height: 30px; /* Altura mínima para preenchimento */
+            flex-grow: 1;
+            margin-top: 5px; /* Espaço após o label */
+            font-size: 9pt;
+            color: #2d3748;
+        }
+
 
         /* Status Badge (Permanente vs Eliminação) */
         .etiqueta-footer {
@@ -248,17 +268,19 @@
         }
 
         .status-permanente {
+            /* Cor escura para permanente */
             background-color: #2d3748;
             color: white;
         }
 
         .status-eliminacao {
+            /* Fundo branco com marca d'água */
             background-color: #fff;
             color: #2d3748;
             position: relative;
         }
         
-        /* Marca d'água sutil para eliminação */
+        /* Melhoria: Marca d'água sutil para eliminação */
         .status-eliminacao::after {
             content: "TEMPORÁRIO";
             position: absolute;
@@ -266,7 +288,8 @@
             left: 50%;
             transform: translate(-50%, -50%);
             font-size: 30pt;
-            color: rgba(0,0,0,0.03);
+            /* Cor extremamente clara para não atrapalhar a leitura */
+            color: rgba(0,0,0,0.03); 
             pointer-events: none;
             font-weight: 900;
         }
@@ -275,25 +298,31 @@
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
             pointer-events: none;
-            border: 1px dashed #e2e8f0; /* Guia de corte visual */
+            border: 1px dashed #e2e8f0; 
             margin: -2px;
             border-radius: 10px;
         }
 
-        /* Ajustes para Impressão */
+        /* Ajustes para Impressão (Mantidos e Reforçados) */
         @media print {
             body { background: white; padding: 0; margin: 0; }
             .container { box-shadow: none; width: 100%; max-width: none; border-radius: 0; }
             .header, .form-section, .btn-group, .preview-controls, h2 { display: none !important; }
             .preview-section { display: block !important; padding: 0; border: none; margin: 0; }
             
+            @page {
+                size: A4;
+                /* Tenta remover margens da impressora */
+                margin: 0mm; 
+            }
+            
             .etiquetas-page {
                 margin: 0;
                 box-shadow: none;
                 page-break-after: always;
-                width: 100%;
-                height: 100vh;
-                padding: 10mm; /* Margem de segurança da impressora */
+                width: 210mm;
+                height: 297mm;
+                padding: 10mm; 
             }
 
             .etiqueta {
@@ -306,7 +335,7 @@
             .etiqueta-header { background-color: #f0f0f0 !important; border-bottom-color: #000; }
             .etiqueta-footer { border-top-color: #000; }
             .status-permanente { background-color: #000 !important; color: #fff !important; }
-            .cut-lines { display: none; } /* Não imprimir a linha guia pontilhada externa */
+            .cut-lines { display: none; } 
         }
     </style>
 </head>
@@ -335,7 +364,7 @@
                 <h2>2. Tipo de Etiqueta</h2>
                 <div class="tipo-grid">
                     <div class="tipo-card" data-tipo="eliminacao" onclick="selecionarTipo('eliminacao')">
-                        <div class="tipo-icon">🗑️</div>
+                        <div class="tipo-icon">♻️</div>
                         <div style="font-weight: bold; font-size: 1.1em; margin-bottom: 5px;">Eliminação</div>
                         <div style="color: #718096; font-size: 0.9em;">Documentos temporários com data de descarte.</div>
                     </div>
@@ -466,12 +495,18 @@
             container.innerHTML = html;
         }
 
-        // --- HTML DA ETIQUETA OTIMIZADA ---
+        // --- HTML DA ETIQUETA OTIMIZADA (Onde aplicamos as melhorias de estrutura) ---
         function gerarEtiquetaHTML() {
+            // Verifica se as variáveis globais estão preenchidas
+            if (!unidadeSelecionada || !tipoSelecionado) return '';
+
             const isPerm = tipoSelecionado === 'permanente';
             const footerClass = isPerm ? 'status-permanente' : 'status-eliminacao';
             const footerText = isPerm ? 'GUARDA PERMANENTE' : `ELIMINAÇÃO: 31/12/______`;
-            const bgDestino = isPerm ? 'background-color: #f7fafc;' : ''; // Destacar destino se perm
+            
+            // Variáveis preenchidas pelo JS
+            const unidadeCodigo = unidadeSelecionada.codigo;
+            const unidadeNome = unidadeSelecionada.nome;
 
             return `
                 <div class="etiqueta">
@@ -479,30 +514,32 @@
                     
                     <div class="etiqueta-header">
                         <div class="etiqueta-header-title">Unidade Produtora / Portadora</div>
-                        <div class="etiqueta-header-unit">${unidadeSelecionada.codigo} - ${unidadeSelecionada.nome}</div>
+                        <div class="etiqueta-header-unit">
+                            <strong>${unidadeCodigo}</strong> - ${unidadeNome}
+                        </div>
                     </div>
 
                     <div class="etiqueta-body">
                         <div class="etiqueta-row">
                             <span class="etiqueta-label">Destinatário:</span>
-                            <span class="etiqueta-value">1344 - SEC. MUNICIPAL DE EDUCAÇÃO</span>
+                            <span class="etiqueta-value">ARQUIVO GERAL MUNICIPAL</span>
                         </div>
 
-                        <div class="etiqueta-row">
+                        <div class="etiqueta-row" style="padding-bottom: 0;">
                             <span class="etiqueta-label">Código:</span>
-                            <span class="etiqueta-value"></span>
-                            <span class="etiqueta-label" style="min-width: auto; margin-right: 5px;">Data:</span>
+                            <span class="etiqueta-value" style="flex: 1;"></span>
+                            <span class="etiqueta-label" style="min-width: 50px; margin-right: 5px;">Data:</span>
                             <span class="etiqueta-value" style="flex: 0 0 100px;">___/___/____</span>
                         </div>
-
+                        
                         <div class="etiqueta-row">
                             <span class="etiqueta-label">Tipo Doc.:</span>
                             <span class="etiqueta-value"></span>
                         </div>
-
-                        <div class="etiqueta-row" style="flex: 2; align-items: flex-start;">
+                        
+                        <div class="etiqueta-row" style="flex-direction: column; align-items: flex-start; padding: 6px 0 15px 0;">
                             <span class="etiqueta-label">Descrição:</span>
-                            <span class="etiqueta-value" style="border-bottom: 1px dotted #ccc; height: 100%;"></span>
+                            <div class="descricao-box"></div>
                         </div>
 
                         <div class="etiqueta-row">
@@ -524,6 +561,9 @@
                 searchResults.classList.remove('show');
             }
         });
+        
+        // Inicializa o botão
+        verificarBotao();
     </script>
 </body>
 </html>
