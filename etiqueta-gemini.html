@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Impressor de Etiquetas Automático - Pro Otimizado</title>
+    <title>Impressor de Etiquetas Automático</title>
     <style>
-        /* --- ESTILOS GERAIS DO SISTEMA (Mantidos) --- */
+        /* --- ESTILOS GERAIS DO SISTEMA --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
@@ -151,7 +151,7 @@
         .preview-section.show { display: block; }
         .preview-controls { margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; background: #f7fafc; padding: 15px; border-radius: 8px; }
 
-        /* --- NOVO DESIGN DAS ETIQUETAS (CSS OTIMIZADO) --- */
+        /* --- ESTILOS DAS ETIQUETAS (DESIGN FINAL) --- */
         .etiquetas-page {
             background: white;
             width: 210mm; /* A4 */
@@ -179,7 +179,6 @@
 
         /* Cabeçalho da Etiqueta */
         .etiqueta-header {
-            /* Mantido o fundo claro, mas reforço o contraste */
             background-color: #f0f0f0; 
             padding: 8px 12px;
             border-bottom: 2px solid #2d3748;
@@ -194,7 +193,6 @@
             font-weight: 700;
         }
         
-        /* Melhoria: Código da unidade com fonte maior e bold */
         .etiqueta-header-unit {
             font-size: 11pt;
             font-weight: 800;
@@ -221,8 +219,7 @@
             display: flex;
             align-items: baseline;
             padding: 6px 0;
-            /* Linha pontilhada clara */
-            border-bottom: 1px dotted #cbd5e0;
+            border-bottom: 1px dotted #cbd5e0; /* Linha pontilhada clara */
         }
         
         .etiqueta-row:last-child { border-bottom: none; }
@@ -237,19 +234,18 @@
 
         .etiqueta-value {
             font-size: 10pt;
-            /* Fonte mono para dados a serem preenchidos */
             font-family: 'Courier New', Courier, monospace; 
             font-weight: 600;
             color: #2d3748;
             flex: 1;
         }
         
-        /* Área de Descrição Aprimorada: Usamos uma div interna para forçar a altura */
+        /* Área de Descrição Aprimorada */
         .descricao-box {
             border-bottom: 1px dotted #cbd5e0;
             height: 30px; /* Altura mínima para preenchimento */
             flex-grow: 1;
-            margin-top: 5px; /* Espaço após o label */
+            margin-top: 5px; 
             font-size: 9pt;
             color: #2d3748;
         }
@@ -268,19 +264,17 @@
         }
 
         .status-permanente {
-            /* Cor escura para permanente */
             background-color: #2d3748;
             color: white;
         }
 
         .status-eliminacao {
-            /* Fundo branco com marca d'água */
             background-color: #fff;
             color: #2d3748;
             position: relative;
         }
         
-        /* Melhoria: Marca d'água sutil para eliminação */
+        /* Marca d'água sutil para eliminação */
         .status-eliminacao::after {
             content: "TEMPORÁRIO";
             position: absolute;
@@ -288,7 +282,6 @@
             left: 50%;
             transform: translate(-50%, -50%);
             font-size: 30pt;
-            /* Cor extremamente clara para não atrapalhar a leitura */
             color: rgba(0,0,0,0.03); 
             pointer-events: none;
             font-weight: 900;
@@ -303,7 +296,7 @@
             border-radius: 10px;
         }
 
-        /* Ajustes para Impressão (Mantidos e Reforçados) */
+        /* Ajustes para Impressão */
         @media print {
             body { background: white; padding: 0; margin: 0; }
             .container { box-shadow: none; width: 100%; max-width: none; border-radius: 0; }
@@ -312,7 +305,6 @@
             
             @page {
                 size: A4;
-                /* Tenta remover margens da impressora */
                 margin: 0mm; 
             }
             
@@ -327,7 +319,6 @@
 
             .etiqueta {
                 border-color: #000;
-                /* Força a impressão das cores de fundo */
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
@@ -495,16 +486,15 @@
             container.innerHTML = html;
         }
 
-        // --- HTML DA ETIQUETA OTIMIZADA (Onde aplicamos as melhorias de estrutura) ---
+        // --- HTML DA ETIQUETA FINAL ---
         function gerarEtiquetaHTML() {
-            // Verifica se as variáveis globais estão preenchidas
             if (!unidadeSelecionada || !tipoSelecionado) return '';
 
             const isPerm = tipoSelecionado === 'permanente';
             const footerClass = isPerm ? 'status-permanente' : 'status-eliminacao';
-            const footerText = isPerm ? 'GUARDA PERMANENTE' : `ELIMINAÇÃO: 31/12/______`;
+            // Ajuste no placeholder para garantir que os traços apareçam na impressão (traços separados)
+            const footerText = isPerm ? 'GUARDA PERMANENTE' : `ELIMINAÇÃO: 31/12/ _ _ _ _`; 
             
-            // Variáveis preenchidas pelo JS
             const unidadeCodigo = unidadeSelecionada.codigo;
             const unidadeNome = unidadeSelecionada.nome;
 
