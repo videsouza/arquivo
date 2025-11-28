@@ -3,336 +3,312 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analytics Pro | Hub de Análise</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>Hub de Análise de Arquivo - Visual Clean</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
+    
     <style>
-        :root {
-            --primary: #4361ee;
-            --secondary: #3f37c9;
-            --success: #4cc9f0;
-            --bg-body: #f3f4f6;
-            --bg-card: #ffffff;
-            --text-main: #1f2937;
-            --text-muted: #6b7280;
-            --border: #e5e7eb;
-            --sidebar-width: 260px;
-        }
-
+        /* --- ESTILOS IDÊNTICOS AO PRIMEIRO CÓDIGO --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-        }
-
-        /* --- Sidebar --- */
-        .sidebar {
-            width: var(--sidebar-width);
-            background: white;
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 20px;
-            z-index: 10;
+            min-height: 100vh;
+            color: #333;
         }
 
-        .brand {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 40px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            animation: slideUp 0.5s ease;
         }
 
-        .nav-menu { list-style: none; }
-        
-        .nav-item {
-            padding: 12px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            color: var(--text-muted);
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transition: all 0.2s;
-            margin-bottom: 5px;
-        }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        .nav-item:hover { background-color: #f8fafc; color: var(--primary); }
-        .nav-item.active { background-color: #eff6ff; color: var(--primary); }
-        .nav-item i { width: 20px; }
-
-        /* --- Main Content --- */
-        .main-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 30px;
-            position: relative;
-        }
-
-        .page-header {
-            margin-bottom: 30px;
-        }
-        .page-header h1 { font-size: 24px; font-weight: 600; }
-        .page-header p { color: var(--text-muted); font-size: 14px; margin-top: 5px; }
-
-        /* --- Upload Section --- */
-        .upload-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
             text-align: center;
         }
 
-        .upload-card {
-            background: white;
+        .header h1 { font-size: 36px; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+        .header p { opacity: 0.9; font-size: 18px; }
+
+        .content { padding: 40px; }
+
+        /* --- SEÇÕES (Estilo Card) --- */
+        .section-card {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 1px solid #e9ecef;
+        }
+
+        .section-title {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 22px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+            display: inline-block;
+        }
+
+        /* --- ÁREA DE UPLOAD --- */
+        .upload-area {
+            border: 3px dashed #cbd5e0;
+            border-radius: 15px;
             padding: 50px;
-            border-radius: 16px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            border: 2px dashed var(--border);
+            text-align: center;
+            background: white;
+            cursor: pointer;
             transition: all 0.3s;
-            cursor: pointer;
-            max-width: 500px;
-            width: 100%;
         }
 
-        .upload-card:hover { border-color: var(--primary); background: #fdfdfd; }
-        .upload-card.dragover { border-color: var(--primary); background: #eff6ff; }
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+            transform: translateY(-2px);
+        }
 
-        .btn-primary {
-            background-color: var(--primary);
+        .upload-icon { font-size: 48px; margin-bottom: 15px; color: #667eea; }
+        
+        .btn-upload {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 10px 20px;
-            border-radius: 6px;
+            padding: 12px 30px;
             border: none;
-            font-weight: 500;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 15px;
             cursor: pointer;
-            transition: 0.2s;
-            margin-top: 20px;
+            transition: transform 0.2s;
         }
-        .btn-primary:hover { background-color: var(--secondary); }
+        .btn-upload:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
 
-        /* --- Loading --- */
-        .loading-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.9);
-            display: none; justify-content: center; align-items: center; z-index: 1000;
-            flex-direction: column;
+        /* --- NAVEGAÇÃO (TABS) --- */
+        .tabs-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
         }
-        .spinner {
-            width: 40px; height: 40px; border: 3px solid var(--border);
-            border-top-color: var(--primary); border-radius: 50%;
-            animation: spin 1s linear infinite; margin-bottom: 15px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* --- Dashboard Grid --- */
-        .stats-grid {
+        .tab-btn {
+            background: white;
+            border: 2px solid #e2e8f0;
+            padding: 12px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #555;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn:hover { border-color: #667eea; background: #f8f9ff; }
+        
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .tab-content { display: none; animation: fadeIn 0.4s; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* --- METRICS (CARDS COLORIDOS) --- */
+        .metrics-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
 
-        .stat-card {
-            background: var(--bg-card);
-            padding: 20px;
+        .metric-card {
+            background: white;
+            padding: 25px;
             border-radius: 12px;
-            border: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            border-left: 5px solid #667eea;
+            transition: transform 0.3s;
         }
+        .metric-card:hover { transform: translateY(-3px); }
+        
+        .metric-value { font-size: 32px; font-weight: 700; color: #333; }
+        .metric-label { font-size: 14px; color: #666; text-transform: uppercase; letter-spacing: 1px; }
 
-        .stat-label { font-size: 13px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; }
-        .stat-value { font-size: 28px; font-weight: 700; color: var(--text-main); margin: 5px 0; }
-        .stat-trend { font-size: 12px; display: flex; align-items: center; gap: 5px; }
-        .trend-up { color: #10b981; }
-
-        /* --- Charts Grid --- */
-        .charts-row {
+        /* --- GRÁFICOS --- */
+        .charts-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
+            gap: 25px;
         }
-
-        .card {
-            background: var(--bg-card);
-            border-radius: 12px;
-            border: 1px solid var(--border);
+        .chart-box {
+            background: white;
             padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
-        .card-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border);
+        /* --- TABELAS --- */
+        .table-wrapper {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
         }
-        .card-title { font-weight: 600; font-size: 16px; }
-
-        /* --- Insights --- */
-        .insights-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        .insight-item {
-            background: #f8fafc; border-left: 4px solid var(--primary);
-            padding: 15px; border-radius: 0 8px 8px 0;
-        }
-        .insight-title { font-weight: 600; color: var(--text-main); margin-bottom: 5px; }
-        .insight-desc { font-size: 14px; color: var(--text-muted); }
-
-        /* --- Tables --- */
-        .table-container {
-            overflow-x: auto;
-            max-height: 500px;
-        }
-        table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        th { 
-            text-align: left; padding: 12px 15px; background: #f8fafc; 
-            color: var(--text-muted); font-weight: 600; position: sticky; top: 0; 
-            border-bottom: 2px solid var(--border);
-        }
-        td { padding: 12px 15px; border-bottom: 1px solid var(--border); color: var(--text-main); }
-        tr:hover { background-color: #f9fafb; }
-
-        /* Views Logic */
-        .view-section { display: none; animation: fadeIn 0.4s ease; }
-        .view-section.active { display: block; }
         
-        #app-container { display: none; height: 100%; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        @media (max-width: 768px) {
-            body { flex-direction: column; overflow: auto; }
-            .sidebar { width: 100%; padding: 10px; border-right: none; border-bottom: 1px solid var(--border); }
-            .nav-menu { display: flex; overflow-x: auto; gap: 10px; padding-bottom: 5px; }
-            .nav-item { white-space: nowrap; margin: 0; }
+        table { width: 100%; border-collapse: collapse; }
+        
+        th {
+            background: #f1f5f9;
+            color: #475569;
+            font-weight: 700;
+            padding: 15px;
+            text-align: left;
+            border-bottom: 2px solid #e2e8f0;
         }
+        
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #333;
+        }
+        
+        tr:hover { background: #f8f9ff; }
+
+        /* --- LOADING --- */
+        .loading-overlay {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        .spinner {
+            width: 50px; height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Ocultar resultados inicialmente */
+        #resultsSection { display: none; }
     </style>
 </head>
 <body>
 
-    <div class="loading-overlay" id="loading">
-        <div class="spinner"></div>
-        <p>Processando dados e gerando insights...</p>
-    </div>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Hub de Análise de Arquivo</h1>
+            <p>Importe seus dados e visualize insights instantâneos</p>
+        </div>
 
-    <div class="upload-wrapper" id="uploadView">
-        <div class="upload-card" id="dropZone">
-            <i class="fas fa-cloud-upload-alt" style="font-size: 48px; color: var(--primary); margin-bottom: 20px;"></i>
-            <h2>Importar Arquivo de Dados</h2>
-            <p style="color: var(--text-muted); margin: 10px 0;">Arraste seu arquivo Excel (.xlsx, .xls) aqui ou clique para selecionar</p>
-            <input type="file" id="fileInput" accept=".xlsx,.xls" hidden>
-            <button class="btn-primary" onclick="document.getElementById('fileInput').click()">Selecionar Arquivo</button>
+        <div class="content">
+            
+            <div id="uploadSection" class="section-card">
+                <h2 class="section-title">1️⃣ Importar Arquivo</h2>
+                <div class="upload-area" id="dropZone">
+                    <div class="upload-icon">📂</div>
+                    <h3 style="margin-bottom: 10px;">Arraste seu Excel aqui</h3>
+                    <p style="color: #666; margin-bottom: 20px;">Aceita arquivos .xlsx e .xls</p>
+                    <input type="file" id="fileInput" accept=".xlsx,.xls" hidden>
+                    <button class="btn-upload" onclick="document.getElementById('fileInput').click()">
+                        Selecionar Arquivo
+                    </button>
+                </div>
+            </div>
+
+            <div id="loadingSection" class="loading-overlay">
+                <div class="spinner"></div>
+                <h3>Processando Inteligência de Dados...</h3>
+            </div>
+
+            <div id="resultsSection">
+                
+                <div class="tabs-container">
+                    <button class="tab-btn active" onclick="switchTab('dashboard', this)">
+                        <span>📈</span> Dashboard
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('insights', this)">
+                        <span>💡</span> Insights
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('tabelas', this)">
+                        <span>📋</span> Tabelas Detalhadas
+                    </button>
+                    <button class="tab-btn" onclick="location.reload()" style="color: #e53e3e; border-color: #fed7d7;">
+                        <span>✖️</span> Novo Arquivo
+                    </button>
+                </div>
+
+                <div id="dashboard" class="tab-content active">
+                    <div class="metrics-grid" id="kpiGrid">
+                        </div>
+
+                    <div class="section-card">
+                        <h2 class="section-title">Visualização Gráfica</h2>
+                        <div class="charts-grid">
+                            <div class="chart-box">
+                                <h3 style="text-align:center; margin-bottom:15px; font-size:16px;">Distribuição por Status</h3>
+                                <canvas id="chartStatus"></canvas>
+                            </div>
+                            <div class="chart-box">
+                                <h3 style="text-align:center; margin-bottom:15px; font-size:16px;">Top 5 Códigos</h3>
+                                <canvas id="chartCodigos"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="insights" class="tab-content">
+                    <div class="section-card">
+                        <h2 class="section-title">🔍 Análise Automática</h2>
+                        <div id="insightsList" style="display: grid; gap: 15px;">
+                            </div>
+                    </div>
+                </div>
+
+                <div id="tabelas" class="tab-content">
+                    <div id="tablesContainer">
+                        </div>
+                </div>
+
+            </div>
         </div>
     </div>
 
-    <div id="app-container">
-        <aside class="sidebar">
-            <div class="brand">
-                <i class="fas fa-chart-pie"></i> Analytics Pro
-            </div>
-            <ul class="nav-menu">
-                <li class="nav-item active" onclick="switchView('dashboard', this)">
-                    <i class="fas fa-home"></i> Visão Geral
-                </li>
-                <li class="nav-item" onclick="switchView('insights', this)">
-                    <i class="fas fa-lightbulb"></i> Insights IA
-                </li>
-                <li class="nav-item" onclick="switchView('tables', this)">
-                    <i class="fas fa-table"></i> Detalhes
-                </li>
-                <li class="nav-item" onclick="location.reload()" style="margin-top: auto; color: #ef4444;">
-                    <i class="fas fa-sign-out-alt"></i> Novo Arquivo
-                </li>
-            </ul>
-        </aside>
-
-        <main class="main-content">
-            
-            <div id="dashboard" class="view-section active">
-                <div class="page-header">
-                    <h1>Dashboard Executivo</h1>
-                    <p>Visão consolidada dos principais indicadores do arquivo.</p>
-                </div>
-
-                <div class="stats-grid" id="kpiContainer">
-                    </div>
-
-                <div class="charts-row">
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="card-title">Distribuição por Status</span>
-                            <i class="fas fa-ellipsis-h" style="color: var(--text-muted); cursor: pointer;"></i>
-                        </div>
-                        <div style="height: 300px;"><canvas id="chartStatus"></canvas></div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="card-title">Top 5 Códigos</span>
-                            <i class="fas fa-ellipsis-h" style="color: var(--text-muted); cursor: pointer;"></i>
-                        </div>
-                        <div style="height: 300px;"><canvas id="chartCodigos"></canvas></div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <span class="card-title">Análise por Setor</span>
-                    </div>
-                    <div style="height: 350px;"><canvas id="chartSetores"></canvas></div>
-                </div>
-            </div>
-
-            <div id="insights" class="view-section">
-                <div class="page-header">
-                    <h1>Insights Automáticos</h1>
-                    <p>Padrões e anomalias detectados nos dados.</p>
-                </div>
-                <div class="insights-list" id="insightsContainer">
-                    </div>
-            </div>
-
-            <div id="tables" class="view-section">
-                <div class="page-header">
-                    <h1>Tabelas de Frequência</h1>
-                    <p>Detalhamento estatístico das variáveis.</p>
-                </div>
-                <div id="tablesContainer">
-                    </div>
-            </div>
-
-        </main>
-    </div>
-
     <script>
-        // --- Lógica de Negócio ---
+        // --- LÓGICA DO SISTEMA ---
         let dadosGlobais = null;
+        let chartInstances = {}; // Para destruir gráficos antigos antes de recriar
 
-        // Elementos DOM
+        // Eventos de Upload
         const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('fileInput');
 
-        // Event Listeners para Upload
         dropZone.addEventListener('click', () => fileInput.click());
-        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
-        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.borderColor = '#764ba2'; dropZone.style.background = '#eef2ff'; });
+        dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = '#cbd5e0'; dropZone.style.background = 'white'; });
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
-            dropZone.classList.remove('dragover');
+            dropZone.style.borderColor = '#cbd5e0'; dropZone.style.background = 'white';
             if(e.dataTransfer.files.length) processarArquivo(e.dataTransfer.files[0]);
         });
         fileInput.addEventListener('change', (e) => {
@@ -341,8 +317,9 @@
 
         // Processamento
         function processarArquivo(file) {
-            document.getElementById('loading').style.display = 'flex';
-            
+            document.getElementById('uploadSection').style.display = 'none';
+            document.getElementById('loadingSection').style.display = 'block';
+
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
@@ -350,193 +327,166 @@
                     const workbook = XLSX.read(data, {type: 'array'});
                     
                     let todosRegistros = [];
-                    // Ler TODAS as abas disponíveis (mais robusto)
+                    // Lê todas as abas para garantir que pegamos os dados
                     workbook.SheetNames.forEach(sheetName => {
-                        const rowData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
-                        todosRegistros = [...todosRegistros, ...rowData];
+                        const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+                        todosRegistros = [...todosRegistros, ...json];
                     });
 
-                    if (todosRegistros.length === 0) throw new Error("Arquivo vazio ou formato inválido.");
+                    if(todosRegistros.length === 0) throw new Error("Arquivo vazio.");
 
-                    dadosGlobais = analisarDados(todosRegistros);
-                    
+                    analisarDados(todosRegistros);
+
                     setTimeout(() => {
-                        inicializarDashboard();
-                        document.getElementById('loading').style.display = 'none';
-                        document.getElementById('uploadView').style.display = 'none';
-                        document.getElementById('app-container').style.display = 'flex';
-                    }, 800); // Pequeno delay para UX
+                        document.getElementById('loadingSection').style.display = 'none';
+                        document.getElementById('resultsSection').style.display = 'block';
+                        renderizarInterface();
+                    }, 800);
 
-                } catch (error) {
-                    alert('Erro: ' + error.message);
-                    document.getElementById('loading').style.display = 'none';
+                } catch (err) {
+                    alert("Erro: " + err.message);
+                    location.reload();
                 }
             };
             reader.readAsArrayBuffer(file);
         }
 
         function analisarDados(registros) {
-            // Função auxiliar de frequência
-            const calcFreq = (campo) => {
-                const map = {};
+            // Função auxiliar para contar frequências
+            const contar = (campo) => {
+                const contagem = {};
                 registros.forEach(r => {
-                    if(r[campo]) map[r[campo]] = (map[r[campo]] || 0) + 1;
+                    if(r[campo]) contagem[r[campo]] = (contagem[r[campo]] || 0) + 1;
                 });
-                return Object.entries(map)
-                    .sort((a,b) => b[1] - a[1])
-                    .map(([k,v]) => ({ 
-                        label: k, 
-                        value: v, 
-                        percent: ((v/registros.length)*100).toFixed(1) 
+                return Object.entries(contagem)
+                    .sort((a,b) => b[1] - a[1]) // Ordenar maior para menor
+                    .map(([chave, valor]) => ({
+                        nome: chave,
+                        qtd: valor,
+                        pct: ((valor / registros.length) * 100).toFixed(1)
                     }));
             };
 
-            return {
+            dadosGlobais = {
                 total: registros.length,
-                codigos: calcFreq('COD'),
-                setores: calcFreq('SETOR'),
-                status: calcFreq('STATUS'),
-                tipos: calcFreq('TIPO')
+                codigos: contar('COD'),
+                setores: contar('SETOR'),
+                status: contar('STATUS'),
+                tipos: contar('TIPO')
             };
         }
 
-        function inicializarDashboard() {
-            renderizarKPIs();
-            renderizarGraficos();
-            renderizarInsights();
-            renderizarTabelas();
-        }
-
-        // --- Renderizadores ---
-
-        function renderizarKPIs() {
-            const kpis = [
-                { label: 'Total de Registros', value: dadosGlobais.total.toLocaleString(), color: 'text-main' },
-                { label: 'Setores Ativos', value: dadosGlobais.setores.length, color: 'text-main' },
-                { label: 'Status Predominante', value: dadosGlobais.status[0]?.label || 'N/A', color: 'success' },
-                { label: 'Tipos de Doc', value: dadosGlobais.tipos.length, color: 'text-main' }
-            ];
-
-            const html = kpis.map(k => `
-                <div class="stat-card">
-                    <span class="stat-label">${k.label}</span>
-                    <span class="stat-value" style="color: ${k.color === 'success' ? '#10b981' : 'inherit'}">${k.value}</span>
+        function renderizarInterface() {
+            // 1. Renderizar KPIs (Cards do topo)
+            const kpiHtml = `
+                <div class="metric-card">
+                    <div class="metric-label">Total de Registros</div>
+                    <div class="metric-value">${dadosGlobais.total}</div>
                 </div>
-            `).join('');
-            document.getElementById('kpiContainer').innerHTML = html;
-        }
+                <div class="metric-card" style="border-left-color: #48bb78;">
+                    <div class="metric-label">Setores Ativos</div>
+                    <div class="metric-value">${dadosGlobais.setores.length}</div>
+                </div>
+                <div class="metric-card" style="border-left-color: #ed8936;">
+                    <div class="metric-label">Variedade de Tipos</div>
+                    <div class="metric-value">${dadosGlobais.tipos.length}</div>
+                </div>
+                <div class="metric-card" style="border-left-color: #f56565;">
+                    <div class="metric-label">Status Principal</div>
+                    <div class="metric-value" style="font-size: 20px; margin-top:8px;">${dadosGlobais.status[0]?.nome || '-'}</div>
+                </div>
+            `;
+            document.getElementById('kpiGrid').innerHTML = kpiHtml;
 
-        function renderizarInsights() {
+            // 2. Renderizar Insights
             const topSetor = dadosGlobais.setores[0];
-            const topStatus = dadosGlobais.status[0];
-            
-            const insights = [
-                { title: 'Dominância de Setor', desc: `O setor <strong>${topSetor.label}</strong> lidera com ${topSetor.percent}% de toda a carga de trabalho.` },
-                { title: 'Taxa de Status', desc: `Atualmente, ${topStatus.percent}% dos processos estão marcados como <strong>${topStatus.label}</strong>.` },
-                { title: 'Variedade de Códigos', desc: `Foram identificados ${dadosGlobais.codigos.length} códigos únicos no processamento.` }
-            ];
-
-            document.getElementById('insightsContainer').innerHTML = insights.map(i => `
-                <div class="insight-item">
-                    <div class="insight-title">${i.title}</div>
-                    <div class="insight-desc">${i.desc}</div>
+            const insightsHtml = `
+                <div style="background: #ebf8ff; padding: 15px; border-radius: 8px; border-left: 4px solid #4299e1;">
+                    <strong>🏢 Dominância de Setor:</strong> O setor <em>${topSetor.nome}</em> é responsável por <strong>${topSetor.pct}%</strong> de todo o volume.
                 </div>
-            `).join('');
-        }
+                <div style="background: #f0fff4; padding: 15px; border-radius: 8px; border-left: 4px solid #48bb78;">
+                    <strong>📊 Padrão de Status:</strong> A maioria dos processos (${dadosGlobais.status[0].pct}%) encontra-se em <em>${dadosGlobais.status[0].nome}</em>.
+                </div>
+                <div style="background: #fffaf0; padding: 15px; border-radius: 8px; border-left: 4px solid #ed8936;">
+                    <strong>📑 Complexidade:</strong> Foram identificados <strong>${dadosGlobais.codigos.length}</strong> códigos distintos no arquivo.
+                </div>
+            `;
+            document.getElementById('insightsList').innerHTML = insightsHtml;
 
-        function renderizarTabelas() {
-            const createTable = (title, data) => {
-                const rows = data.map(d => `<tr><td>${d.label}</td><td>${d.value}</td><td>${d.percent}%</td></tr>`).join('');
+            // 3. Renderizar Tabelas
+            const criarTabela = (titulo, dados) => {
+                const linhas = dados.map(d => `<tr><td>${d.nome}</td><td>${d.qtd}</td><td>${d.pct}%</td></tr>`).join('');
                 return `
-                    <div class="card" style="margin-bottom: 20px;">
-                        <div class="card-header"><span class="card-title">${title}</span></div>
-                        <div class="table-container">
-                            <table>
-                                <thead><tr><th>Nome</th><th>Qtd Absoluta</th><th>Relativa</th></tr></thead>
-                                <tbody>${rows}</tbody>
-                            </table>
-                        </div>
+                    <div class="table-wrapper">
+                        <div style="padding: 15px; background: #f8f9fa; font-weight:bold; color:#667eea; border-bottom:1px solid #eee;">${titulo}</div>
+                        <table>
+                            <thead><tr><th>Nome</th><th>Quantidade</th><th>% Relativa</th></tr></thead>
+                            <tbody>${linhas}</tbody>
+                        </table>
                     </div>
                 `;
             };
+            document.getElementById('tablesContainer').innerHTML = 
+                criarTabela('Frequência de Códigos', dadosGlobais.codigos) +
+                criarTabela('Frequência de Setores', dadosGlobais.setores) +
+                criarTabela('Frequência de Status', dadosGlobais.status);
 
-            const container = document.getElementById('tablesContainer');
-            container.innerHTML = createTable('Análise de Códigos', dadosGlobais.codigos) +
-                                  createTable('Análise de Setores', dadosGlobais.setores) +
-                                  createTable('Análise de Status', dadosGlobais.status);
+            // 4. Renderizar Gráficos
+            renderizarGraficos();
         }
 
         function renderizarGraficos() {
-            // Configurações comuns
-            Chart.defaults.font.family = "'Inter', sans-serif";
-            Chart.defaults.color = '#6b7280';
-            
-            // Gráfico de Status (Doughnut)
-            new Chart(document.getElementById('chartStatus'), {
+            // Destruir anteriores se existirem
+            if(chartInstances.status) chartInstances.status.destroy();
+            if(chartInstances.codigos) chartInstances.codigos.destroy();
+
+            // Gráfico 1: Status (Pizza)
+            const ctx1 = document.getElementById('chartStatus').getContext('2d');
+            chartInstances.status = new Chart(ctx1, {
                 type: 'doughnut',
                 data: {
-                    labels: dadosGlobais.status.map(d => d.label),
+                    labels: dadosGlobais.status.map(d => d.nome),
                     datasets: [{
-                        data: dadosGlobais.status.map(d => d.value),
-                        backgroundColor: ['#4361ee', '#3f37c9', '#4cc9f0', '#f72585'],
-                        borderWidth: 0
+                        data: dadosGlobais.status.map(d => d.qtd),
+                        backgroundColor: ['#667eea', '#764ba2', '#a3bffa', '#d6bcfa', '#e2e8f0']
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'right', labels: { usePointStyle: true } } }
-                }
+                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
             });
 
-            // Gráfico de Códigos (Bar)
-            new Chart(document.getElementById('chartCodigos'), {
+            // Gráfico 2: Códigos (Barras)
+            const top5Codigos = dadosGlobais.codigos.slice(0, 5);
+            const ctx2 = document.getElementById('chartCodigos').getContext('2d');
+            chartInstances.codigos = new Chart(ctx2, {
                 type: 'bar',
                 data: {
-                    labels: dadosGlobais.codigos.slice(0,5).map(d => d.label),
+                    labels: top5Codigos.map(d => d.nome),
                     datasets: [{
                         label: 'Ocorrências',
-                        data: dadosGlobais.codigos.slice(0,5).map(d => d.value),
-                        backgroundColor: '#4361ee',
-                        borderRadius: 4
+                        data: top5Codigos.map(d => d.qtd),
+                        backgroundColor: '#764ba2',
+                        borderRadius: 5
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
+                options: { 
+                    responsive: true, 
                     plugins: { legend: { display: false } },
-                    scales: { y: { grid: { borderDash: [5, 5] } }, x: { grid: { display: false } } }
-                }
-            });
-
-            // Gráfico de Setores (Line Area)
-            new Chart(document.getElementById('chartSetores'), {
-                type: 'bar',
-                data: {
-                    labels: dadosGlobais.setores.slice(0,10).map(d => d.label),
-                    datasets: [{
-                        label: 'Volume por Setor',
-                        data: dadosGlobais.setores.slice(0,10).map(d => d.value),
-                        backgroundColor: '#4cc9f0',
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
                     scales: { y: { beginAtZero: true } }
                 }
             });
         }
 
         // --- Navegação ---
-        function switchView(viewId, navItem) {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        function switchTab(tabId, btn) {
+            // Remove active de tudo
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             
-            document.getElementById(viewId).classList.add('active');
-            navItem.classList.add('active');
+            // Adiciona active no selecionado
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
         }
     </script>
+
 </body>
 </html>
