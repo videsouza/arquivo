@@ -3,156 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Impressor de Etiquetas - Maximizado</title>
+    <title>Impressor de Etiquetas Automático - Pro</title>
     <style>
-        /* --- RESET E ESTILOS GERAIS --- */
+        /* --- ESTILOS GERAIS DO SISTEMA (Mantidos e Melhorados) --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 20px;
+            line-height: 1.6;
             color: #333;
         }
 
-        /* --- UI (Tela do computador) --- */
         .container {
             max-width: 1200px;
             margin: 0 auto;
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             overflow: hidden;
         }
 
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 30px;
+            padding: 40px;
             text-align: center;
         }
-        .header h1 { font-size: 28px; margin-bottom: 5px; }
 
-        .content { padding: 30px; }
+        .header h1 { font-size: 36px; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+        .content { padding: 40px; }
 
-        /* Formulários */
         .form-section {
             background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
             border: 1px solid #e9ecef;
         }
 
-        .form-group { position: relative; margin-bottom: 15px; }
-        .form-group label { display: block; font-weight: 600; margin-bottom: 5px; color: #4a5568; }
-        .form-group input {
-            width: 100%; padding: 10px; border: 2px solid #e2e8f0;
-            border-radius: 6px; font-size: 15px;
+        .form-section h2 {
+            color: #4a5568;
+            margin-bottom: 20px;
+            font-size: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+            display: inline-block;
         }
+
+        /* Inputs e Formulários */
+        .form-group { margin-bottom: 25px; position: relative; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #4a5568; }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        .form-group input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
 
         /* Resultados da Busca */
         .search-results {
-            position: absolute; top: 100%; left: 0; right: 0;
-            max-height: 250px; overflow-y: auto;
-            border: 1px solid #ddd; background: white; z-index: 100;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1); display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            z-index: 100;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            display: none;
         }
         .search-results.show { display: block; }
-        .search-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; }
-        .search-item:hover { background: #f0f4ff; }
+        .search-item { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid #f0f0f0; transition: background 0.2s; }
+        .search-item:hover { background: #f8f9ff; }
+        .search-item-code { font-weight: 700; color: #667eea; margin-right: 10px; background: #eef2ff; padding: 2px 6px; border-radius: 4px; }
 
-        /* Cards de Tipo */
-        .tipo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .selected-unit {
+            background: #e8f4ff;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 5px solid #667eea;
+            margin-top: 15px;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+        .selected-unit.show { display: block; }
+
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Grid de Tipos */
+        .tipo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .tipo-card {
-            border: 2px solid #e2e8f0; border-radius: 8px; padding: 15px;
-            cursor: pointer; text-align: center; background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            background: white;
         }
+        .tipo-card:hover { border-color: #667eea; transform: translateY(-3px); }
         .tipo-card.selected {
-            border-color: #667eea; background: #f8f9ff;
-            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.3);
         }
+        .tipo-icon { font-size: 42px; margin-bottom: 10px; }
 
         /* Botões */
+        .btn-group { display: flex; gap: 15px; margin-top: 30px; }
         .btn {
-            padding: 12px 25px; border: none; border-radius: 6px;
-            font-size: 16px; font-weight: 600; cursor: pointer;
-            color: white; background: #667eea; width: 100%;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
-        .btn:disabled { background: #cbd5e0; cursor: not-allowed; }
+        .btn-primary { background: #667eea; color: white; flex: 1; }
+        .btn-primary:hover:not(:disabled) { background: #5a67d8; transform: translateY(-2px); }
+        .btn-primary:disabled { background: #cbd5e0; cursor: not-allowed; }
+        .btn-secondary { background: #718096; color: white; }
+        .btn-secondary:hover { background: #4a5568; }
 
-        .preview-section { display: none; margin-top: 30px; background: #fff; padding: 20px; border-radius: 10px; }
+        /* Área de Preview */
+        .preview-section {
+            display: none;
+            background: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+            border: 1px solid #e2e8f0;
+        }
         .preview-section.show { display: block; }
-        .preview-controls { margin-bottom: 15px; display: flex; gap: 10px; background: #edf2f7; padding: 10px; border-radius: 6px; align-items: center;}
+        .preview-controls { margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; background: #f7fafc; padding: 15px; border-radius: 8px; }
 
-        /* --- ESTILOS DE IMPRESSÃO (Otimização A4) --- */
-        
-        /* Configuração da Página Física */
-        @page {
-            size: A4;
-            margin: 0; /* Remove margens do navegador para controle total */
-        }
-
+        /* --- NOVO DESIGN DAS ETIQUETAS (CSS Melhorado) --- */
         .etiquetas-page {
-            width: 210mm;
-            height: 297mm;
             background: white;
-            /* Margem de segurança de 5mm para impressoras comuns não cortarem */
-            padding: 5mm; 
+            width: 210mm; /* A4 */
+            min-height: 297mm;
             margin: 0 auto;
+            padding: 10mm;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1fr 1fr; /* 3 linhas exatas */
-            gap: 2mm; /* Pequeno espaço para corte */
+            grid-template-columns: 1fr 1fr; /* 2 colunas */
+            grid-template-rows: repeat(3, 1fr); /* 3 linhas (6 etiquetas por pág) */
+            gap: 5mm; /* Espaço entre etiquetas para corte */
             box-sizing: border-box;
         }
 
         .etiqueta {
-            border: 2px solid #000;
-            border-radius: 4px;
+            border: 2px solid #2d3748;
+            border-radius: 8px;
             background: white;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            /* Ocupa 100% da célula do grid */
-            width: 100%;
-            height: 100%;
+            height: 90mm; /* Altura fixa para garantir uniformidade */
             position: relative;
         }
 
-        /* Cabeçalho */
+        /* Cabeçalho da Etiqueta */
         .etiqueta-header {
-            background-color: #e2e8f0;
-            padding: 5px 8px;
-            border-bottom: 2px solid #000;
+            background-color: #f7fafc;
+            padding: 8px 12px;
+            border-bottom: 2px solid #2d3748;
             text-align: center;
-            height: 45px; /* Altura fixa para cabeçalho */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
         }
         
         .etiqueta-header-title {
-            font-size: 7pt;
+            font-size: 9pt;
             text-transform: uppercase;
-            color: #4a5568;
+            color: #718096;
+            letter-spacing: 1px;
             font-weight: 700;
-            margin-bottom: 2px;
         }
 
         .etiqueta-header-unit {
-            font-size: 10pt;
+            font-size: 11pt;
             font-weight: 800;
-            color: #000;
-            line-height: 1.1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            color: #1a202c;
+            line-height: 1.2;
+            margin-top: 4px;
         }
 
-        /* Corpo */
+        /* Corpo da Etiqueta */
         .etiqueta-body {
-            padding: 8px 10px;
+            padding: 10px 15px;
             flex: 1;
             display: flex;
             flex-direction: column;
@@ -162,218 +213,317 @@
         .etiqueta-row {
             display: flex;
             align-items: baseline;
-            padding: 4px 0;
-            border-bottom: 1px dotted #a0aec0;
+            padding: 6px 0;
+            border-bottom: 1px dotted #cbd5e0;
         }
         
-        .etiqueta-row:last-of-type { border-bottom: none; }
+        .etiqueta-row:last-child { border-bottom: none; }
 
         .etiqueta-label {
             font-size: 8pt;
             font-weight: 700;
-            color: #2d3748;
-            min-width: 85px;
+            text-transform: uppercase;
+            color: #4a5568;
+            min-width: 90px;
         }
 
         .etiqueta-value {
             font-size: 10pt;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Courier New', Courier, monospace; /* Fonte mono para dados manuscritos/digitados */
             font-weight: 600;
-            color: #000;
+            color: #2d3748;
             flex: 1;
         }
 
-        /* Rodapé / Status */
+        /* Status Badge (Permanente vs Eliminação) */
         .etiqueta-footer {
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-top: 2px solid #000;
-            font-weight: 800;
-            font-size: 11pt;
+            padding: 8px;
+            text-align: center;
+            border-top: 2px solid #2d3748;
+            font-weight: bold;
+            font-size: 10pt;
             text-transform: uppercase;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
         }
 
-        .status-permanente { background-color: #000; color: white; }
-        .status-eliminacao { background-color: #fff; color: #000; }
+        .status-permanente {
+            background-color: #2d3748;
+            color: white;
+        }
 
-        /* Media Query para Impressão */
+        .status-eliminacao {
+            background-color: #fff;
+            color: #2d3748;
+            position: relative;
+        }
+        
+        /* Marca d'água sutil para eliminação */
+        .status-eliminacao::after {
+            content: "TEMPORÁRIO";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 30pt;
+            color: rgba(0,0,0,0.03);
+            pointer-events: none;
+            font-weight: 900;
+        }
+
+        .cut-lines {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            border: 1px dashed #e2e8f0; /* Guia de corte visual */
+            margin: -2px;
+            border-radius: 10px;
+        }
+
+        /* Ajustes para Impressão */
         @media print {
-            body { padding: 0; background: white; }
-            .container { width: 100%; max-width: none; box-shadow: none; margin: 0; }
-            .header, .form-section, .btn, .preview-controls, h2 { display: none !important; }
-            .preview-section { display: block !important; padding: 0; margin: 0; border: none; }
+            body { background: white; padding: 0; margin: 0; }
+            .container { box-shadow: none; width: 100%; max-width: none; border-radius: 0; }
+            .header, .form-section, .btn-group, .preview-controls, h2 { display: none !important; }
+            .preview-section { display: block !important; padding: 0; border: none; margin: 0; }
             
             .etiquetas-page {
+                margin: 0;
                 box-shadow: none;
                 page-break-after: always;
-                margin: 0;
+                width: 100%;
+                height: 100vh;
+                padding: 10mm; /* Margem de segurança da impressora */
+            }
+
+            .etiqueta {
+                border-color: #000;
+                /* Força a impressão das cores de fundo */
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
             
-            /* Força impressão de cores */
-            .etiqueta-header { background-color: #ddd !important; }
+            .etiqueta-header { background-color: #f0f0f0 !important; border-bottom-color: #000; }
+            .etiqueta-footer { border-top-color: #000; }
             .status-permanente { background-color: #000 !important; color: #fff !important; }
+            .cut-lines { display: none; } /* Não imprimir a linha guia pontilhada externa */
         }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <div class="header">
-        <h1>🏷️ Impressor Otimizado (A4)</h1>
-    </div>
-
-    <div class="content">
-        <div class="form-section">
-            <div class="form-group">
-                <label>1. Unidade:</label>
-                <input type="text" id="searchInput" placeholder="Digite código ou nome..." autocomplete="off">
-                <div class="search-results" id="searchResults"></div>
-            </div>
-            <div id="selectedUnitInfo" style="color: #667eea; font-weight: bold; margin-top: 5px;"></div>
+    <div class="container">
+        <div class="header">
+            <h1>🏷️ Impressor de Etiquetas Pro</h1>
+            <p>Sistema de Gestão Documental</p>
         </div>
 
-        <div class="form-section">
-            <label style="display:block; margin-bottom:10px; font-weight:600;">2. Tipo:</label>
-            <div class="tipo-grid">
-                <div class="tipo-card" data-tipo="eliminacao" onclick="selecionarTipo('eliminacao')">
-                    🗑️ Temporário
+        <div class="content">
+            <div class="form-section">
+                <h2>1. Unidade Produtora</h2>
+                <div class="form-group">
+                    <label>🔍 Buscar Unidade:</label>
+                    <input type="text" id="searchInput" placeholder="Digite o código (ex: 1344) ou nome..." autocomplete="off">
+                    <div class="search-results" id="searchResults"></div>
                 </div>
-                <div class="tipo-card" data-tipo="permanente" onclick="selecionarTipo('permanente')">
-                    📚 Permanente
+                <div class="selected-unit" id="selectedUnit">
+                    <h3 style="margin-bottom: 5px; color: #667eea;">Unidade Selecionada:</h3>
+                    <div id="selectedUnitText" style="font-size: 1.1em; color: #2d3748;"></div>
                 </div>
             </div>
-        </div>
 
-        <button class="btn" id="btnGerar" onclick="gerarPreview()" disabled>Gerar Etiquetas</button>
-
-        <div class="preview-section" id="previewSection">
-            <div class="preview-controls">
-                <span style="font-weight:bold;">Cópias:</span>
-                <input type="number" id="numCopias" value="6" min="1" max="60" style="width: 60px; padding: 5px;">
-                <button onclick="atualizarPreview()" style="padding: 5px 15px; cursor: pointer;">Atualizar</button>
-                <button onclick="window.print()" style="padding: 5px 15px; cursor: pointer; background: #2d3748; color: white; border: none;">🖨️ Imprimir</button>
+            <div class="form-section">
+                <h2>2. Tipo de Etiqueta</h2>
+                <div class="tipo-grid">
+                    <div class="tipo-card" data-tipo="eliminacao" onclick="selecionarTipo('eliminacao')">
+                        <div class="tipo-icon">🗑️</div>
+                        <div style="font-weight: bold; font-size: 1.1em; margin-bottom: 5px;">Eliminação</div>
+                        <div style="color: #718096; font-size: 0.9em;">Documentos temporários com data de descarte.</div>
+                    </div>
+                    
+                    <div class="tipo-card" data-tipo="permanente" onclick="selecionarTipo('permanente')">
+                        <div class="tipo-icon">🏛️</div>
+                        <div style="font-weight: bold; font-size: 1.1em; margin-bottom: 5px;">Guarda Permanente</div>
+                        <div style="color: #718096; font-size: 0.9em;">Documentos históricos e probatórios.</div>
+                    </div>
+                </div>
             </div>
-            <div id="etiquetasContainer"></div>
+
+            <div class="btn-group">
+                <button class="btn btn-primary" id="btnGerar" onclick="gerarPreview()" disabled>
+                    📄 Gerar Etiquetas
+                </button>
+            </div>
+
+            <div class="preview-section" id="previewSection">
+                <div class="preview-controls">
+                    <div style="flex: 1;">
+                        <label style="font-weight: bold; margin-right: 10px;">Cópias:</label>
+                        <input type="number" id="numCopias" value="6" min="1" max="60" style="width: 80px; padding: 5px;">
+                    </div>
+                    <button class="btn btn-secondary" onclick="atualizarPreview()">🔄 Atualizar</button>
+                    <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimir</button>
+                    <button class="btn btn-secondary" style="background: #e53e3e;" onclick="fecharPreview()">✕</button>
+                </div>
+                <div id="etiquetasContainer"></div>
+            </div>
         </div>
     </div>
-</div>
 
-<script>
-    const unidades = [
-        { codigo: "1", nome: "GABINETE DO PREFEITO" },
-        { codigo: "1344", nome: "SEC. MUNICIPAL DE EDUCAÇÃO" },
-        { codigo: "301", nome: "DEP. RECURSOS HUMANOS" },
-        { codigo: "401", nome: "CONTABILIDADE" },
-        { codigo: "1201", nome: "SAÚDE - ATENÇÃO BÁSICA" }
-    ];
+    <script>
+        // --- DADOS (Mesma base de dados) ---
+        const unidades = [
+            { codigo: "1", nome: "GABINETE DO PREFEITO" },
+            { codigo: "2", nome: "SECRETARIA MUNICIPAL DE GOVERNO" },
+            { codigo: "3", nome: "SECRETARIA MUNICIPAL DE ADMINISTRAÇÃO" },
+            { codigo: "4", nome: "SECRETARIA MUNICIPAL DE FINANÇAS" },
+            { codigo: "11", nome: "SECRETARIA MUNICIPAL DE EDUCAÇÃO" },
+            { codigo: "12", nome: "SECRETARIA MUNICIPAL DE SAÚDE" },
+            { codigo: "1344", nome: "SEC. MUNICIPAL DE EDUCAÇÃO" },
+            { codigo: "301", nome: "RH - RECURSOS HUMANOS" },
+            { codigo: "401", nome: "CONTABILIDADE E TESOURARIA" }
+        ];
 
-    let unidadeSelecionada = null;
-    let tipoSelecionado = null;
+        let unidadeSelecionada = null;
+        let tipoSelecionado = null;
 
-    const searchInput = document.getElementById('searchInput');
-    const searchResults = document.getElementById('searchResults');
-    const btnGerar = document.getElementById('btnGerar');
+        const searchInput = document.getElementById('searchInput');
+        const searchResults = document.getElementById('searchResults');
+        const selectedUnit = document.getElementById('selectedUnit');
+        const btnGerar = document.getElementById('btnGerar');
 
-    searchInput.addEventListener('input', function() {
-        const termo = this.value.toLowerCase().trim();
-        if (termo.length < 1) { searchResults.classList.remove('show'); return; }
-        const resultados = unidades.filter(u => u.codigo.includes(termo) || u.nome.toLowerCase().includes(termo));
-        
-        searchResults.innerHTML = resultados.length ? resultsHTML(resultados) : '<div style="padding:10px; color:#999;">Nada encontrado</div>';
-        searchResults.classList.add('show');
-    });
+        // Lógica de Busca
+        searchInput.addEventListener('input', function() {
+            const termo = this.value.toLowerCase().trim();
+            if (termo.length < 1) { searchResults.classList.remove('show'); return; }
 
-    const resultsHTML = (list) => list.map(u => 
-        `<div class="search-item" onclick="setUnit('${u.codigo}', '${u.nome}')"><b>${u.codigo}</b> - ${u.nome}</div>`
-    ).join('');
+            const resultados = unidades.filter(u => u.codigo.includes(termo) || u.nome.toLowerCase().includes(termo));
 
-    function setUnit(code, name) {
-        unidadeSelecionada = { codigo: code, nome: name };
-        searchInput.value = `${code} - ${name}`;
-        searchResults.classList.remove('show');
-        document.getElementById('selectedUnitInfo').innerText = `Selecionado: ${name}`;
-        checkBtn();
-    }
+            if (resultados.length > 0) {
+                searchResults.innerHTML = resultados.map(u => `
+                    <div class="search-item" onclick="selecionarUnidade('${u.codigo}', '${u.nome}')">
+                        <span class="search-item-code">${u.codigo}</span>
+                        <span class="search-item-name">${u.nome}</span>
+                    </div>
+                `).join('');
+                searchResults.classList.add('show');
+            } else {
+                searchResults.innerHTML = '<div style="padding:15px; color:#999;">Nenhuma unidade encontrada</div>';
+                searchResults.classList.add('show');
+            }
+        });
 
-    function selecionarTipo(tipo) {
-        tipoSelecionado = tipo;
-        document.querySelectorAll('.tipo-card').forEach(c => c.classList.remove('selected'));
-        document.querySelector(`[data-tipo="${tipo}"]`).classList.add('selected');
-        checkBtn();
-    }
-
-    function checkBtn() { btnGerar.disabled = !(unidadeSelecionada && tipoSelecionado); }
-
-    function gerarPreview() {
-        document.getElementById('previewSection').classList.add('show');
-        atualizarPreview();
-        document.getElementById('previewSection').scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function atualizarPreview() {
-        const copias = parseInt(document.getElementById('numCopias').value) || 6;
-        const container = document.getElementById('etiquetasContainer');
-        const porPagina = 6;
-        const paginas = Math.ceil(copias / porPagina);
-        
-        let html = '';
-        for(let p=0; p<paginas; p++) {
-            html += '<div class="etiquetas-page">';
-            const qtd = Math.min(porPagina, copias - (p * porPagina));
-            for(let i=0; i<qtd; i++) html += templateEtiqueta();
-            // Preenche espaço vazio para manter layout
-            for(let i=qtd; i<porPagina; i++) html += '<div style="visibility:hidden"></div>';
-            html += '</div>';
+        function selecionarUnidade(codigo, nome) {
+            unidadeSelecionada = { codigo, nome };
+            searchInput.value = `${codigo} - ${nome}`;
+            searchResults.classList.remove('show');
+            document.getElementById('selectedUnitText').innerHTML = `<strong>${codigo}</strong> - ${nome}`;
+            selectedUnit.classList.add('show');
+            verificarBotao();
         }
-        container.innerHTML = html;
-    }
 
-    function templateEtiqueta() {
-        const isPerm = tipoSelecionado === 'permanente';
-        const footerClass = isPerm ? 'status-permanente' : 'status-eliminacao';
-        const footerText = isPerm ? 'GUARDA PERMANENTE' : 'ELIMINAÇÃO: 31/12/______';
-        
-        return `
-            <div class="etiqueta">
-                <div class="etiqueta-header">
-                    <div class="etiqueta-header-title">Unidade Produtora</div>
-                    <div class="etiqueta-header-unit">${unidadeSelecionada.codigo} - ${unidadeSelecionada.nome}</div>
-                </div>
-                <div class="etiqueta-body">
-                    <div class="etiqueta-row">
-                        <span class="etiqueta-label">Destino:</span>
-                        <span class="etiqueta-value">ARQUIVO CENTRAL</span>
-                    </div>
-                    <div class="etiqueta-row">
-                        <span class="etiqueta-label">Assunto/Cód:</span>
-                        <span class="etiqueta-value"></span>
-                    </div>
-                    <div class="etiqueta-row">
-                        <span class="etiqueta-label">Datas:</span>
-                        <span class="etiqueta-value">____/____ a ____/____</span>
-                    </div>
-                    <div class="etiqueta-row" style="flex:1;">
-                        <span class="etiqueta-label">Descrição:</span>
-                        <span class="etiqueta-value" style="border-bottom: 1px dotted #ccc;"></span>
-                    </div>
-                    <div class="etiqueta-row">
-                        <span class="etiqueta-label">Nº CX / DOC:</span>
-                        <span class="etiqueta-value"></span>
-                    </div>
-                </div>
-                <div class="etiqueta-footer ${footerClass}">${footerText}</div>
-            </div>
-        `;
-    }
+        function selecionarTipo(tipo) {
+            tipoSelecionado = tipo;
+            document.querySelectorAll('.tipo-card').forEach(c => c.classList.remove('selected'));
+            document.querySelector(`[data-tipo="${tipo}"]`).classList.add('selected');
+            verificarBotao();
+        }
 
-    // Fechar busca ao clicar fora
-    document.addEventListener('click', e => {
-        if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) searchResults.classList.remove('show');
-    });
-</script>
+        function verificarBotao() {
+            btnGerar.disabled = !(unidadeSelecionada && tipoSelecionado);
+        }
+
+        function gerarPreview() {
+            document.getElementById('previewSection').classList.add('show');
+            atualizarPreview();
+            document.getElementById('previewSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function fecharPreview() {
+            document.getElementById('previewSection').classList.remove('show');
+        }
+
+        function atualizarPreview() {
+            const numCopias = parseInt(document.getElementById('numCopias').value) || 6;
+            const container = document.getElementById('etiquetasContainer');
+            const etiquetasPorPagina = 6;
+            const numPaginas = Math.ceil(numCopias / etiquetasPorPagina);
+            
+            let html = '';
+            
+            for (let pagina = 0; pagina < numPaginas; pagina++) {
+                html += '<div class="etiquetas-page">';
+                const qtdNestaPagina = Math.min(etiquetasPorPagina, numCopias - (pagina * etiquetasPorPagina));
+                
+                for (let i = 0; i < qtdNestaPagina; i++) {
+                    html += gerarEtiquetaHTML();
+                }
+                // Preencher com vazios para manter o grid
+                for (let i = qtdNestaPagina; i < etiquetasPorPagina; i++) {
+                     html += '<div style="visibility: hidden;"></div>';
+                }
+                html += '</div>';
+            }
+            container.innerHTML = html;
+        }
+
+        // --- HTML DA ETIQUETA OTIMIZADA ---
+        function gerarEtiquetaHTML() {
+            const isPerm = tipoSelecionado === 'permanente';
+            const footerClass = isPerm ? 'status-permanente' : 'status-eliminacao';
+            const footerText = isPerm ? 'GUARDA PERMANENTE' : `ELIMINAÇÃO: 31/12/______`;
+            const bgDestino = isPerm ? 'background-color: #f7fafc;' : ''; // Destacar destino se perm
+
+            return `
+                <div class="etiqueta">
+                    <div class="cut-lines"></div>
+                    
+                    <div class="etiqueta-header">
+                        <div class="etiqueta-header-title">Unidade Produtora / Portadora</div>
+                        <div class="etiqueta-header-unit">${unidadeSelecionada.codigo} - ${unidadeSelecionada.nome}</div>
+                    </div>
+
+                    <div class="etiqueta-body">
+                        <div class="etiqueta-row">
+                            <span class="etiqueta-label">Destinatário:</span>
+                            <span class="etiqueta-value">1344 - SEC. MUNICIPAL DE EDUCAÇÃO</span>
+                        </div>
+
+                        <div class="etiqueta-row">
+                            <span class="etiqueta-label">Código:</span>
+                            <span class="etiqueta-value"></span>
+                            <span class="etiqueta-label" style="min-width: auto; margin-right: 5px;">Data:</span>
+                            <span class="etiqueta-value" style="flex: 0 0 100px;">___/___/____</span>
+                        </div>
+
+                        <div class="etiqueta-row">
+                            <span class="etiqueta-label">Tipo Doc.:</span>
+                            <span class="etiqueta-value"></span>
+                        </div>
+
+                        <div class="etiqueta-row" style="flex: 2; align-items: flex-start;">
+                            <span class="etiqueta-label">Descrição:</span>
+                            <span class="etiqueta-value" style="border-bottom: 1px dotted #ccc; height: 100%;"></span>
+                        </div>
+
+                        <div class="etiqueta-row">
+                            <span class="etiqueta-label">Nº Documento:</span>
+                            <span class="etiqueta-value">S/N</span>
+                        </div>
+                    </div>
+
+                    <div class="etiqueta-footer ${footerClass}">
+                        ${footerText}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Fechar dropdown se clicar fora
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.classList.remove('show');
+            }
+        });
+    </script>
 </body>
 </html>
