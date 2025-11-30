@@ -52,7 +52,11 @@
           <div id="uploadText">Arraste o arquivo Excel aqui (colunas esperadas: <strong>SETOR</strong>, <strong>BOX</strong>, <strong>COD</strong>)</div>
           <input id="fileInput" type="file" accept=".xlsx,.xls" />
           <div style="margin-top:10px">
-            <button id="btnSelect">Selecionar Arquivo</button>
+            <button type="button" class="btn-primary"
+        onclick="document.getElementById('fileInput').click()">
+    Selecionar Arquivo
+</button>
+
           </div>
         </div>
 
