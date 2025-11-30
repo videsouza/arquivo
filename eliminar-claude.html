@@ -786,24 +786,16 @@
         function imprimirApenasBoxes() {
             const boxes = resultadoOtimizacao.boxesSelecionados.map(b => b.id).join(', ');
             const win = window.open('', '', 'width=800,height=600');
-            win.document.write(`
-                <html>
-                <head>
-                    <title>Boxes Selecionados</title>
-                    <style>
-                        body { font-family: Arial; padding: 40px; }
-                        h1 { color: #333; }
-                        .boxes { font-size: 16px; line-height: 2; }
-                    </style>
-                </head>
-                <body>
-                    <h1>📦 Boxes Selecionados</h1>
-                    <p><strong>Total:</strong> ${resultadoOtimizacao.estatisticas.totalBoxes} boxes</p>
-                    <div class="boxes">${boxes}</div>
-                    <script>window.print(); window.close();</script>
-                </body>
-                </html>
-            `);
+            const total = resultadoOtimizacao.estatisticas.totalBoxes;
+            win.document.write('<html><head><title>Boxes Selecionados</title>');
+            win.document.write('<style>body { font-family: Arial; padding: 40px; } h1 { color: #333; } .boxes { font-size: 16px; line-height: 2; }</style>');
+            win.document.write('</head><body>');
+            win.document.write('<h1>📦 Boxes Selecionados</h1>');
+            win.document.write('<p><strong>Total:</strong> ' + total + ' boxes</p>');
+            win.document.write('<div class="boxes">' + boxes + '</div>');
+            win.document.write('<script>window.print(); window.close();<\/script>');
+            win.document.write('</body></html>');
+            win.document.close();
         }
 
         function exportarExcel() {
