@@ -607,78 +607,98 @@
                 boxesMap[box].push(doc);
             });
 
-            const boxes = Object.keys(boxesMap).map(boxId => ({
-                id: boxId,
-                documentos: boxesMap[boxId],
-                codigos: [...new Set(boxesMap[boxId].map(d => d.COD))],
-                setores: [...new Set(boxesMap[boxId].map(d => d.SETOR))]
-            }));
+            const boxes = Object.keys(boxesMap).map(boxId => {
+                const docs = boxesMap[boxId];
+                const codigos = new Set(docs.map(d => d.COD));
+                const setores = new Set(docs.map(d => d.SETOR));
+                
+                // Pré-calcular setores por código para este box
+                const setoresPorCod = {};
+                docs.forEach(d => {
+                    if (!setoresPorCod[d.COD]) setoresPorCod[d.COD] = new Set();
+                    setoresPorCod[d.COD].add(d.SETOR);
+                });
+                
+                return {
+                    id: boxId,
+                    documentos: docs,
+                    numDocs: docs.length,
+                    codigos: Array.from(codigos),
+                    setores: Array.from(setores),
+                    setoresPorCodigo: setoresPorCod
+                };
+            });
 
-            // Ordenar boxes por número de documentos (greedy approach)
-            boxes.sort((a, b) => b.documentos.length - a.documentos.length);
+            // Ordenar por número de documentos (decrescente) - Best-Fit
+            boxes.sort((a, b) => b.numDocs - a.numDocs);
 
+            // Estruturas para rastreamento rápido
             const blocoSelecionado = [];
             const codigosNoBloco = new Set();
-            const setoresPorCodigo = {};
+            const setoresPorCodigoGlobal = {};
+            let totalDocs = 0;
 
+            // Best-Fit Search (Guloso Local)
             for (const box of boxes) {
-                // Verificar se adicionar este box viola as restrições
-                const novosCodigosTemp = new Set([...codigosNoBloco, ...box.codigos]);
-                
-                // Verificar limite de códigos
-                if (restricoes.codigos.ativa && novosCodigosTemp.size > restricoes.codigos.valor) {
-                    continue;
+                let valido = true;
+
+                // Verificação rápida: limite de códigos
+                if (restricoes.codigos.ativa) {
+                    let novosCodigosCount = codigosNoBloco.size;
+                    for (const cod of box.codigos) {
+                        if (!codigosNoBloco.has(cod)) novosCodigosCount++;
+                    }
+                    if (novosCodigosCount > restricoes.codigos.valor) {
+                        valido = false;
+                        continue;
+                    }
                 }
 
-                // Verificar limite de setores por código
-                let violaSetores = false;
-                if (restricoes.setores.ativa) {
-                    const setoresTemp = JSON.parse(JSON.stringify(setoresPorCodigo));
-                    
-                    box.documentos.forEach(doc => {
-                        if (!setoresTemp[doc.COD]) {
-                            setoresTemp[doc.COD] = new Set();
-                        }
-                        setoresTemp[doc.COD].add(doc.SETOR);
-                    });
-
-                    for (const cod in setoresTemp) {
-                        if (setoresTemp[cod].size > restricoes.setores.valor) {
-                            violaSetores = true;
+                // Verificação rápida: limite de setores por código
+                if (restricoes.setores.ativa && valido) {
+                    for (const cod of box.codigos) {
+                        const setoresAtuais = setoresPorCodigoGlobal[cod] || new Set();
+                        const setoresBox = box.setoresPorCodigo[cod];
+                        const setoresUnidos = new Set([...setoresAtuais, ...setoresBox]);
+                        
+                        if (setoresUnidos.size > restricoes.setores.valor) {
+                            valido = false;
                             break;
                         }
                     }
                 }
 
-                if (violaSetores) {
-                    continue;
-                }
-
-                // Adicionar box ao bloco
-                blocoSelecionado.push(box);
-                box.codigos.forEach(cod => codigosNoBloco.add(cod));
-                
-                box.documentos.forEach(doc => {
-                    if (!setoresPorCodigo[doc.COD]) {
-                        setoresPorCodigo[doc.COD] = new Set();
+                // Se válido, adiciona ao bloco
+                if (valido) {
+                    blocoSelecionado.push(box);
+                    totalDocs += box.numDocs;
+                    
+                    // Atualizar estruturas de rastreamento
+                    box.codigos.forEach(cod => codigosNoBloco.add(cod));
+                    
+                    for (const cod of box.codigos) {
+                        if (!setoresPorCodigoGlobal[cod]) {
+                            setoresPorCodigoGlobal[cod] = new Set();
+                        }
+                        box.setoresPorCodigo[cod].forEach(s => 
+                            setoresPorCodigoGlobal[cod].add(s)
+                        );
                     }
-                    setoresPorCodigo[doc.COD].add(doc.SETOR);
-                });
+                }
             }
 
-            // Calcular estatísticas
-            const docsSelec = blocoSelecionado.reduce((sum, box) => sum + box.documentos.length, 0);
+            // Calcular estatísticas finais
             const setoresUnicos = new Set();
             blocoSelecionado.forEach(box => {
                 box.setores.forEach(s => setoresUnicos.add(s));
             });
 
-            const totalDocs = dados.length;
-            const totalBoxes = boxes.length;
-
-            // Calcular qualidade (0-100)
-            const percDocs = (docsSelec / totalDocs) * 100;
-            const percBoxes = (blocoSelecionado.length / totalBoxes) * 100;
+            const totalDocsOriginal = dados.length;
+            const totalBoxesOriginal = boxes.length;
+            const percDocs = (totalDocs / totalDocsOriginal) * 100;
+            const percBoxes = (blocoSelecionado.length / totalBoxesOriginal) * 100;
+            
+            // Qualidade: 70% documentos + 30% boxes
             const qualidade = Math.round((percDocs * 0.7) + (percBoxes * 0.3));
 
             return {
@@ -687,12 +707,12 @@
                     totalBoxes: blocoSelecionado.length,
                     totalSetores: setoresUnicos.size,
                     totalCodigos: codigosNoBloco.size,
-                    totalDocumentos: docsSelec,
+                    totalDocumentos: totalDocs,
                     percDocumentos: percDocs.toFixed(1),
                     percBoxes: percBoxes.toFixed(1),
                     qualidade: qualidade,
-                    totalDocsOriginal: totalDocs,
-                    totalBoxesOriginal: totalBoxes
+                    totalDocsOriginal: totalDocsOriginal,
+                    totalBoxesOriginal: totalBoxesOriginal
                 }
             };
         }
