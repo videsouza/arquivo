@@ -29,7 +29,7 @@
     table{width:100%;border-collapse:collapse}
     th,td{padding:8px;border-bottom:1px solid #f2f6ff;text-align:left}
     .muted{color:#666;font-size:13px}
-    .log{max-height:200px;overflow:auto;background:#fff;padding:10px;border-radius:6px;border:1px solid #eef3ff;font-size:13px}
+    .log{max-height:200px;overflow:auto;background:#fff;padding:10px;border-radius:6px;border:1px solid #eef3ff;font-size:13px;white-space:pre-wrap}
     footer{padding:18px;background:#fbfdff;border-top:1px solid #eef3ff;display:flex;justify-content:space-between}
     @media (max-width:900px){.grid{grid-template-columns:1fr;}.stats{flex-direction:column}}
   </style>
@@ -52,11 +52,7 @@
           <div id="uploadText">Arraste o arquivo Excel aqui (colunas esperadas: <strong>SETOR</strong>, <strong>BOX</strong>, <strong>COD</strong>)</div>
           <input id="fileInput" type="file" accept=".xlsx,.xls" />
           <div style="margin-top:10px">
-            <button type="button" class="btn-primary"
-        onclick="document.getElementById('fileInput').click()">
-    Selecionar Arquivo
-</button>
-
+            <button type="button" id="btnSelect">Selecionar Arquivo</button>
           </div>
         </div>
 
@@ -86,7 +82,7 @@
           <label class="small">Opções avançadas</label>
           <div style="display:flex;gap:8px">
             <button id="btnRun">🚀 Iniciar Otimização</button>
-            <button id="btnReset" style="background:#6c757d">Reset</button>
+            <button type="button" id="btnReset" style="background:#6c757d">Reset</button>
           </div>
         </div>
       </div>
@@ -371,7 +367,7 @@
         // accept
         selected.add(box.id);
         box.codigos.forEach(c=>codesSet.add(c));
-        for(const c of box.codigos){ if(!sectorsPerCodeGlobal[c]) sectorsPerCodeGlobal[c]=new Set(); (box.setoresPorCodigo[c]||new Set()).forEach(s=>sectorsPerCodeGlobal[c].add(s)); }
+        for(const c of box.codigos){ if(!sectorsPerCodeGlobal[c]) sectorsPerCodeGlobal[c]=new Set(); (box.setoresPorCodigo[c]|| new Set()).forEach(s=>sectorsPerCodeGlobal[c].add(s)); }
       }
       return selected;
     }
@@ -504,8 +500,7 @@
       const logLines = [];
       logLines.push(`Boxes selecionados: ${boxes.map(b=>b.id).join(', ')}`);
       logLines.push(`Total docs: ${totalDocs}, códigos únicos: ${codes.size}, setores únicos: ${sectors.size}`);
-      auditLog.textContent = logLines.join('
-');
+      auditLog.textContent = logLines.join('\n');
     }
 
     btnExport.addEventListener('click', ()=>{
