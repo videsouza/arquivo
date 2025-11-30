@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Hub Profissional de Análise Arquivística — Completo</title>
+  <!-- Dependências CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <style>
+    :root{--accent1:#2b6cb0;--accent2:#6b46c1;--bg:#f4f6fb}
+    *{box-sizing:border-box}
+    body{font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);margin:0;color:#222}
+    .app{max-width:1200px;margin:28px auto;background:#fff;border-radius:12px;box-shadow:0 18px 50px rgba(0,0,0,.12);overflow:hidden}
+    header{display:flex;gap:16px;align-items:center;padding:20px 24px;background:linear-gradient(90deg,rgba(255,255,255,.02),transparent)}
+    header h1{margin:0;font-size:18px}
+    .layout{display:grid;grid-template-columns:320px 1fr;gap:18px;padding:18px}
+    .panel{background:#fbfdff;padding:14px;border-radius:10px;border:1px solid #eef2ff}
+    .upload-area{border:2px dashed #dfe7ff;padding:14px;border-radius:8px;text-align:center;cursor:pointer}
+    .controls{display:flex;flex-direction:column;gap:10px}
+    label{font-size:13px;color:#333}
+    input[type=file]{display:none}
+    input[type=text],select,input[type=number]{width:100%;padding:8px;border-radius:6px;border:1px solid #e6eefc}
+    button{background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#fff;border:none;padding:10px 12px;border-radius:8px;cursor:pointer}
+    .kpis{display:flex;gap:12px;margin-bottom:12px}
+    .kpi{flex:1;background:#fff;padding:10px;border-radius:8px;border:1px solid #eef3ff;text-align:center}
+    .kpi .v{font-size:20px;font-weight:700}
+    .charts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .chart-card{background:#fff;padding:12px;border-radius:8px;border:1px solid #eef3ff}
+    .table-wrapper{background:#fff;padding:8px;border-radius:8px;border:1px solid #eef3ff;margin-top:12px;overflow:auto}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border-bottom:1px solid #f2f6ff;text-align:left}
+    .muted{color:#666;font-size:13px}
+    .log{white-space:pre-wrap;font-family:monospace;background:#fff;padding:10px;border-radius:6px;border:1px solid #eef3ff;max-height:220px;overflow:auto}
+    .filters{display:flex;gap:8px;align-items:center}
+    @media(max-width:980px){.layout{grid-template-columns:1fr}.charts{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div style="font-size:22px">📚</div>
+      <div>
+        <h1>Hub Profissional de Análise Arquivística — Completo (Arquivístico + BI + Operacional)</h1>
+        <div class="muted">Parsing robusto · Normalização · Web Worker · Auditoria · Dashboards e exportação</div>
+      </div>
+    </header>
+
+    <div class="layout">
+      <!-- LEFT PANEL: upload, mapping, params -->
+      <div class="panel" style="height:100%">
+        <h3 style="margin:0 0 8px 0">1) Upload & Mapeamento</h3>
+        <div id="uploadArea" class="upload-area" tabindex="0">
+          <div id="uploadText">Arraste um arquivo Excel (colunas esperadas: SETOR, BOX, COD, STATUS, DATA, TIPO, ELIM_PREVISTA)</div>
+          <input id="fileInput" type="file" accept=".xlsx,.xls" />
+          <div style="margin-top:8px">
+            <button type="button" id="btnSelect">Selecionar Arquivo</button>
+            <button type="button" id="btnExample" style="background:#4a5568;margin-left:8px">Exemplo</button>
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div>
+          <h4 style="margin:0 0 6px 0">2) Mapeamento Automatizado</h4>
+          <div class="muted" style="font-size:13px;margin-bottom:6px">Caso os cabeçalhos não sejam reconhecidos, ajuste manualmente abaixo.</div>
+          <div class="controls">
+            <label>Coluna SETOR (detectada)</label>
+            <input type="text" id="mapSetor" placeholder="Ex: SETOR, setor, Departamento" />
+            <label>Coluna BOX</label>
+            <input type="text" id="mapBox" placeholder="Ex: BOX, Caixas" />
+            <label>Coluna COD</label>
+            <input type="text" id="mapCod" placeholder="Ex: COD, Código" />
+            <label>Coluna STATUS</label>
+            <input type="text" id="mapStatus" placeholder="Ex: STATUS, Situação" />
+            <label>Coluna DATA (data do registro)</label>
+            <input type="text" id="mapDate" placeholder="Ex: DATA, DataRegistro" />
+            <label>Coluna ELIM_PREVISTA (data de eliminação)</label>
+            <input type="text" id="mapElim" placeholder="Ex: ELIM_PREVISTA, Elim" />
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div>
+          <h4 style="margin:0 0 6px 0">3) Parâmetros de Análise</h4>
+          <div class="controls">
+            <label>Limite de registros para processamento síncrono (recomendado 5000)</label>
+            <input type="number" id="limitSync" value="5000" />
+            <label>Ativar validação arquivística (prazos, inconsistências)</label>
+            <select id="enableArchival"><option value="true">Sim</option><option value="false">Não</option></select>
+            <div style="display:flex;gap:8px;margin-top:6px">
+              <button id="btnProcess">▶ Processar</button>
+              <button id="btnReset" style="background:#6b7280">Reset</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <h4 style="margin:0 0 6px 0">4) Auditoria & Logs</h4>
+        <div class="log" id="auditLog">Nenhuma ação ainda.</div>
+      </div>
+
+      <!-- RIGHT PANEL: dashboard, filters, tables -->
+      <div>
+        <div class="panel">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div class="muted">Resumo</div>
+              <div style="font-weight:700;font-size:20px" id="summaryTitle">Nenhum arquivo carregado</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <div class="muted" style="font-size:13px">Filtros:</div>
+              <div class="filters">
+                <select id="filterSetor"><option value="">Todos setores</option></select>
+                <select id="filterStatus"><option value="">Todos status</option></select>
+                <button id="btnExport" style="background:#2f855a">Exportar CSV</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="height:12px"></div>
+          <div class="kpis" id="kpisArea">
+            <div class="kpi"><div class="muted">Registros</div><div class="v" id="kpiTotal">—</div></div>
+            <div class="kpi"><div class="muted">Setores</div><div class="v" id="kpiSetores">—</div></div>
+            <div class="kpi"><div class="muted">Códigos distintos</div><div class="v" id="kpiCodigos">—</div></div>
+            <div class="kpi"><div class="muted">Processos em atraso</div><div class="v" id="kpiAtraso">—</div></div>
+          </div>
+
+          <div class="charts">
+            <div class="chart-card">
+              <div class="muted">Status (distribuição)</div>
+              <canvas id="chartStatus"></canvas>
+            </div>
+            <div class="chart-card">
+              <div class="muted">Top 10 códigos (ocorrências)</div>
+              <canvas id="chartCod"></canvas>
+            </div>
+          </div>
+
+          <div class="table-wrapper" id="tableWrapper"></div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="panel">
+          <h4 style="margin:0 0 8px 0">Relatórios & Ações</h4>
+          <div style="display:flex;gap:8px">
+            <button id="btnReportElim" style="background:#dd6b20">Relatório de Eliminação</button>
+            <button id="btnReportRisk" style="background:#c53030">Relatório de Risco</button>
+            <button id="btnDownloadAll" style="background:#4a5568">Download Excel</button>
+          </div>
+          <div style="height:12px"></div>
+          <div class="log" id="reportLog">Nenhum relatório gerado.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* =================================================
+       Arquitetura: Main thread (UI) + Worker (parsing/análise)
+       - Normalização de cabeçalhos
+       - Validação e relatório de inconsistências
+       - Análises: KPIs, gráficos, top N
+       - Export / impressão
+       ================================================== */
+
+    // ---------- UTIL ----------
+    const $ = id => document.getElementById(id);
+    function logAudit(msg, append=true){ const el = $('auditLog'); if(append) el.textContent = el.textContent + '
+' + msg; else el.textContent = msg; }
+    function humanDate(d){ try{ const dt = new Date(d); if(isNaN(dt)) return d; return dt.toLocaleDateString(); }catch(e){ return d; } }
+
+    // ---------- STATE ----------
+    let rawRecords = null; // array of original rows
+    let normalized = null; // array normalized
+    let summary = {};
+    let worker = null;
+    let charts = {};
+
+    // ---------- Mapeamento de cabeçalhos (heurística) ----------
+    function detectHeaders(sample){
+      // sample: object keys
+      const keys = Object.keys(sample).map(k=>k.trim());
+      const map = {};
+      const findKey = patterns => keys.find(k => patterns.some(p => k.toLowerCase().includes(p)));
+      map.setor = findKey(['setor','sector','depart']);
+      map.box = findKey(['box','caixa']);
+      map.cod = findKey(['cod','codigo','code']);
+      map.status = findKey(['status','situacao','situação']);
+      map.date = findKey(['data','date','created']);
+      map.elim = findKey(['elim','elimina','elimination','elim_prev']);
+      return map;
+    }
+
+    // ---------- File handling ----------
+    const fileInput = $('fileInput');
+    const uploadArea = $('uploadArea');
+    const btnSelect = $('btnSelect');
+    const btnProcess = $('btnProcess');
+    const btnReset = $('btnReset');
+    const btnExport = $('btnExport');
+    const btnExample = $('btnExample');
+
+    uploadArea.addEventListener('dragover', e=>{ e.preventDefault(); uploadArea.style.borderColor = 'var(--accent2)'; uploadArea.style.background='#f5f7ff'; });
+    uploadArea.addEventListener('dragleave', e=>{ uploadArea.style.borderColor = '#dfe7ff'; uploadArea.style.background='transparent'; });
+    uploadArea.addEventListener('drop', e=>{ e.preventDefault(); uploadArea.style.borderColor = '#dfe7ff'; uploadArea.style.background='transparent'; if(e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]); });
+
+    btnSelect.addEventListener('click', ()=> fileInput.click());
+    fileInput.addEventListener('change', e=>{ if(e.target.files.length) handleFile(e.target.files[0]); });
+    btnReset.addEventListener('click', resetApp);
+    btnProcess.addEventListener('click', ()=>{
+      if(!rawRecords) return alert('Carregue um arquivo primeiro.');
+      startWorkerProcessing();
+    });
+    btnExport.addEventListener('click', exportFilteredCSV);
+    btnExample.addEventListener('click', ()=>{
+      // cria um exemplo mínimo e processa
+      const example = [{SETOR:'Financeiro',BOX:'001',COD:'A123',STATUS:'ATIVO',DATA:'2020-01-05',TIPO:'Documento',ELIM_PREVISTA:'2025-01-01'},{SETOR:'RH',BOX:'002',COD:'B200',STATUS:'CONCLUIDO',DATA:'2018-03-10',TIPO:'Processo',ELIM_PREVISTA:'2023-03-10'}];
+      rawRecords = example; $('uploadText').textContent = 'Exemplo carregado (pré-visualização)'; logAudit('Exemplo inserido', false); prepareUIAfterRaw();
+    });
+
+    function handleFile(file){
+      $('uploadText').textContent = 'Lendo: ' + file.name;
+      logAudit('Carregando arquivo: ' + file.name, false);
+      const reader = new FileReader();
+      reader.onload = function(ev){
+        try{
+          const data = new Uint8Array(ev.target.result);
+          const wb = XLSX.read(data,{type:'array'});
+          let rows = [];
+          wb.SheetNames.forEach(name=>{
+            const json = XLSX.utils.sheet_to_json(wb.Sheets[name],{defval:null});
+            rows = rows.concat(json);
+          });
+          if(rows.length===0) throw new Error('Planilha sem linhas.');
+          rawRecords = rows;
+          logAudit('Linhas lidas: ' + rows.length, false);
+          prepareUIAfterRaw();
+        }catch(err){ alert('Erro ao ler arquivo: ' + err.message); logAudit('Erro leitura: '+err.message,false); }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function prepareUIAfterRaw(){
+      // Detect headers and fill mapping fields for user
+      const map = detectHeaders(rawRecords[0] || {});
+      $('mapSetor').value = map.setor || '';
+      $('mapBox').value = map.box || '';
+      $('mapCod').value = map.cod || '';
+      $('mapStatus').value = map.status || '';
+      $('mapDate').value = map.date || '';
+      $('mapElim').value = map.elim || '';
+
+      $('summaryTitle').textContent = 'Arquivo carregado — ' + rawRecords.length + ' registros';
+      $('kpiTotal').textContent = rawRecords.length;
+      // populate filters placeholder
+      fillFilterOptions([]);
+    }
+
+    // ---------- Worker orchestration ----------
+    function startWorkerProcessing(){
+      // terminate old worker
+      if(worker) try{worker.terminate();}catch(e){}
+      const mapConfig = {
+        setor: $('mapSetor').value || null,
+        box: $('mapBox').value || null,
+        cod: $('mapCod').value || null,
+        status: $('mapStatus').value || null,
+        date: $('mapDate').value || null,
+        elim: $('mapElim').value || null
+      };
+      const enableArch = $('enableArchival').value === 'true';
+      const limitSync = parseInt($('limitSync').value,10)||5000;
+
+      logAudit('Iniciando processamento (worker)...
+Map config: ' + JSON.stringify(mapConfig), false);
+      // Create worker blob
+      const code = `
+        onmessage = function(e){
+          const {rows, mapConfig, enableArch, limitSync} = e.data;
+          // helper normalize key
+          const norm = k => k? k.toString().trim() : null;
+          const map = {};
+          // if user provided, use it, else try auto-detect from first row
+          const hdr = rows[0] || {};
+          const keys = Object.keys(hdr).map(k=>k.trim());
+
+          function findKey(probs){ return keys.find(k=> probs.some(p=> k.toLowerCase().includes(p))) || null; }
+          map.setor = norm(mapConfig.setor) || findKey(['setor','department','sector']);
+          map.box = norm(mapConfig.box) || findKey(['box','caixa']);
+          map.cod = norm(mapConfig.cod) || findKey(['cod','codigo','code']);
+          map.status = norm(mapConfig.status) || findKey(['status','situacao','situação']);
+          map.date = norm(mapConfig.date) || findKey(['data','date','created']);
+          map.elim = norm(mapConfig.elim) || findKey(['elim','elimina','elimination','elim_prev','eliminar']);
+
+          // normalize rows
+          const normalized = [];
+          const issues = [];
+          for(let i=0;i<rows.length;i++){
+            const r = rows[i];
+            const nr = {__rowIndex:i};
+            nr.SETOR = map.setor? (r[map.setor] || '').toString().trim() : '';
+            nr.BOX = map.box? (r[map.box] || '').toString().trim() : '';
+            nr.COD = map.cod? (r[map.cod] || '').toString().trim() : '';
+            nr.STATUS = map.status? (r[map.status] || '').toString().trim() : '';
+            nr.DATA = map.date? (r[map.date] || '') : '';
+            nr.ELIM = map.elim? (r[map.elim] || '') : '';
+            // basic checks
+            if(!nr.BOX) issues.push({i,reason:'BOX vazio'});
+            if(!nr.COD) issues.push({i,reason:'COD vazio'});
+            // parse dates
+            if(nr.DATA){ const d = new Date(nr.DATA); if(isNaN(d)) nr.DATA_parsed = null; else nr.DATA_parsed = d.toISOString(); }
+            if(nr.ELIM){ const d2 = new Date(nr.ELIM); if(isNaN(d2)) nr.ELIM_parsed = null; else nr.ELIM_parsed = d2.toISOString(); }
+            normalized.push(nr);
+            // periodically inform progress
+            if(i%500===0) postMessage({type:'progress',i});
+            // if too many, optionally break for demo
+            if(limitSync && i>limitSync) break;
+          }
+
+          // aggregations
+          const total = normalized.length;
+          const freq = (field)=>{
+            const m = {};
+            normalized.forEach(r=>{ const v = r[field]||''; if(v!==null) m[v] = (m[v]||0)+1; });
+            return Object.entries(m).sort((a,b)=>b[1]-a[1]).map(([k,v])=>({k,v,pct: (v/total*100).toFixed(1)}));
+          };
+
+          const result = {
+            normalized,
+            issues,
+            total,
+            freqSetor: freq('SETOR'),
+            freqCod: freq('COD'),
+            freqStatus: freq('STATUS')
+          };
+
+          // simple archival rules: mark records with ELIM date <= today as 'to eliminate'
+          if(enableArch){
+            const today = new Date();
+            result.archival = normalized.filter(r=>{ if(r.ELIM_parsed) return new Date(r.ELIM_parsed) <= today; return false; }).map(r=>r.__rowIndex);
+          }
+
+          postMessage({type:'done',result});
+        }
+      `;
+
+      const blob = new Blob([code],{type:'application/javascript'});
+      worker = new Worker(URL.createObjectURL(blob));
+      worker.onmessage = function(ev){
+        if(ev.data.type==='progress') logAudit('Worker progresso: ' + ev.data.i);
+        if(ev.data.type==='done'){
+          // receive result
+          normalized = ev.data.result.normalized;
+          summary = {
+            total: ev.data.result.total,
+            freqSetor: ev.data.result.freqSetor,
+            freqCod: ev.data.result.freqCod,
+            freqStatus: ev.data.result.freqStatus,
+            issues: ev.data.result.issues || [],
+            archival: ev.data.result.archival || []
+          };
+          logAudit('Processamento concluído. Registros normalizados: ' + normalized.length, false);
+          worker.terminate(); worker = null;
+          renderAll();
+        }
+      };
+      worker.postMessage({rows: rawRecords, mapConfig, enableArch, limitSync});
+    }
+
+    // ---------- Rendering ----------
+    function renderAll(){
+      // KPIs
+      $('kpiTotal').textContent = summary.total;
+      $('kpiSetores').textContent = summary.freqSetor.length;
+      $('kpiCodigos').textContent = summary.freqCod.length;
+      $('kpiAtraso').textContent = (summary.archival? summary.archival.length : 0);
+
+      // filters
+      fillFilterOptions(summary.freqSetor.map(x=>x.k), summary.freqStatus.map(x=>x.k));
+
+      renderTables();
+      renderCharts();
+      renderReports();
+    }
+
+    function fillFilterOptions(setores=[], statuses=[]){
+      const selS = $('filterSetor'); selS.innerHTML = '<option value="">Todos setores</option>' + setores.map(s=>`<option value="${s}">${s}</option>`).join('');
+      const selSt = $('filterStatus'); selSt.innerHTML = '<option value="">Todos status</option>' + statuses.map(s=>`<option value="${s}">${s}</option>`).join('');
+    }
+
+    function renderTables(){
+      const container = $('tableWrapper');
+      // show top codes and issues
+      const topCodesHtml = `<h4 style="margin:6px 0">Top Códigos</h4><table><thead><tr><th>Código</th><th>Ocorrências</th></tr></thead><tbody>${summary.freqCod.slice(0,20).map(r=>`<tr><td>${r.k}</td><td>${r.v}</td></tr>`).join('')}</tbody></table>`;
+      const issuesHtml = `<h4 style="margin:6px 0">Inconsistências detectadas (${summary.issues.length})</h4><div style="max-height:160px;overflow:auto;border:1px solid #f1f5f9;padding:8px;background:#fff">${summary.issues.slice(0,200).map(i=>`Linha ${i.i+1}: ${i.reason}`).join('<br>')}</div>`;
+      const archivalHtml = `<h4 style="margin:6px 0">Registros para Eliminação (${(summary.archival||[]).length})</h4><div style="max-height:160px;overflow:auto;border:1px solid #f1f5f9;padding:8px;background:#fff">${(summary.archival||[]).slice(0,200).map(idx=>`Linha ${idx+1}`).join('<br>')}</div>`;
+      container.innerHTML = topCodesHtml + issuesHtml + archivalHtml;
+    }
+
+    function renderCharts(){
+      // destroy if exist
+      if(charts.status) charts.status.destroy(); if(charts.cod) charts.cod.destroy();
+      // status chart
+      const ctx = $('chartStatus').getContext('2d');
+      const labels = summary.freqStatus.map(r=>r.k);
+      const data = summary.freqStatus.map(r=>r.v);
+      charts.status = new Chart(ctx,{type:'doughnut',data:{labels, datasets:[{data, backgroundColor: generatePalette(labels.length)}]}, options:{plugins:{legend:{position:'bottom'}}}});
+      // cod chart
+      const ctx2 = $('chartCod').getContext('2d');
+      const top = summary.freqCod.slice(0,10);
+      charts.cod = new Chart(ctx2,{type:'bar',data:{labels:top.map(r=>r.k), datasets:[{label:'Ocorrências', data:top.map(r=>r.v), backgroundColor:'#6b46c1'}]}, options:{scales:{y:{beginAtZero:true}}}});
+    }
+
+    function generatePalette(n){
+      const base = ['#2b6cb0','#6b46c1','#ed64a6','#f6ad55','#68d391','#63b3ed','#f56565','#ed8936','#9f7aea','#4299e1'];
+      const out = []; for(let i=0;i<n;i++) out.push(base[i%base.length]); return out;
+    }
+
+    function renderReports(){
+      $('reportLog').textContent = 'Relatórios prontos: Eliminação (' + ((summary.archival||[]).length) + '), Inconsistências (' + (summary.issues?summary.issues.length:0) + ')';
+    }
+
+    // ---------- Exports & Reports ----------
+    function exportFilteredCSV(){
+      if(!normalized) return alert('Execute o processamento primeiro.');
+      // apply filters
+      const setor = $('filterSetor').value; const status = $('filterStatus').value;
+      const rows = normalized.filter(r=> (setor? r.SETOR===setor : true) && (status? r.STATUS===status : true));
+      const ws = XLSX.utils.json_to_sheet(rows.map(r=>({BOX:r.BOX, SETOR:r.SETOR, COD:r.COD, STATUS:r.STATUS, DATA:r.DATA, ELIM:r.ELIM})));
+      const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'export'); XLSX.writeFile(wb,'export_filtered.xlsx');
+      logAudit('Exportado ' + rows.length + ' linhas (filtro ativo).', true);
+    }
+
+    $('btnReportElim').addEventListener('click', ()=>{
+      if(!summary) return alert('Executar análise primeiro.');
+      const idxs = summary.archival || [];
+      $('reportLog').textContent = 'Relatório de eliminação: ' + idxs.length + ' itens
+' + idxs.slice(0,200).map(i=>'Linha '+(i+1)).join('
+');
+    });
+
+    $('btnReportRisk').addEventListener('click', ()=>{
+      if(!summary) return alert('Executar análise primeiro.');
+      // risco simplificado: códigos com mais de 10 ocorrências
+      const risky = summary.freqCod.filter(r=>r.v > 10);
+      $('reportLog').textContent = 'Relatório de risco: ' + risky.length + ' códigos
+' + risky.map(r=>`${r.k}: ${r.v}`).join('
+');
+    });
+
+    $('btnDownloadAll').addEventListener('click', ()=>{
+      if(!rawRecords) return alert('Nenhum dado para download.');
+      const ws = XLSX.utils.json_to_sheet(rawRecords);
+      const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'raw'); XLSX.writeFile(wb,'raw_download.xlsx');
+      logAudit('Download raw gerado.');
+    });
+
+    // ---------- Reset ----------
+    function resetApp(){
+      rawRecords = null; normalized = null; summary = {}; if(worker){ try{worker.terminate(); }catch(e){} worker=null; }
+      $('uploadText').textContent = 'Arraste um arquivo Excel (colunas esperadas: SETOR, BOX, COD, STATUS, DATA, TIPO, ELIM_PREVISTA)';
+      $('summaryTitle').textContent = 'Nenhum arquivo carregado';
+      $('kpiTotal').textContent = '—'; $('kpiSetores').textContent = '—'; $('kpiCodigos').textContent = '—'; $('kpiAtraso').textContent='—';
+      $('tableWrapper').innerHTML = ''; $('reportLog').textContent = 'Nenhum relatório gerado.'; $('auditLog').textContent = 'Nenhuma ação ainda.';
+      if(charts.status) charts.status.destroy(); if(charts.cod) charts.cod.destroy();
+    }
+
+    // keyboard accessibility for upload area
+    uploadArea.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') fileInput.click(); });
+
+    // On start, set placeholders
+    resetApp();
+  </script>
+</body>
+</html>
