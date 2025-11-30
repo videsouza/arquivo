@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gerador Profissional de Blocos — Versão B</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    :root{--accent1:#667eea;--accent2:#764ba2;--bg:#f6f7fb;--card:#fff}
+    *{box-sizing:border-box}
+    body{font-family:Inter,Segoe UI,system-ui,Arial,sans-serif;background:linear-gradient(135deg,var(--accent1),var(--accent2));padding:28px;margin:0;color:#222}
+    .app{max-width:1200px;margin:0 auto;background:var(--card);border-radius:14px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+    header{padding:28px;background:linear-gradient(90deg,rgba(255,255,255,.03),transparent);display:flex;align-items:center;gap:18px}
+    header h1{font-size:20px;margin:0}
+    .grid{display:grid;grid-template-columns:360px 1fr;gap:20px;padding:28px}
+    .panel{background:#fbfdff;padding:18px;border-radius:10px;border:1px solid #eef2ff}
+    .panel h2{margin:0 0 12px 0;font-size:16px}
+    .upload-area{border:2px dashed var(--accent1);padding:18px;border-radius:8px;text-align:center;cursor:pointer}
+    .upload-area.drag{background:#f0f4ff}
+    input[type=file]{display:none}
+    .small{font-size:13px;color:#666}
+    .controls{display:flex;flex-direction:column;gap:10px}
+    label{font-size:13px;color:#333}
+    input[type=number],select,input[type=text]{width:100%;padding:8px;border-radius:6px;border:1px solid #dfe7ff}
+    button{background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#fff;border:none;padding:10px 12px;border-radius:8px;cursor:pointer}
+    .results{padding:18px}
+    .stats{display:flex;gap:12px;margin-bottom:12px}
+    .stat{flex:1;background:linear-gradient(90deg,#fff,#f8fbff);padding:12px;border-radius:8px;border:1px solid #eef3ff}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border-bottom:1px solid #f2f6ff;text-align:left}
+    .muted{color:#666;font-size:13px}
+    .log{max-height:200px;overflow:auto;background:#fff;padding:10px;border-radius:6px;border:1px solid #eef3ff;font-size:13px}
+    footer{padding:18px;background:#fbfdff;border-top:1px solid #eef3ff;display:flex;justify-content:space-between}
+    @media (max-width:900px){.grid{grid-template-columns:1fr;}.stats{flex-direction:column}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div style="font-size:28px">📦</div>
+      <div>
+        <h1>Gerador Profissional de Blocos para Eliminação — Versão B (Simulated Annealing)</h1>
+        <div class="small">Validação, Normalização, Auditoria e processamento em Web Worker</div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- Left panel: upload + configs -->
+      <div class="panel">
+        <h2>1) Upload e Validação</h2>
+        <div id="uploadArea" class="upload-area">
+          <div id="uploadText">Arraste o arquivo Excel aqui (colunas esperadas: <strong>SETOR</strong>, <strong>BOX</strong>, <strong>COD</strong>)</div>
+          <input id="fileInput" type="file" accept=".xlsx,.xls" />
+          <div style="margin-top:10px">
+            <button id="btnSelect">Selecionar Arquivo</button>
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+        <div id="validation" class="muted">Nenhum arquivo processado.</div>
+
+        <hr style="margin:14px 0" />
+
+        <h2>2) Parâmetros</h2>
+        <div class="controls">
+          <label>Objetivo</label>
+          <select id="objective">
+            <option value="documentos">Maximizar Documentos</option>
+            <option value="boxes">Maximizar Boxes (preferir boxes pequenos)</option>
+            <option value="pareto">Multiobjetivo (Pareto)</option>
+          </select>
+
+          <label>Limite de códigos únicos no bloco</label>
+          <input id="maxCodes" type="number" value="30" min="1" />
+
+          <label>Limite de setores por código</label>
+          <input id="maxSectorsPerCode" type="number" value="12" min="1" />
+
+          <label>Tempo (s) do algoritmo de Simulated Annealing</label>
+          <input id="saTime" type="number" value="3" min="1" />
+
+          <label class="small">Opções avançadas</label>
+          <div style="display:flex;gap:8px">
+            <button id="btnRun">🚀 Iniciar Otimização</button>
+            <button id="btnReset" style="background:#6c757d">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right panel: results -->
+      <div class="panel results">
+        <h2>3) Resultado e Auditoria</h2>
+        <div class="stats" id="statsArea">
+          <div class="stat"><div class="muted">Boxes Selecionados</div><div id="statBoxes">—</div></div>
+          <div class="stat"><div class="muted">Documentos</div><div id="statDocs">—</div></div>
+          <div class="stat"><div class="muted">Códigos</div><div id="statCodes">—</div></div>
+          <div class="stat"><div class="muted">Setores</div><div id="statSectors">—</div></div>
+        </div>
+
+        <div style="margin-bottom:12px">
+          <div class="muted">Qualidade</div>
+          <div style="height:14px;background:#eef3ff;border-radius:8px;overflow:hidden;margin-top:6px"><div id="qualityBar" style="height:100%;width:0;background:linear-gradient(90deg,#30D158,#32AE85)"></div></div>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:12px;margin-bottom:12px">
+          <button id="btnExport" style="flex:1;background:#4a90e2">Exportar Excel</button>
+          <button id="btnPrint" style="flex:1;background:#ff6b6b">Imprimir</button>
+        </div>
+
+        <h3>Boxes Selecionados (preview)</h3>
+        <div style="max-height:240px;overflow:auto;border:1px solid #f0f4ff;border-radius:8px;padding:8px;background:#fff">
+          <table id="previewTable"><thead><tr><th>BOX</th><th>QTD DOCS</th><th>CÓDIGOS</th><th>SET</th></tr></thead><tbody></tbody></table>
+        </div>
+
+        <h3 style="margin-top:12px">Relatório Técnico / Auditoria</h3>
+        <div class="log" id="auditLog">Nenhuma execução ainda.</div>
+      </div>
+    </div>
+
+    <footer>
+      <div class="muted">Versão B — Simulated Annealing • Desenvolvido para uso institucional</div>
+      <div>
+        <span class="muted">Arquivo original:</span> <span id="fileName" class="muted">nenhum</span>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // ------------------------------
+    // Utility helpers
+    // ------------------------------
+    const $ = id => document.getElementById(id);
+    function normalizeString(v){ return v==null?"":""+v; }
+
+    function normalizeRow(row){
+      // Try common header variations
+      const normalized = {};
+      // Detect keys ignoring case
+      for(const k in row){
+        const low = k.trim().toLowerCase();
+        if(low.includes('box')) normalized.box = normalizeString(row[k]).trim();
+        else if(low.includes('setor')|| low.includes('sector')|| low.includes('department')) normalized.setor = normalizeString(row[k]).trim();
+        else if(low.includes('cod')||low.includes('code')||low.includes('codigo')) normalized.cod = normalizeString(row[k]).trim();
+        else {
+          // keep other fields if needed
+          normalized[low]=row[k];
+        }
+      }
+      // fallback direct properties if sheet_to_json produced uppercase keys
+      if(!normalized.box && (row.BOX||row.Box||row.box)) normalized.box = normalizeString(row.BOX||row.Box||row.box).trim();
+      if(!normalized.setor && (row.SETOR||row.Setor||row.setor)) normalized.setor = normalizeString(row.SETOR||row.Setor||row.setor).trim();
+      if(!normalized.cod && (row.COD||row.Cod||row.cod)) normalized.cod = normalizeString(row.COD||row.Cod||row.cod).trim();
+      return normalized;
+    }
+
+    // Simple deep clone utility
+    function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
+
+    // ------------------------------
+    // File handling & validation
+    // ------------------------------
+    const fileInput = $('fileInput');
+    const uploadArea = $('uploadArea');
+    const btnSelect = $('btnSelect');
+    const validation = $('validation');
+    const fileNameEl = $('fileName');
+
+    let originalData = []; // array of normalized rows
+    let boxesMap = null;
+    let lastResult = null;
+
+    btnSelect.addEventListener('click', ()=> fileInput.click());
+
+    uploadArea.addEventListener('dragover', e=>{e.preventDefault();uploadArea.classList.add('drag');$('uploadText').textContent='Solte o arquivo para enviar';});
+    uploadArea.addEventListener('dragleave', e=>{uploadArea.classList.remove('drag');$('uploadText').textContent='Arraste o arquivo Excel aqui (colunas esperadas: SETOR, BOX, COD)';});
+
+    uploadArea.addEventListener('drop', e=>{e.preventDefault();uploadArea.classList.remove('drag');const f = e.dataTransfer.files[0]; if(f) handleFile(f);});
+    fileInput.addEventListener('change', e=>{const f = e.target.files[0]; if(f) handleFile(f);});
+
+    function handleFile(file){
+      fileNameEl.textContent = file.name;
+      validation.textContent = 'Lendo arquivo...';
+      const reader = new FileReader();
+      reader.onload = (ev)=>{
+        try{
+          const data = new Uint8Array(ev.target.result);
+          const wb = XLSX.read(data,{type:'array'});
+          let rows = [];
+          wb.SheetNames.forEach(name=>{
+            const ws = wb.Sheets[name];
+            const json = XLSX.utils.sheet_to_json(ws,{defval:null});
+            if(json && json.length) rows = rows.concat(json);
+          });
+
+          if(rows.length===0){ validation.textContent = 'Planilha vazia.'; return; }
+
+          // Normalize and validate
+          originalData = rows.map(r=>normalizeRow(r)).filter(r=>r.box || r.setor || r.cod);
+
+          // Quick header detection
+          const sample = originalData[0];
+          if(!sample.box || !sample.setor || !sample.cod){
+            validation.innerHTML = '<strong style="color:#b93d3d">Aviso:</strong> Planilha não possui as colunas esperadas (SETOR, BOX, COD). Tente renomear cabeçalhos.';
+            // but continue allowing user to fix or proceed
+          } else {
+            validation.textContent = `Arquivo carregado com ${originalData.length} registros. Cabeçalhos reconhecidos.`;
+          }
+
+          // Further normalization
+          originalData = originalData.map(r=>({
+            BOX: (''+ (r.box||'')).trim(),
+            SETOR: (''+ (r.setor||'')).trim(),
+            COD: (''+ (r.cod||'')).trim()
+          })).filter(r=>r.BOX && r.COD); // at least BOX and COD required
+
+          // Deduplicate exact duplicates
+          const seen = new Set(); const dedup = [];
+          for(const row of originalData){
+            const key = `${row.BOX}||${row.SETOR}||${row.COD}`;
+            if(!seen.has(key)){seen.add(key);dedup.push(row);} }
+          originalData = dedup;
+
+          validation.textContent = `Pronto — ${originalData.length} registros válidos (duplicatas removidas).`;
+
+          // Build boxes map
+          boxesMap = buildBoxesMap(originalData);
+
+        }catch(err){
+          validation.textContent = 'Erro ao processar arquivo: '+err.message;
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function buildBoxesMap(rows){
+      const map = {};
+      rows.forEach(r=>{
+        const bid = r.BOX;
+        if(!map[bid]) map[bid] = [];
+        map[bid].push(r);
+      });
+      // precompute metadata
+      const boxes = Object.keys(map).map(id=>{
+        const docs = map[id];
+        const codigos = Array.from(new Set(docs.map(d=>d.COD)));
+        const setores = Array.from(new Set(docs.map(d=>d.SETOR)));
+        const setoresPorCod = {};
+        docs.forEach(d=>{ if(!setoresPorCod[d.COD]) setoresPorCod[d.COD] = new Set(); setoresPorCod[d.COD].add(d.SETOR); });
+        return {id, documentos:docs, numDocs:docs.length, codigos, setores, setoresPorCodigo: setoresPorCod};
+      });
+      return boxes;
+    }
+
+    // ------------------------------
+    // Scoring & Simulated Annealing implementation
+    // ------------------------------
+
+    function scoreSolution(selectedBoxes, allBoxes, params){
+      // returns [score, diagnostics]
+      // score higher is better
+      const docs = selectedBoxes.reduce((s,b)=>s + b.numDocs,0);
+      const boxesCount = selectedBoxes.length;
+      const uniqueCodes = new Set();
+      const sectorsSet = new Set();
+      const sectorsPerCode = {};
+      selectedBoxes.forEach(b=>{
+        b.codigos.forEach(c=>uniqueCodes.add(c));
+        b.setores.forEach(s=>sectorsSet.add(s));
+        for(const c of b.codigos){ if(!sectorsPerCode[c]) sectorsPerCode[c] = new Set(); b.setoresPorCodigo[c].forEach(x=>sectorsPerCode[c].add(x)); }
+      });
+
+      const totalCodes = uniqueCodes.size;
+      // compute violations
+      let violations = 0;
+      for(const c of Object.keys(sectorsPerCode)){
+        if(sectorsPerCode[c].size > params.maxSectorsPerCode) violations += (sectorsPerCode[c].size - params.maxSectorsPerCode);
+      }
+      if(totalCodes > params.maxCodes) violations += (totalCodes - params.maxCodes)*2; // code limit is stricter
+
+      // metrics
+      const docScore = docs; // raw
+      const boxScore = -boxesCount*0.5; // prefer fewer boxes if objective is docs
+      const homogeneity = -violations*5; // penalize violations
+
+      // combine according to objective
+      let score = 0;
+      if(params.objective==='documentos') score = docScore + boxScore + homogeneity;
+      else if(params.objective==='boxes') score = -docs + (boxesCount*2) + homogeneity; // favor more boxes (smaller docs)
+      else score = docScore*0.7 + (boxesCount*1.0) + homogeneity; // hybrid
+
+      const diagnostics = {docs, boxesCount, totalCodes, sectors: sectorsSet.size, violations};
+      return [score, diagnostics];
+    }
+
+    function randomNeighbor(currentSet, allBoxes){
+      // currentSet is Set of box ids
+      const ids = allBoxes.map(b=>b.id);
+      // flip: with 50% chance add a box, 50% remove a box (if possible)
+      const next = new Set(Array.from(currentSet));
+      if(Math.random()<0.5){
+        // add a random not-included
+        const candidates = ids.filter(i=>!next.has(i));
+        if(candidates.length===0) return next;
+        const pick = candidates[Math.floor(Math.random()*candidates.length)]; next.add(pick);
+      } else {
+        const included = Array.from(next);
+        if(included.length===0) return next;
+        const pick = included[Math.floor(Math.random()*included.length)]; next.delete(pick);
+      }
+      return next;
+    }
+
+    // Simplified SA that works in worker; here we provide a main-thread fallback as well
+    function runSimulatedAnnealing(allBoxes, params, timeLimitSec, onProgress){
+      const start = Date.now();
+      // initial state: greedy seed
+      const seedSet = greedySeed(allBoxes, params);
+      let current = seedSet; // Set of box ids
+      let best = new Set(current);
+      let bestScore = -Infinity; let bestDiag = null;
+
+      const T0 = 1.0; const Tmin = 1e-3; const maxIter = 1000000;
+      let iter = 0;
+      while((Date.now()-start)/1000 < timeLimitSec && iter < maxIter){
+        iter++;
+        const neighbor = randomNeighbor(current, allBoxes);
+        const currentBoxes = Array.from(current).map(id=>allBoxes.find(b=>b.id===id)).filter(Boolean);
+        const neighborBoxes = Array.from(neighbor).map(id=>allBoxes.find(b=>b.id===id)).filter(Boolean);
+        const [sCur] = scoreSolution(currentBoxes, allBoxes, params);
+        const [sNei, diagNei] = scoreSolution(neighborBoxes, allBoxes, params);
+        const T = T0 * Math.pow(0.99, iter);
+        const accept = (sNei > sCur) || (Math.random() < Math.exp((sNei - sCur)/(Math.max(T,Tmin))));
+        if(accept) current = neighbor;
+        if(sNei > bestScore){ bestScore = sNei; best = new Set(neighbor); bestDiag = diagNei; }
+        if(iter % 250 === 0){ if(onProgress) onProgress({iter, elapsed:(Date.now()-start)/1000, bestScore}); }
+      }
+      const finalBoxes = Array.from(best).map(id=>allBoxes.find(b=>b.id===id)).filter(Boolean);
+      const [finalScore, finalDiag] = scoreSolution(finalBoxes, allBoxes, params);
+      return {boxes: finalBoxes, score: finalScore, diag: finalDiag, iterations:iter};
+    }
+
+    // Greedy seed: similar to original but slightly improved
+    function greedySeed(allBoxes, params){
+      const boxes = clone(allBoxes).map(b=>Object.assign({},b));
+      // sort according to objective
+      if(params.objective==='documentos') boxes.sort((a,b)=>b.numDocs - a.numDocs);
+      else boxes.sort((a,b)=>a.numDocs - b.numDocs);
+
+      const selected = new Set();
+      const codesSet = new Set();
+      const sectorsPerCodeGlobal = {};
+
+      for(const box of boxes){
+        // quick code limit check
+        let newCodesCount = codesSet.size;
+        for(const c of box.codigos) if(!codesSet.has(c)) newCodesCount++;
+        if(newCodesCount > params.maxCodes) continue;
+        // sectors per code check
+        let ok = true;
+        for(const c of box.codigos){
+          const cur = sectorsPerCodeGlobal[c] || new Set();
+          const boxSet = box.setoresPorCodigo[c] || new Set();
+          const union = new Set([...cur, ...(Array.from(boxSet))]);
+          if(union.size > params.maxSectorsPerCode){ ok = false; break; }
+        }
+        if(!ok) continue;
+        // accept
+        selected.add(box.id);
+        box.codigos.forEach(c=>codesSet.add(c));
+        for(const c of box.codigos){ if(!sectorsPerCodeGlobal[c]) sectorsPerCodeGlobal[c]=new Set(); (box.setoresPorCodigo[c]||new Set()).forEach(s=>sectorsPerCodeGlobal[c].add(s)); }
+      }
+      return selected;
+    }
+
+    // ------------------------------
+    // Worker-based orchestration
+    // ------------------------------
+
+    // We'll create a worker on the fly using a blob so we can move heavy computation off main thread
+    function createWorker(){
+      const workerCode = `
+        self.onmessage = function(e){
+          const {boxes, params, timeLimitSec} = e.data;
+          // reconstruct functions inside worker (score, greedy, neighbor)
+          function scoreSolution(selectedBoxes, allBoxes, params){
+            const docs = selectedBoxes.reduce((s,b)=>s + b.numDocs,0);
+            const boxesCount = selectedBoxes.length;
+            const uniqueCodes = new Set();
+            const sectorsPerCode = {};
+            selectedBoxes.forEach(b=>{ b.codigos.forEach(c=>uniqueCodes.add(c)); for(const c of b.codigos){ if(!sectorsPerCode[c]) sectorsPerCode[c]= new Set(); (b.setoresPorCodigo[c]||[]).forEach(x=>sectorsPerCode[c].add(x)); }});
+            const totalCodes = uniqueCodes.size;
+            let violations = 0;
+            for(const c in sectorsPerCode){ if(sectorsPerCode[c].size > params.maxSectorsPerCode) violations += (sectorsPerCode[c].size - params.maxSectorsPerCode); }
+            if(totalCodes > params.maxCodes) violations += (totalCodes - params.maxCodes)*2;
+            const docScore = docs;
+            const boxScore = -boxesCount*0.5;
+            const homogeneity = -violations*5;
+            let score = 0;
+            if(params.objective==='documentos') score = docScore + boxScore + homogeneity;
+            else if(params.objective==='boxes') score = -docScore + (boxesCount*2) + homogeneity;
+            else score = docScore*0.7 + (boxesCount*1.0) + homogeneity;
+            return score;
+          }
+          function greedySeed(allBoxes, params){
+            const boxes = allBoxes.slice();
+            if(params.objective==='documentos') boxes.sort((a,b)=>b.numDocs - a.numDocs);
+            else boxes.sort((a,b)=>a.numDocs - b.numDocs);
+            const selected = new Set(); const codesSet = new Set(); const sectorsPerCodeGlobal = {};
+            for(const box of boxes){
+              let newCodesCount = codesSet.size;
+              for(const c of box.codigos) if(!codesSet.has(c)) newCodesCount++;
+              if(newCodesCount > params.maxCodes) continue;
+              let ok = true;
+              for(const c of box.codigos){ const cur = sectorsPerCodeGlobal[c] || new Set(); const boxSet = box.setoresPorCodigo[c] || []; const union = new Set([...Array.from(cur), ...boxSet]); if(union.size > params.maxSectorsPerCode){ ok=false; break; }}
+              if(!ok) continue;
+              selected.add(box.id);
+              box.codigos.forEach(c=>codesSet.add(c));
+              for(const c of box.codigos){ if(!sectorsPerCodeGlobal[c]) sectorsPerCodeGlobal[c]= new Set(); (box.setoresPorCodigo[c] || []).forEach(s=>sectorsPerCodeGlobal[c].add(s)); }
+            }
+            return selected;
+          }
+
+          // neighbor generator
+          function randomNeighbor(curr, allIds){ const next = new Set(curr); if(Math.random()<0.5){ const candidates = allIds.filter(i=>!next.has(i)); if(candidates.length>0) next.add(candidates[Math.floor(Math.random()*candidates.length)]);} else { const included = Array.from(next); if(included.length>0) next.delete(included[Math.floor(Math.random()*included.length)]);} return next; }
+
+          const allIds = boxes.map(b=>b.id);
+          let current = greedySeed(boxes, params);
+          let best = new Set(current); let bestScore = -Infinity; let iter=0; const start=Date.now(); const T0=1.0; const Tmin=1e-3; const maxIter=1000000;
+          while((Date.now()-start)/1000 < timeLimitSec && iter < maxIter){ iter++; const neighbor = randomNeighbor(current, allIds); const curBoxes = Array.from(current).map(id=>boxes.find(b=>b.id===id)).filter(Boolean); const neiBoxes = Array.from(neighbor).map(id=>boxes.find(b=>b.id===id)).filter(Boolean); const sCur = scoreSolution(curBoxes, boxes, params); const sNei = scoreSolution(neiBoxes, boxes, params); const T = T0 * Math.pow(0.99, iter); const accept = (sNei > sCur) || (Math.random() < Math.exp((sNei - sCur)/(Math.max(T,Tmin)))); if(accept) current = neighbor; if(sNei > bestScore){ bestScore = sNei; best = new Set(neighbor);} if(iter % 200 === 0){ self.postMessage({type:'progress', iter, elapsed:(Date.now()-start)/1000, bestScore}); }}
+          const finalBoxes = Array.from(best).map(id=>boxes.find(b=>b.id===id)).filter(Boolean);
+          self.postMessage({type:'done', result:{boxes:finalBoxes}});
+        };
+      `;
+      const blob = new Blob([workerCode],{type:'application/javascript'});
+      const url = URL.createObjectURL(blob);
+      return new Worker(url);
+    }
+
+    // ------------------------------
+    // UI bindings
+    // ------------------------------
+    const btnRun = $('btnRun');
+    const btnReset = $('btnReset');
+    const btnExport = $('btnExport');
+    const btnPrint = $('btnPrint');
+
+    const statBoxes = $('statBoxes'), statDocs = $('statDocs'), statCodes = $('statCodes'), statSectors = $('statSectors');
+    const qualityBar = $('qualityBar');
+    const previewTableBody = document.querySelector('#previewTable tbody');
+    const auditLog = $('auditLog');
+
+    btnReset.addEventListener('click', ()=>{
+      originalData = []; boxesMap = null; lastResult = null; validation.textContent='Reset concluído.'; fileNameEl.textContent='nenhum'; statBoxes.textContent='—'; statDocs.textContent='—'; statCodes.textContent='—'; statSectors.textContent='—'; previewTableBody.innerHTML=''; auditLog.textContent='Nenhuma execução.'; qualityBar.style.width='0%';
+    });
+
+    btnRun.addEventListener('click', ()=>{
+      if(!boxesMap){ alert('Carregue um arquivo válido antes.'); return; }
+      const params = {
+        objective: $('objective').value,
+        maxCodes: parseInt($('maxCodes').value,10) || 30,
+        maxSectorsPerCode: parseInt($('maxSectorsPerCode').value,10) || 12
+      };
+      const timeLimit = Math.max(1, parseInt($('saTime').value,10) || 3);
+      auditLog.textContent = 'Iniciando...';
+      // Prepare worker
+      const worker = createWorker();
+      worker.postMessage({boxes:boxesMap, params, timeLimitSec: timeLimit});
+      worker.onmessage = (ev)=>{
+        if(ev.data.type==='progress'){
+          auditLog.textContent = `Iter: ${ev.data.iter} • elapsed: ${ev.data.elapsed.toFixed(1)}s • bestScore: ${ev.data.bestScore.toFixed(2)}`;
+        } else if(ev.data.type==='done'){
+          worker.terminate();
+          const result = ev.data.result;
+          lastResult = result;
+          showResult(result);
+          auditLog.textContent = 'Processo finalizado. Relatório gerado.';
+        }
+      };
+    });
+
+    function showResult(result){
+      const boxes = result.boxes;
+      previewTableBody.innerHTML = '';
+      let totalDocs=0; const codes = new Set(); const sectors = new Set();
+      boxes.forEach(b=>{
+        const tr = document.createElement('tr');
+        const codesStr = b.codigos.join(', ');
+        const sectorsStr = b.setores.join(', ');
+        tr.innerHTML = `<td><strong>${b.id}</strong></td><td>${b.numDocs}</td><td>${codesStr}</td><td>${sectorsStr}</td>`;
+        previewTableBody.appendChild(tr);
+        totalDocs += b.numDocs; b.codigos.forEach(c=>codes.add(c)); b.setores.forEach(s=>sectors.add(s));
+      });
+      statBoxes.textContent = boxes.length;
+      statDocs.textContent = totalDocs.toLocaleString('pt-BR');
+      statCodes.textContent = codes.size;
+      statSectors.textContent = sectors.size;
+      const quality = Math.min(100, Math.round((totalDocs / (originalData.length||1))*70 + (boxes.length / (boxesMap.length||1))*30));
+      qualityBar.style.width = quality+'%';
+      // detailed audit
+      const logLines = [];
+      logLines.push(`Boxes selecionados: ${boxes.map(b=>b.id).join(', ')}`);
+      logLines.push(`Total docs: ${totalDocs}, códigos únicos: ${codes.size}, setores únicos: ${sectors.size}`);
+      auditLog.textContent = logLines.join('
+');
+    }
+
+    btnExport.addEventListener('click', ()=>{
+      if(!lastResult || !lastResult.boxes){ alert('Execute a otimização primeiro.'); return; }
+      const dadosExport = [];
+      lastResult.boxes.forEach(b=> b.documentos.forEach(d=> dadosExport.push({BOX:b.id, SETOR:d.SETOR, COD:d.COD})));
+      const ws = XLSX.utils.json_to_sheet(dadosExport);
+      const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Bloco'); XLSX.writeFile(wb,'bloco_eliminacao_profissional.xlsx');
+    });
+
+    btnPrint.addEventListener('click', ()=>{
+      if(!lastResult || !lastResult.boxes){ alert('Execute a otimização primeiro.'); return; }
+      const w = window.open('','_blank');
+      const html = `<!doctype html><html><head><meta charset="utf-8"><title>Relatório</title><style>body{font-family:Arial;padding:20px}table{width:100%;border-collapse:collapse}th,td{padding:8px;border:1px solid #ddd}</style></head><body><h1>Boxes Selecionados</h1><p>Total: ${lastResult.boxes.length}</p><table><thead><tr><th>BOX</th><th>QTD</th><th>CÓDIGOS</th><th>SET</th></tr></thead><tbody>${lastResult.boxes.map(b=>`<tr><td>${b.id}</td><td>${b.numDocs}</td><td>${b.codigos.join(', ')}</td><td>${b.setores.join(', ')}</td></tr>`).join('')}</tbody></table></body></html>`;
+      w.document.write(html); w.document.close(); w.print();
+    });
+
+  </script>
+</body>
+</html>
