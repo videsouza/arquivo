@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hub de Serviços - Sistema de Gestão Documental</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            padding: 60px 20px;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 56px;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .header p {
+            font-size: 22px;
+            opacity: 0.95;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .header .subtitle {
+            font-size: 16px;
+            margin-top: 10px;
+            opacity: 0.85;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .service-card {
+            background: white;
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.6s ease forwards;
+            opacity: 0;
+        }
+
+        .service-card:nth-child(1) { animation-delay: 0.1s; }
+        .service-card:nth-child(2) { animation-delay: 0.2s; }
+        .service-card:nth-child(3) { animation-delay: 0.3s; }
+        .service-card:nth-child(4) { animation-delay: 0.4s; }
+        .service-card:nth-child(5) { animation-delay: 0.5s; }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .service-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .service-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+        }
+
+        .service-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+
+        .service-card:hover .service-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .service-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .service-description {
+            color: #666;
+            font-size: 15px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .service-features {
+            list-style: none;
+            margin-bottom: 25px;
+        }
+
+        .service-features li {
+            color: #555;
+            font-size: 13px;
+            padding: 6px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .service-features li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .service-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .service-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .service-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            padding: 40px 20px;
+            margin-top: 40px;
+        }
+
+        .footer-content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .footer h3 {
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+
+        .footer p {
+            font-size: 14px;
+            opacity: 0.9;
+            line-height: 1.8;
+        }
+
+        .stats-bar {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 36px;
+            }
+
+            .header p {
+                font-size: 18px;
+            }
+
+            .services-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-bar {
+                flex-direction: column;
+            }
+        }
+
+        .new-badge {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .popular-badge {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Hub de Serviços</h1>
+            <p>Sistema Integrado de Gestão Documental</p>
+            <p class="subtitle">Ferramentas profissionais para otimizar seu arquivo</p>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-number">5</span>
+                <span class="stat-label">Serviços Disponíveis</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">100%</span>
+                <span class="stat-label">Gratuito</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">24/7</span>
+                <span class="stat-label">Disponível</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">⚡</span>
+                <span class="stat-label">Rápido e Eficiente</span>
+            </div>
+        </div>
+
+        <div class="services-grid">
+            <!-- Serviço 1: Análise de Dados -->
+            <div class="service-card" onclick="window.location.href='hub-analise.html'">
+                <span class="service-badge popular-badge">Popular</span>
+                <span class="service-icon">📊</span>
+                <h2 class="service-title">Análise de Dados</h2>
+                <p class="service-description">
+                    Sistema completo de análise com gráficos interativos, tabelas de frequência e insights automáticos.
+                </p>
+                <ul class="service-features">
+                    <li>Dashboard executivo</li>
+                    <li>Gráficos interativos</li>
+                    <li>Tabelas de frequência</li>
+                    <li>Análise temporal</li>
+                    <li>Insights automáticos</li>
+                </ul>
+                <a href="hub-analise.html" class="service-button">Acessar Análise</a>
+            </div>
+
+            <!-- Serviço 2: Visualizador de Boxes -->
+            <div class="service-card" onclick="window.location.href='visualizador-boxes.html'">
+                <span class="service-icon">📦</span>
+                <h2 class="service-title">Visualizador de Boxes</h2>
+                <p class="service-description">
+                    Visualize a ocupação completa dos 7.000 boxes do arquivo em um mapa interativo colorido.
+                </p>
+                <ul class="service-features">
+                    <li>Mapa visual 7x7</li>
+                    <li>Cores por situação</li>
+                    <li>Tooltip com detalhes</li>
+                    <li>Estatísticas gerais</li>
+                    <li>Identificação rápida</li>
+                </ul>
+                <a href="visualizador-boxes.html" class="service-button">Visualizar Boxes</a>
+            </div>
+
+            <!-- Serviço 3: Impressor de Etiquetas -->
+            <div class="service-card" onclick="window.location.href='impressor-etiquetas.html'">
+                <span class="service-badge">Essencial</span>
+                <span class="service-icon">🏷️</span>
+                <h2 class="service-title">Impressor de Etiquetas</h2>
+                <p class="service-description">
+                    Geração automática de etiquetas para documentos de eliminação ou guarda permanente.
+                </p>
+                <ul class="service-features">
+                    <li>Busca rápida de unidades</li>
+                    <li>2 tipos de etiqueta</li>
+                    <li>Pré-visualização</li>
+                    <li>6 etiquetas por página</li>
+                    <li>Formato 9,5cm x 9,5cm</li>
+                </ul>
+                <a href="impressor-etiquetas.html" class="service-button">Imprimir Etiquetas</a>
+            </div>
+
+            <!-- Serviço 4: Gerador de Blocos -->
+            <div class="service-card" onclick="window.location.href='gerador-blocos.html'">
+                <span class="service-badge new-badge">Novo</span>
+                <span class="service-icon">🎯</span>
+                <h2 class="service-title">Gerador de Blocos</h2>
+                <p class="service-description">
+                    Otimização inteligente para seleção de boxes para eliminação com múltiplas restrições.
+                </p>
+                <ul class="service-features">
+                    <li>Algoritmo Best-Fit</li>
+                    <li>Restrições configuráveis</li>
+                    <li>Maximização de documentos</li>
+                    <li>Relatórios detalhados</li>
+                    <li>Exportação Excel</li>
+                </ul>
+                <a href="gerador-blocos.html" class="service-button">Gerar Blocos</a>
+            </div>
+
+            <!-- Serviço 5: Relatórios de Frequência -->
+            <div class="service-card" onclick="window.location.href='relatorio-frequencias.html'">
+                <span class="service-icon">📋</span>
+                <h2 class="service-title">Relatórios de Frequência</h2>
+                <p class="service-description">
+                    Tabelas de frequência detalhadas com análises estatísticas completas dos seus dados.
+                </p>
+                <ul class="service-features">
+                    <li>Frequências absolutas</li>
+                    <li>Frequências relativas</li>
+                    <li>Frequências acumuladas</li>
+                    <li>Análises por categoria</li>
+                    <li>Design profissional</li>
+                </ul>
+                <a href="relatorio-frequencias.html" class="service-button">Gerar Relatórios</a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="footer-content">
+                <h3>💡 Sobre o Hub de Serviços</h3>
+                <p>
+                    Plataforma integrada desenvolvida para otimizar a gestão documental.<br>
+                    Todos os serviços funcionam 100% no navegador, garantindo privacidade e segurança dos seus dados.<br>
+                    Nenhum arquivo é enviado para servidores externos - todo o processamento é local.
+                </p>
+                <p style="margin-top: 20px; font-size: 12px; opacity: 0.7;">
+                    Desenvolvido por Vinicius A. de Souza com Claude.ai e Gemini 2025
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Animação suave ao clicar nos cards
+        document.querySelectorAll('.service-card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                if (e.target.tagName !== 'A') {
+                    const link = this.querySelector('a');
+                    if (link) {
+                        window.location.href = link.href;
+                    }
+                }
+            });
+        });
+
+        // Contador animado
+        const animateValue = (element, start, end, duration) => {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                const value = Math.floor(progress * (end - start) + start);
+                element.textContent = value;
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        };
+
+        // Animar estatísticas ao carregar
+        window.addEventListener('load', () => {
+            const statNumbers = document.querySelectorAll('.stat-number');
+            statNumbers.forEach((stat, index) => {
+                if (index === 0) { // 5 serviços
+                    animateValue(stat, 0, 5, 1000);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
