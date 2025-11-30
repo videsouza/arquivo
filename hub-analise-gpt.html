@@ -51,8 +51,23 @@
       <div class="panel" style="height:100%">
         <h3 style="margin:0 0 8px 0">1) Upload & Mapeamento</h3>
         <div id="uploadArea" class="upload-area" tabindex="0">
+<script>
+const fileInput = document.getElementById('fileInput');
+const btnSelect = document.getElementById('btnSelect');
+const uploadArea = document.getElementById('uploadArea');
+btnSelect.addEventListener('click', () => fileInput.click());
+uploadArea.addEventListener('click', (e) => {
+  if(e.target.id === 'uploadArea' || e.target.id === 'uploadText') fileInput.click();
+});
+fileInput.addEventListener('change', (e)=>{
+  if (!e.target.files || e.target.files.length===0) return;
+  // chamada para função de processamento principal (já existente no hub)
+  if (typeof handleFile === 'function') handleFile(e.target.files[0]);
+});
+</script>
+<div id="uploadArea" class="upload-area" tabindex="0">
           <div id="uploadText">Arraste um arquivo Excel (colunas esperadas: SETOR, BOX, COD, STATUS, DATA, TIPO, ELIM_PREVISTA)</div>
-          <input id="fileInput" type="file" accept=".xlsx,.xls" />
+          <input id="fileInput" type="file" accept=".xlsx,.xls" style="display:none" />
           <div style="margin-top:8px">
             <button type="button" id="btnSelect">Selecionar Arquivo</button>
             <button type="button" id="btnExample" style="background:#4a5568;margin-left:8px">Exemplo</button>
