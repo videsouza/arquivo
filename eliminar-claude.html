@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Blocos para Eliminação</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 42px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .upload-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 60px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f8f9ff;
+            transform: translateY(-5px);
+        }
+
+        .upload-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .config-section {
+            display: none;
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .config-section.show {
+            display: block;
+        }
+
+        .config-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .config-item {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+
+        .config-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.2);
+        }
+
+        .config-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .config-label {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: #ccc;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: #667eea;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .toggle-switch.active .toggle-slider {
+            left: 33px;
+        }
+
+        .config-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .config-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .config-input:disabled {
+            background: #f0f0f0;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: none;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results-section {
+            display: none;
+        }
+
+        .results-section.show {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .quality-meter {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .quality-bar {
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .quality-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #43e97b 100%);
+            transition: width 1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 15px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .report-table {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .report-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .report-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 13px;
+        }
+
+        .report-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .report-table tbody tr:hover {
+            background: #f8f9ff;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                border-radius: 0;
+            }
+
+            .header,
+            .upload-section,
+            .config-section,
+            .btn-group,
+            .loading {
+                display: none !important;
+            }
+
+            .results-section {
+                display: block !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .config-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📦 Gerador de Blocos para Eliminação</h1>
+            <p>Sistema de Otimização Inteligente de Boxes</p>
+        </div>
+
+        <div class="content">
+            <!-- UPLOAD -->
+            <div class="upload-section" id="uploadSection">
+                <h2 style="color: #333; margin-bottom: 20px; font-size: 24px;">📂 Upload do Arquivo</h2>
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📊</div>
+                    <div style="font-size: 18px; color: #333; margin-bottom: 10px;">
+                        Arraste o arquivo Excel aqui
+                    </div>
+                    <div style="font-size: 14px; color: #666; margin-bottom: 20px;">
+                        Arquivo com colunas: SETOR, BOX, COD
+                    </div>
+                    <input type="file" id="fileInput" accept=".xlsx,.xls">
+                    <button class="btn-primary" onclick="document.getElementById('fileInput').click()">
+                        Selecionar Arquivo
+                    </button>
+                </div>
+            </div>
+
+            <!-- CONFIGURAÇÕES -->
+            <div class="config-section" id="configSection">
+                <h2>⚙️ Configurações de Otimização</h2>
+                <p style="color: #666; margin-bottom: 20px;">
+                    Ajuste as restrições conforme necessário para otimizar a seleção de boxes.
+                </p>
+
+                <div class="config-grid">
+                    <div class="config-item">
+                        <div class="config-header">
+                            <span class="config-label">🔢 Limite de Códigos Únicos</span>
+                            <div class="toggle-switch active" id="toggleCodigos" onclick="toggleRestriction('codigos')">
+                                <div class="toggle-slider"></div>
+                            </div>
+                        </div>
+                        <input type="number" class="config-input" id="inputCodigos" value="30" min="1" max="1000">
+                        <div style="font-size: 12px; color: #999; margin-top: 8px;">
+                            Máximo de códigos (COD) únicos no bloco
+                        </div>
+                    </div>
+
+                    <div class="config-item">
+                        <div class="config-header">
+                            <span class="config-label">🏢 Limite de Setores por Código</span>
+                            <div class="toggle-switch active" id="toggleSetores" onclick="toggleRestriction('setores')">
+                                <div class="toggle-slider"></div>
+                            </div>
+                        </div>
+                        <input type="number" class="config-input" id="inputSetores" value="12" min="1" max="1000">
+                        <div style="font-size: 12px; color: #999; margin-top: 8px;">
+                            Máximo de setores diferentes por código
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="iniciarOtimizacao()">
+                        🚀 Iniciar Otimização
+                    </button>
+                </div>
+            </div>
+
+            <!-- LOADING -->
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p style="font-size: 18px; color: #333;">Processando otimização...</p>
+                <p style="font-size: 14px; color: #666; margin-top: 10px;">
+                    Analisando combinações e maximizando seleção de documentos
+                </p>
+            </div>
+
+            <!-- RESULTADOS -->
+            <div class="results-section" id="resultsSection">
+                <h2 style="color: #333; margin-bottom: 20px; font-size: 28px; border-bottom: 3px solid #667eea; padding-bottom: 10px;">
+                    📊 Resultados da Otimização
+                </h2>
+
+                <!-- Estatísticas -->
+                <div class="stats-grid" id="statsGrid"></div>
+
+                <!-- Medidor de Qualidade -->
+                <div class="quality-meter">
+                    <h3 style="color: #333; margin-bottom: 15px;">🎯 Qualidade da Otimização</h3>
+                    <div class="quality-bar">
+                        <div class="quality-fill" id="qualityFill">0%</div>
+                    </div>
+                    <p style="color: #666; font-size: 14px;" id="qualityText"></p>
+                </div>
+
+                <!-- Tabela de Boxes Selecionados -->
+                <div class="report-table">
+                    <h3 style="padding: 20px; color: #333; font-size: 20px;">
+                        📋 Boxes Selecionados
+                    </h3>
+                    <div style="max-height: 500px; overflow-y: auto;">
+                        <table id="reportTable"></table>
+                    </div>
+                </div>
+
+                <!-- Botões de Ação -->
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="imprimirRelatorioCompleto()">
+                        🖨️ Imprimir Relatório Completo
+                    </button>
+                    <button class="btn btn-primary" onclick="imprimirApenasBoxes()">
+                        📄 Imprimir Apenas Boxes
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportarExcel()">
+                        📥 Exportar Excel
+                    </button>
+                    <button class="btn btn-secondary" onclick="reiniciar()">
+                        🔄 Nova Otimização
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let dadosOriginais = [];
+        let resultadoOtimizacao = null;
+        let restricoes = {
+            codigos: { ativa: true, valor: 30 },
+            setores: { ativa: true, valor: 12 }
+        };
+
+        // Upload de arquivo
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#764ba2';
+            uploadArea.style.background = '#e8eeff';
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.borderColor = '#667eea';
+            uploadArea.style.background = 'white';
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#667eea';
+            uploadArea.style.background = 'white';
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                processarArquivo(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                processarArquivo(e.target.files[0]);
+            }
+        });
+
+        function processarArquivo(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    
+                    // Ler todas as planilhas
+                    let todosRegistros = [];
+                    workbook.SheetNames.forEach(sheetName => {
+                        const worksheet = workbook.Sheets[sheetName];
+                        const json = XLSX.utils.sheet_to_json(worksheet);
+                        todosRegistros = todosRegistros.concat(json);
+                    });
+
+                    dadosOriginais = todosRegistros;
+                    
+                    document.getElementById('uploadSection').style.display = 'none';
+                    document.getElementById('configSection').classList.add('show');
+                    
+                } catch (error) {
+                    alert('Erro ao processar arquivo: ' + error.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function toggleRestriction(tipo) {
+            const toggle = document.getElementById(`toggle${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`);
+            const input = document.getElementById(`input${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`);
+            
+            restricoes[tipo].ativa = !restricoes[tipo].ativa;
+            toggle.classList.toggle('active');
+            input.disabled = !restricoes[tipo].ativa;
+        }
+
+        function iniciarOtimizacao() {
+            // Atualizar valores das restrições
+            restricoes.codigos.valor = parseInt(document.getElementById('inputCodigos').value) || 30;
+            restricoes.setores.valor = parseInt(document.getElementById('inputSetores').value) || 12;
+
+            document.getElementById('configSection').classList.remove('show');
+            document.getElementById('loading').classList.add('show');
+
+            // Executar otimização em background
+            setTimeout(() => {
+                resultadoOtimizacao = otimizarBlocos(dadosOriginais, restricoes);
+                mostrarResultados(resultadoOtimizacao);
+            }, 500);
+        }
+
+        function otimizarBlocos(dados, restricoes) {
+            // Agrupar documentos por BOX
+            const boxesMap = {};
+            dados.forEach(doc => {
+                const box = doc.BOX;
+                if (!boxesMap[box]) {
+                    boxesMap[box] = [];
+                }
+                boxesMap[box].push(doc);
+            });
+
+            const boxes = Object.keys(boxesMap).map(boxId => ({
+                id: boxId,
+                documentos: boxesMap[boxId],
+                codigos: [...new Set(boxesMap[boxId].map(d => d.COD))],
+                setores: [...new Set(boxesMap[boxId].map(d => d.SETOR))]
+            }));
+
+            // Ordenar boxes por número de documentos (greedy approach)
+            boxes.sort((a, b) => b.documentos.length - a.documentos.length);
+
+            const blocoSelecionado = [];
+            const codigosNoBloco = new Set();
+            const setoresPorCodigo = {};
+
+            for (const box of boxes) {
+                // Verificar se adicionar este box viola as restrições
+                const novosCodigosTemp = new Set([...codigosNoBloco, ...box.codigos]);
+                
+                // Verificar limite de códigos
+                if (restricoes.codigos.ativa && novosCodigosTemp.size > restricoes.codigos.valor) {
+                    continue;
+                }
+
+                // Verificar limite de setores por código
+                let violaSetores = false;
+                if (restricoes.setores.ativa) {
+                    const setoresTemp = JSON.parse(JSON.stringify(setoresPorCodigo));
+                    
+                    box.documentos.forEach(doc => {
+                        if (!setoresTemp[doc.COD]) {
+                            setoresTemp[doc.COD] = new Set();
+                        }
+                        setoresTemp[doc.COD].add(doc.SETOR);
+                    });
+
+                    for (const cod in setoresTemp) {
+                        if (setoresTemp[cod].size > restricoes.setores.valor) {
+                            violaSetores = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (violaSetores) {
+                    continue;
+                }
+
+                // Adicionar box ao bloco
+                blocoSelecionado.push(box);
+                box.codigos.forEach(cod => codigosNoBloco.add(cod));
+                
+                box.documentos.forEach(doc => {
+                    if (!setoresPorCodigo[doc.COD]) {
+                        setoresPorCodigo[doc.COD] = new Set();
+                    }
+                    setoresPorCodigo[doc.COD].add(doc.SETOR);
+                });
+            }
+
+            // Calcular estatísticas
+            const docsSelec = blocoSelecionado.reduce((sum, box) => sum + box.documentos.length, 0);
+            const setoresUnicos = new Set();
+            blocoSelecionado.forEach(box => {
+                box.setores.forEach(s => setoresUnicos.add(s));
+            });
+
+            const totalDocs = dados.length;
+            const totalBoxes = boxes.length;
+
+            // Calcular qualidade (0-100)
+            const percDocs = (docsSelec / totalDocs) * 100;
+            const percBoxes = (blocoSelecionado.length / totalBoxes) * 100;
+            const qualidade = Math.round((percDocs * 0.7) + (percBoxes * 0.3));
+
+            return {
+                boxesSelecionados: blocoSelecionado,
+                estatisticas: {
+                    totalBoxes: blocoSelecionado.length,
+                    totalSetores: setoresUnicos.size,
+                    totalCodigos: codigosNoBloco.size,
+                    totalDocumentos: docsSelec,
+                    percDocumentos: percDocs.toFixed(1),
+                    percBoxes: percBoxes.toFixed(1),
+                    qualidade: qualidade,
+                    totalDocsOriginal: totalDocs,
+                    totalBoxesOriginal: totalBoxes
+                }
+            };
+        }
+
+        function mostrarResultados(resultado) {
+            document.getElementById('loading').classList.remove('show');
+            document.getElementById('resultsSection').classList.add('show');
+
+            const stats = resultado.estatisticas;
+
+            // Cards de estatísticas
+            const statsHTML = `
+                <div class="stat-card">
+                    <div class="stat-label">Boxes Selecionados</div>
+                    <div class="stat-value">${stats.totalBoxes}</div>
+                    <div style="font-size: 12px; opacity: 0.8;">${stats.percBoxes}% do total</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #fa8231 0%, #f96a26 100%);">
+                    <div class="stat-label">Documentos</div>
+                    <div class="stat-value">${stats.totalDocumentos.toLocaleString('pt-BR')}</div>
+                    <div style="font-size: 12px; opacity: 0.8;">${stats.percDocumentos}% do total</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #30D158 0%, #32AE85 100%);">
+                    <div class="stat-label">Códigos Únicos</div>
+                    <div class="stat-value">${stats.totalCodigos}</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #FF375F 0%, #FF6482 100%);">
+                    <div class="stat-label">Setores Únicos</div>
+                    <div class="stat-value">${stats.totalSetores}</div>
+                </div>
+            `;
+            document.getElementById('statsGrid').innerHTML = statsHTML;
+
+            // Medidor de qualidade
+            const qualityFill = document.getElementById('qualityFill');
+            qualityFill.style.width = stats.qualidade + '%';
+            qualityFill.textContent = stats.qualidade + '%';
+
+            let qualidadeTexto = '';
+            if (stats.qualidade >= 80) {
+                qualidadeTexto = '🌟 Excelente! Otimização altamente eficiente.';
+            } else if (stats.qualidade >= 60) {
+                qualidadeTexto = '✅ Boa otimização. Resultado satisfatório.';
+            } else if (stats.qualidade >= 40) {
+                qualidadeTexto = '⚠️ Otimização moderada. Considere ajustar as restrições.';
+            } else {
+                qualidadeTexto = '❌ Baixa eficiência. Restrições muito limitantes.';
+            }
+            document.getElementById('qualityText').textContent = qualidadeTexto;
+
+            // Tabela de resultados
+            gerarTabelaRelatorio(resultado.boxesSelecionados);
+
+            document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function gerarTabelaRelatorio(boxes) {
+            let html = `
+                <thead>
+                    <tr>
+                        <th>Box</th>
+                        <th>Setor</th>
+                        <th>Código (COD)</th>
+                        <th>Qtd. Docs</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+
+            boxes.forEach(box => {
+                box.documentos.forEach((doc, idx) => {
+                    html += `
+                        <tr>
+                            <td>${idx === 0 ? '<strong>' + box.id + '</strong>' : ''}</td>
+                            <td>${doc.SETOR}</td>
+                            <td>${doc.COD}</td>
+                            <td>1</td>
+                        </tr>
+                    `;
+                });
+            });
+
+            html += '</tbody>';
+            document.getElementById('reportTable').innerHTML = html;
+        }
+
+        function imprimirRelatorioCompleto() {
+            window.print();
+        }
+
+        function imprimirApenasBoxes() {
+            const boxes = resultadoOtimizacao.boxesSelecionados.map(b => b.id).join(', ');
+            const win = window.open('', '', 'width=800,height=600');
+            win.document.write(`
+                <html>
+                <head>
+                    <title>Boxes Selecionados</title>
+                    <style>
+                        body { font-family: Arial; padding: 40px; }
+                        h1 { color: #333; }
+                        .boxes { font-size: 16px; line-height: 2; }
+                    </style>
+                </head>
+                <body>
+                    <h1>📦 Boxes Selecionados</h1>
+                    <p><strong>Total:</strong> ${resultadoOtimizacao.estatisticas.totalBoxes} boxes</p>
+                    <div class="boxes">${boxes}</div>
+                    <script>window.print(); window.close();</script>
+                </body>
+                </html>
+            `);
+        }
+
+        function exportarExcel() {
+            const dadosExport = [];
+            resultadoOtimizacao.boxesSelecionados.forEach(box => {
+                box.documentos.forEach(doc => {
+                    dadosExport.push({
+                        BOX: box.id,
+                        SETOR: doc.SETOR,
+                        COD: doc.COD
+                    });
+                });
+            });
+
+            const ws = XLSX.utils.json_to_sheet(dadosExport);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Bloco Selecionado");
+            XLSX.writeFile(wb, "bloco_eliminacao.xlsx");
+        }
+
+        function reiniciar() {
+            document.getElementById('resultsSection').classList.remove('show');
+            document.getElementById('uploadSection').style.display = 'block';
+            dadosOriginais = [];
+            resultadoOtimizacao = null;
+        }
+    </script>
+</body>
+</html>
