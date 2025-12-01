@@ -212,10 +212,28 @@ fileInput.addEventListener('change', (e)=>{
 
     // ---------- File handling ----------
     const fileInput = $('fileInput');
-    const uploadArea = $('uploadArea');
-    const btnSelect = $('btnSelect');
-    const btnProcess = $('btnProcess');
-    const btnReset = $('btnReset');
+const uploadArea = $('uploadArea');
+const btnSelect = $('btnSelect');
+const btnProcess = $('btnProcess');
+const btnReset = $('btnReset');
+const btnExport = $('btnExport');
+const btnExample = $('btnExample');
+
+// --- FIX UPLOAD ---
+btnSelect.addEventListener('click', ()=> fileInput.click());
+uploadArea.addEventListener('click', (e)=>{
+  if(e.target.id==='uploadArea' || e.target.id==='uploadText') fileInput.click();
+});
+fileInput.addEventListener('change', e=>{
+  if(e.target.files && e.target.files.length) handleFile(e.target.files[0]);
+});
+
+// drag & drop
+uploadArea.addEventListener('dragover', e=>{ e.preventDefault(); uploadArea.style.borderColor = 'var(--accent2)'; uploadArea.style.background='#f5f7ff'; });
+uploadArea.addEventListener('dragleave', e=>{ uploadArea.style.borderColor = '#dfe7ff'; uploadArea.style.background='transparent'; });
+uploadArea.addEventListener('drop', e=>{ e.preventDefault(); uploadArea.style.borderColor = '#dfe7ff'; uploadArea.style.background='transparent'; if(e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]); });
+
+btnReset = $('btnReset');
     const btnExport = $('btnExport');
     const btnExample = $('btnExample');
 
