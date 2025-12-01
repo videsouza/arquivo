@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Super Analista de Dados - Gestão & Qualidade</title>
+    <title>Super Analista de Dados - Corrigido</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -78,7 +78,7 @@
         .tab-btn:hover { background: #f8fafc; color: #667eea; }
         .tab-btn.active { background: var(--primary-grad); color: white; border-color: transparent; box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3); }
 
-        .tab-content { display: none; animation: fadeIn 0.5s; }
+        .tab-content { display: none; animation: fadeIn 0.3s ease-in-out; }
         .tab-content.active { display: block; }
 
         /* --- KPIS & GRÁFICOS --- */
@@ -141,7 +141,7 @@
                 <div class="upload-area" id="uploadArea">
                     <i class="fas fa-cloud-upload-alt upload-icon"></i>
                     <h3>Arraste sua planilha aqui</h3>
-                    <p style="color:#94a3b8; margin-bottom:15px;">Detecta automaticamente colunas de arquivo (Setor, Box, Status) ou dados gerais.</p>
+                    <p style="color:#94a3b8; margin-bottom:15px;">Detecta automaticamente colunas de arquivo ou dados gerais.</p>
                     <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" hidden>
                     <button onclick="document.getElementById('fileInput').click()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color:white; padding:12px 30px; border:none; border-radius:8px; cursor:pointer; font-weight:600;">
                         Selecionar Arquivo
@@ -149,15 +149,15 @@
                 </div>
             </div>
 
-            <div id="dashboard" style="display: none;">
+            <div id="painel-principal" style="display: none;">
                 
                 <div class="tabs">
-                    <button class="tab-btn active" onclick="switchTab('dashboard')"><i class="fas fa-chart-line"></i> Dashboard Gerencial</button>
-                    <button class="tab-btn" onclick="switchTab('quality')"><i class="fas fa-stethoscope"></i> Saúde dos Dados</button>
-                    <button class="tab-btn" onclick="switchTab('explorer')"><i class="fas fa-search"></i> Explorador de Variáveis</button>
+                    <button class="tab-btn active" onclick="switchTab('tab-dashboard', this)"><i class="fas fa-chart-line"></i> Dashboard Gerencial</button>
+                    <button class="tab-btn" onclick="switchTab('tab-quality', this)"><i class="fas fa-stethoscope"></i> Saúde dos Dados</button>
+                    <button class="tab-btn" onclick="switchTab('tab-explorer', this)"><i class="fas fa-search"></i> Explorador de Variáveis</button>
                 </div>
 
-                <div id="dashboard" class="tab-content active">
+                <div id="tab-dashboard" class="tab-content active">
                     
                     <div class="kpi-grid" id="kpiContainer"></div>
 
@@ -167,7 +167,7 @@
                         </div>
                 </div>
 
-                <div id="quality" class="tab-content">
+                <div id="tab-quality" class="tab-content">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px;">
                         
                         <div>
@@ -189,7 +189,7 @@
                     </div>
                 </div>
 
-                <div id="explorer" class="tab-content">
+                <div id="tab-explorer" class="tab-content">
                     <h3 style="margin-bottom: 20px; color: #333;">📑 Detalhes por Coluna</h3>
                     <div class="charts-grid" id="explorerGrid">
                         </div>
@@ -207,8 +207,7 @@
 
     <script>
         // --- LÓGICA DO SISTEMA ---
-        let charts = {}; // Armazena instâncias de gráficos para destruir antes de recriar
-
+        
         // Upload
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
@@ -234,12 +233,10 @@
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, {type: 'array'});
                     
-                    // Une todas as abas para análise completa
                     let rawData = [];
                     workbook.SheetNames.forEach(sheetName => {
                         const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {header: 1, defval: null});
                         if(json.length > 1) {
-                            // Se for a primeira, pega header. Se não, ignora header (simplificação)
                             if(rawData.length === 0) rawData = json;
                             else rawData = rawData.concat(json.slice(1));
                         }
@@ -250,8 +247,9 @@
                     setTimeout(() => {
                         analisarDados(rawData);
                         document.getElementById('loading').style.display = 'none';
-                        document.getElementById('dashboard').style.display = 'block';
-                    }, 1000); // UX Delay
+                        // ID CORRIGIDO: painel-principal
+                        document.getElementById('painel-principal').style.display = 'block';
+                    }, 1000); 
 
                 } catch (err) {
                     alert('Erro: ' + err.message);
@@ -266,12 +264,10 @@
             const rows = data.slice(1);
             const totalRows = rows.length;
             
-            // 1. Dicionário de Colunas e Tipos
             const cols = {};
             const anomalies = [];
             let isArchivalContext = false;
 
-            // Mapeia colunas interessantes para Gestão Documental
             const mapArchival = {
                 setor: headers.find(h => h.includes('SETOR') || h.includes('UNIDADE') || h.includes('DEP')),
                 status: headers.find(h => h.includes('STATUS') || h.includes('SITUACAO') || h.includes('ESTADO')),
@@ -281,21 +277,17 @@
 
             if(mapArchival.setor || mapArchival.status) isArchivalContext = true;
 
-            // Análise Coluna a Coluna
             headers.forEach((header, idx) => {
                 const values = rows.map(r => r[idx]);
                 const cleanValues = values.filter(v => v !== null && v !== undefined && v !== '');
                 const missing = totalRows - cleanValues.length;
 
-                // Inferência de Tipo
                 let numCount = 0;
                 cleanValues.forEach(v => {
                     if(!isNaN(parseFloat(v)) && isFinite(v)) numCount++;
                 });
                 
                 const type = (numCount > cleanValues.length * 0.85) ? 'NUMBER' : 'STRING';
-                
-                // Estatísticas Básicas
                 const stats = { type, missing, unique: 0, top: [], min: null, max: null, mean: null };
 
                 if(type === 'NUMBER') {
@@ -305,7 +297,6 @@
                         stats.max = ss.max(nums);
                         stats.mean = ss.mean(nums);
                         
-                        // Detecção de Outliers (IQR)
                         if(nums.length > 10) {
                             const q1 = ss.quantile(nums, 0.25);
                             const q3 = ss.quantile(nums, 0.75);
@@ -320,18 +311,16 @@
                             });
                         }
                     }
-                    // Erro de Texto em Número
                     values.forEach((v, rIdx) => {
                         if(v && isNaN(v)) anomalies.push({ row: rIdx+2, col: header, val: v, issue: 'Texto em Coluna Numérica' });
                     });
 
                 } else {
-                    // String: Frequência
                     const freq = {};
                     cleanValues.forEach(v => freq[v] = (freq[v]||0) + 1);
                     const sorted = Object.entries(freq).sort((a,b) => b[1] - a[1]);
                     stats.unique = sorted.length;
-                    stats.top = sorted; // Guarda tudo para gráficos
+                    stats.top = sorted; 
                 }
 
                 cols[header] = stats;
@@ -362,11 +351,9 @@
                 `;
             }
 
-            // 3. Gráficos do Dashboard (Inteligente)
+            // 3. Gráficos do Dashboard
             const chartsContainer = document.getElementById('chartsContainer');
             chartsContainer.innerHTML = '';
-
-            // Se for arquivo, prioriza Setor e Status
             const chartsToRender = [];
             
             if(isArchivalContext) {
@@ -374,7 +361,6 @@
                 if(mapArchival.setor && cols[mapArchival.setor]) chartsToRender.push({ title: 'Distribuição por Setor', col: cols[mapArchival.setor], type: 'bar' });
                 if(mapArchival.cod && cols[mapArchival.cod]) chartsToRender.push({ title: 'Top Códigos (Assuntos)', col: cols[mapArchival.cod], type: 'bar' });
             } else {
-                // Se não, pega as colunas de texto com menos valores únicos (categóricas)
                 const categorical = Object.values(cols).filter(c => c.type === 'STRING' && c.unique < 20 && c.unique > 1);
                 categorical.slice(0, 4).forEach((c, i) => {
                     const name = headers.find(h => cols[h] === c);
@@ -391,11 +377,9 @@
                     </div>
                 `);
                 
-                // Prepara dados (Top 10)
                 const dataSlice = cfg.col.top.slice(0, 10);
                 const labels = dataSlice.map(d => d[0]);
                 const data = dataSlice.map(d => d[1]);
-                
                 renderChart(canvasId, cfg.type, labels, data, generateColors(data.length));
             });
 
@@ -403,7 +387,6 @@
             const alertDiv = document.getElementById('qualityAlerts');
             alertDiv.innerHTML = '';
             
-            // Checa Nulos
             Object.keys(cols).forEach(k => {
                 if(cols[k].missing > 0) {
                     const pct = ((cols[k].missing / totalRows) * 100).toFixed(1);
@@ -426,11 +409,10 @@
             }
             if(alertDiv.innerHTML === '') alertDiv.innerHTML = '<div class="quality-alert alert-info"><i class="fas fa-check-circle"></i> Nenhum problema grave detectado.</div>';
 
-            // Tabela de Anomalias
             const tbody = document.querySelector('#anomalyTable tbody');
             tbody.innerHTML = anomalies.slice(0, 100).map(a => `<tr><td>${a.row}</td><td>${a.col}</td><td style="color:#ef4444; font-weight:bold;">${a.val}</td><td>${a.issue}</td></tr>`).join('');
 
-            // 5. Explorer (Mini gráficos para todas as colunas)
+            // 5. Explorer
             const explorerContainer = document.getElementById('explorerGrid');
             explorerContainer.innerHTML = '';
             
@@ -447,33 +429,29 @@
                     </div>
                 `);
 
-                // Dados para o mini gráfico
-                let labels, data, type;
-                if(col.type === 'NUMBER') {
-                    // Histograma simplificado (Visualização de tendência)
-                    // Pega amostra de 50 pontos para performance
-                    const step = Math.ceil(col.top ? col.top.length : totalRows / 50); 
-                    // Para números, usamos uma abordagem de linha simples dos valores limpos
-                    const nums = headers[idx].values; // simplificado
-                    labels = Array.from({length: 20}, (_, i) => i);
-                    data = col.type === 'NUMBER' ? [col.min, col.mean, col.max] : []; // Placeholder visual simples
-                    type = 'line';
-                    // Renderizar um gráfico de linha real exigiria binning complexo, 
-                    // aqui vamos mostrar apenas se for categórico ou usar os valores limpos (amostra)
-                    // Ajuste para NUMBER: mostrar distribuição se possível ou linha
-                    renderChart(canvasId, 'line', Array.from({length: 10}, (_,i)=>i), Array(10).fill(col.mean), ['#cbd5e0']); // Placeholder estático para manter performance
-                } else {
-                    const slice = col.top.slice(0, 8);
-                    labels = slice.map(d => d[0]);
-                    data = slice.map(d => d[1]);
-                    renderChart(canvasId, 'bar', labels, data, ['#667eea']);
-                }
+                // Timeout para garantir que o DOM existe antes de desenhar
+                setTimeout(() => {
+                    let labels, data;
+                    if(col.type === 'NUMBER') {
+                        labels = Array.from({length: 10}, (_,i)=>i);
+                        data = Array(10).fill(col.mean); // Placeholder simples
+                        renderChart(canvasId, 'line', labels, data, ['#cbd5e0']);
+                    } else {
+                        const slice = col.top.slice(0, 8);
+                        labels = slice.map(d => d[0]);
+                        data = slice.map(d => d[1]);
+                        renderChart(canvasId, 'bar', labels, data, ['#667eea']);
+                    }
+                }, 100);
             });
         }
 
         // --- CHART.JS HELPER ---
         function renderChart(id, type, labels, data, colors) {
-            const ctx = document.getElementById(id).getContext('2d');
+            const canvas = document.getElementById(id);
+            if (!canvas) return; // Segurança
+            
+            const ctx = canvas.getContext('2d');
             new Chart(ctx, {
                 type: type,
                 data: {
@@ -483,7 +461,8 @@
                         backgroundColor: colors,
                         borderColor: type === 'line' ? '#667eea' : 'transparent',
                         borderWidth: 1,
-                        fill: type === 'line'
+                        fill: type === 'line',
+                        tension: 0.4
                     }]
                 },
                 options: {
@@ -501,18 +480,21 @@
         function generateColors(n) {
             const colors = [];
             for(let i=0; i<n; i++) {
-                const hue = Math.floor(240 + (i * (120/n))); // Gradiente de azul para roxo
+                const hue = Math.floor(240 + (i * (120/n)));
                 colors.push(`hsl(${hue}, 70%, 60%)`);
             }
             return colors;
         }
 
-        // --- NAVEGAÇÃO ---
-        function switchTab(id) {
+        // --- NAVEGAÇÃO CORRIGIDA ---
+        function switchTab(tabId, btn) {
+            // Remove active de tudo
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            event.currentTarget.classList.add('active');
+            
+            // Adiciona ao selecionado
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
         }
     </script>
 </body>
