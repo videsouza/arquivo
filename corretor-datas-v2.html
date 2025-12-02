@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Corretor de Datas de Eliminação - Pro (Intervalos)</title>
+    <title>Corretor de Datas de Eliminação - Pro (Intervalos V3)</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
@@ -129,8 +129,8 @@
 
     <div class="container">
         <div class="header">
-            <h1><i class="fas fa-calendar-alt"></i> Corretor de Datas (Intervalos)</h1>
-            <p>Auditoria Completa de Prazos de Eliminação</p>
+            <h1><i class="fas fa-calendar-alt"></i> Corretor de Datas (Intervalos V3)</h1>
+            <p>Auditoria Completa de Prazos de Eliminação, verificando o **início e o fim** do intervalo base.</p>
         </div>
 
         <div class="content">
@@ -139,7 +139,7 @@
                 <div class="upload-area" id="uploadArea">
                     <i class="fas fa-file-pdf upload-icon" style="color: #ef4444;"></i>
                     <h3>Arraste o Relatório PDF aqui</h3>
-                    <p style="color:#94a3b8; margin-bottom:15px;">O sistema validará intervalos completos (ex: 2020-2022).</p>
+                    <p style="color:#94a3b8; margin-bottom:15px;">O sistema precisa que o texto seja selecionável (não pode ser PDF escaneado).</p>
                     <input type="file" id="fileInput" accept=".pdf" hidden>
                     <button onclick="document.getElementById('fileInput').click()" style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); color:white; padding:12px 30px; border:none; border-radius:8px; cursor:pointer; font-weight:600;">
                         Selecionar PDF
@@ -159,7 +159,7 @@
                     </div>
                     <div class="kpi-card" style="border-left-color: var(--warning);">
                         <div class="kpi-val" id="totalAlertas" style="color: var(--warning);">0</div>
-                        <div class="kpi-label">Observações / Permanentes</div>
+                        <div class="kpi-label">Observações / Sem Regra</div>
                     </div>
                     <div class="kpi-card" style="border-left-color: var(--success);">
                         <div class="kpi-val" id="taxaAcerto" style="color: var(--success);">0%</div>
@@ -184,9 +184,9 @@
                             <thead>
                                 <tr>
                                     <th>Cód. Classificação</th>
-                                    <th>Especificação</th>
-                                    <th>Data Limite (PDF)</th>
-                                    <th>Data Eliminação (PDF)</th>
+                                    <th>Intervalo Base (PDF)</th>
+                                    <th>Prazo (Anos)</th>
+                                    <th>Eliminação (PDF)</th>
                                     <th>Cálculo Correto</th>
                                     <th>Status</th>
                                 </tr>
@@ -200,37 +200,23 @@
     </div>
 
     <script>
-        // BASE DE REGRAS (Exemplo - Adicionar mais conforme necessário)
+        // BASE DE REGRAS (Simulando o arquivo 'Temporalidade' do seu script Python)
+        // **ATENÇÃO:** Mantenha esta lista atualizada com seus prazos reais.
         const REGRAS_TEMPORALIDADE = [
             { cod: "002.0.10.00.01", espec: "Abono de faltas", elim: 1 },
             { cod: "002.0.10.00.01", espec: "Boletim de frequência", elim: 5 },
             { cod: "002.0.10.00.01", espec: "Controle de frequência", elim: 5 },
-            { cod: "002.0.10.00.01", espec: "Escala de férias", elim: 1 },
             { cod: "002.0.10.00.01", espec: "Folha de ponto", elim: 5 },
-            { cod: "002.0.10.00.01", espec: "Mapa de frequência", elim: 5 },
-            { cod: "002.0.10.00.01", espec: "Registro de ponto", elim: 5 },
-            { cod: "002.0.10.00.01", espec: "Relatório de frequência", elim: 5 },
-            { cod: "002.0.10.00.01", espec: "Solicitação de abono de faltas", elim: 1 },
             { cod: "004.2", elim: 5 },
             { cod: "023.2", elim: 5 },
-            { cod: "023.3", elim: 5 },
             { cod: "024.1", elim: 5 },
-            { cod: "024.2", elim: 5 },
-            { cod: "026.1", elim: 5 },
-            { cod: "033.2", elim: 5 },
-            { cod: "034.1", elim: 5 },
-            { cod: "034.2", elim: 5 },
             { cod: "035.1", elim: 1 },
-            { cod: "036.1", elim: 5 },
-            { cod: "042.3", elim: 5 },
             { cod: "052.2", obs: "GUARDA PERMANENTE" },
-            { cod: "062.1", elim: 1 },
-            { cod: "062.2", elim: 1 },
-            { cod: "900.1", elim: 5 },
+            { cod: "099.0", elim: 3 }, // Exemplo de regra adicional
             { cod: "900.2", elim: 10 }
         ];
 
-        // --- UPLOAD ---
+        // --- UPLOAD HANDLERS ---
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
 
@@ -254,25 +240,37 @@
             const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
             
             let itensExtraidos = [];
+            let totalItensLidos = 0;
 
             for (let i = 1; i <= pdf.numPages; i++) {
                 const page = await pdf.getPage(i);
                 const textContent = await page.getTextContent();
-                console.log(`Página ${i}: Encontrados ${textContent.items.length} itens de texto.`);
-if (textContent.items.length > 0) {
-    console.log("Exemplo de texto:", textContent.items[0].str);
-}
+                
+                // DIAGNÓSTICO: Verifica se o PDF é escaneado (sem texto)
+                if (textContent.items.length === 0 && i === 1) {
+                    alert("ERRO: Nenhum texto foi encontrado neste PDF. O arquivo pode ser uma imagem (escaneado) ou estar codificado.");
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('uploadSection').style.display = 'block';
+                    return;
+                }
+                
+                totalItensLidos += textContent.items.length;
                 const linhas = agruparPorLinhas(textContent.items);
                 const dadosPagina = interpretarColunas(linhas);
                 itensExtraidos = itensExtraidos.concat(dadosPagina);
             }
+            
+            if (itensExtraidos.length === 0 && totalItensLidos > 0) {
+                 alert("ALERTA: O texto foi lido, mas a rotina não conseguiu extrair nenhum item no formato esperado (Código seguido de 2 a 4 anos).");
+            }
+
 
             analisarErros(itensExtraidos);
         }
 
         function agruparPorLinhas(items) {
             const linhas = [];
-            const toleranciaY = 5;
+            const toleranciaY = 5; // Tolerância vertical
             items.forEach(item => {
                 if (!item.str.trim()) return;
                 const y = item.transform[5];
@@ -284,7 +282,7 @@ if (textContent.items.length > 0) {
                 }
                 linha.itens.push({ str: item.str, x: x });
             });
-            return linhas.sort((a, b) => b.y - a.y);
+            return linhas.sort((a, b) => b.y - a.y); // Ordem de leitura: de cima para baixo
         }
 
         function interpretarColunas(linhas) {
@@ -292,13 +290,14 @@ if (textContent.items.length > 0) {
             
             linhas.forEach(linha => {
                 const itensOrdenados = linha.itens.sort((a, b) => a.x - b.x);
-                const textoCompleto = itensOrdenados.map(i => i.str).join(" ");
+                const textoCompleto = itensOrdenados.map(i => i.str).join(" ").replace(/\s{2,}/g, ' '); // Normaliza espaços
                 
-                // Regex para capturar código
-                const matchCod = textoCompleto.match(/^(\d{3}[\.\d]*)/);
+                // Regex para capturar código de classificação (ex: 0.2.10.00.01 ou 099.0)
+                // Usando um padrão mais flexível para capturar a maioria dos códigos
+                const matchCod = textoCompleto.match(/^(\d[\.\d]*\d{2}[\.\d]*)/);
                 
                 if (matchCod) {
-                    const cod = matchCod[0];
+                    const cod = matchCod[1].trim();
                     // Captura todos os anos de 4 dígitos
                     const anosEncontrados = textoCompleto.match(/\d{4}/g);
                     
@@ -306,28 +305,30 @@ if (textContent.items.length > 0) {
                         let anosLimite = [];
                         let anosElimPDF = [];
 
-                        // Lógica de separação inteligente de intervalos
-                        if (anosEncontrados.length === 4) {
-                            // Caso: 2010 a 2012 ... 2015 a 2017
+                        // Lógica de separação: Imita a busca por 4, 3 ou 2 anos do script Python
+                        if (anosEncontrados.length >= 4) {
+                            // Caso: [2010], [2012], [2015], [2017]
                             anosLimite = [parseInt(anosEncontrados[0]), parseInt(anosEncontrados[1])];
                             anosElimPDF = [parseInt(anosEncontrados[2]), parseInt(anosEncontrados[3])];
                         } else if (anosEncontrados.length === 3) {
-                            // Caso: 2010 a 2012 ... 2017 (Eliminação única)
-                            // OU Caso raro: 2010 ... 2011 a 2015 (Limite único, eliminação intervalo) - pouco provável na prática
-                            // Assumimos padrão: Intervalo Limite -> Eliminação Única
+                            // Caso: [2010], [2012], [2017] -> Assume [2010-2012] Limite e [2017] Eliminação
                             anosLimite = [parseInt(anosEncontrados[0]), parseInt(anosEncontrados[1])];
-                            anosElimPDF = [parseInt(anosEncontrados[2])];
+                            // Eliminação é ano único (Elim_Ini = Elim_Fim)
+                            anosElimPDF = [parseInt(anosEncontrados[2]), parseInt(anosEncontrados[2])]; 
+                        } else if (anosEncontrados.length === 2) {
+                            // Caso: [2010], [2015] -> Assume [2010] Limite e [2015] Eliminação (Ano único)
+                            anosLimite = [parseInt(anosEncontrados[0]), parseInt(anosEncontrados[0])]; // Limite é ano único
+                            anosElimPDF = [parseInt(anosEncontrados[1]), parseInt(anosEncontrados[1])]; // Eliminação é ano único
                         } else {
-                            // Caso: 2010 ... 2015
-                            anosLimite = [parseInt(anosEncontrados[0])];
-                            anosElimPDF = [parseInt(anosEncontrados[1])];
+                            // Menos de 2 anos, ignorar
+                            return;
                         }
 
                         dados.push({
                             cod: cod,
-                            espec: textoCompleto,
-                            anosLimite: anosLimite,
-                            anosElimPDF: anosElimPDF,
+                            espec: textoCompleto, // Texto completo da linha
+                            anosLimite: anosLimite, // [Data_Ini, Data_Fim]
+                            anosElimPDF: anosElimPDF, // [Elim_Ini, Elim_Fim]
                             raw: textoCompleto
                         });
                     }
@@ -336,7 +337,7 @@ if (textContent.items.length > 0) {
             return dados;
         }
 
-        // --- ANÁLISE ---
+        // --- ANÁLISE E VALIDAÇÃO DE INTERVALOS ---
         function analisarErros(itens) {
             let totalErros = 0;
             let totalAlertas = 0;
@@ -347,60 +348,51 @@ if (textContent.items.length > 0) {
                 let calculoCorreto = "";
                 let status = 'OK';
                 let mensagem = '';
+                let prazo = null;
 
-                // Busca Regra
-                if (item.cod === "002.0.10.00.01") {
-                    const regrasEsp = REGRAS_TEMPORALIDADE.filter(r => r.cod === item.cod);
-                    const match = regrasEsp.find(r => item.espec.toLowerCase().includes(r.espec.toLowerCase()));
-                    if (match) regra = match;
-                    else {
-                        status = 'ALERTA';
-                        mensagem = 'Especificação não encontrada.';
-                        totalAlertas++;
-                    }
-                } else {
-                    regra = REGRAS_TEMPORALIDADE.find(r => item.cod.startsWith(r.cod));
-                }
+                // 1. Busca Regra (Usa o código mais específico primeiro, depois o geral)
+                let regraEspecifica = REGRAS_TEMPORALIDADE.find(r => r.cod === item.cod && r.espec && item.espec.toLowerCase().includes(r.espec.toLowerCase()));
+                let regraGeral = REGRAS_TEMPORALIDADE.find(r => item.cod.startsWith(r.cod) && !r.espec);
 
-                if (status === 'OK') {
-                    if (!regra) {
-                        status = 'ALERTA';
-                        mensagem = 'Código sem regra.';
-                        totalAlertas++;
-                    } else if (regra.obs) {
+                regra = regraEspecifica || regraGeral;
+
+                if (regra) {
+                    prazo = regra.elim;
+                    
+                    if (regra.obs) {
                         status = 'OBS';
                         mensagem = regra.obs;
                         totalAlertas++;
-                    } else if (regra.elim) {
-                        // CÁLCULO DE INTERVALOS
-                        const prazo = regra.elim;
-                        const minLim = Math.min(...item.anosLimite);
-                        const maxLim = Math.max(...item.anosLimite);
+                    } else if (prazo !== undefined && prazo !== null) {
+                        // 2. CÁLCULO E VALIDAÇÃO DE INTERVALOS (Lógica do script Python)
                         
-                        const calcMin = minLim + prazo;
-                        const calcMax = maxLim + prazo;
+                        const minLim = item.anosLimite[0]; // Ano Base Início (Coluna B)
+                        const maxLim = item.anosLimite[1]; // Ano Base Fim (Coluna C)
+                        
+                        const pdfMin = item.anosElimPDF[0]; // Eliminação Início (Coluna D)
+                        const pdfMax = item.anosElimPDF[1]; // Eliminação Fim (Coluna E)
 
-                        // Verifica coerência
-                        const pdfMin = Math.min(...item.anosElimPDF);
-                        const pdfMax = Math.max(...item.anosElimPDF);
+                        // Datas Esperadas
+                        const calcMin = minLim + prazo; // Esperado (Início)
+                        const calcMax = maxLim + prazo; // Esperado (Fim)
 
                         // Define o que deveria ser exibido
-                        if (item.anosLimite.length > 1) {
+                        if (minLim !== maxLim || pdfMin !== pdfMax) {
                             calculoCorreto = `${calcMin} a ${calcMax}`;
                         } else {
-                            calculoCorreto = `${calcMax}`;
+                            // Se for ano único, mostra só o ano final
+                            calculoCorreto = `${calcMax}`; 
                         }
 
-                        // Validação
+                        // 3. Validação Dupla: Checa o início E o fim do intervalo
                         let temErro = false;
                         
-                        // Se PDF tem intervalo, checa ambos
-                        if (item.anosElimPDF.length > 1) {
-                            if (pdfMin !== calcMin || pdfMax !== calcMax) temErro = true;
-                        } else {
-                            // Se PDF tem data única, deve bater com o Max calculado (prazo final)
-                            if (pdfMax !== calcMax) temErro = true;
-                        }
+                        // Checa se o início da eliminação está correto (B -> D)
+                        if (pdfMin !== calcMin) temErro = true;
+                        
+                        // Checa se o fim da eliminação está correto (C -> E)
+                        // ESSA É A VERIFICAÇÃO PRINCIPAL DA SOLICITAÇÃO DO USUÁRIO
+                        if (pdfMax !== calcMax) temErro = true;
 
                         if (temErro) {
                             status = 'ERRO';
@@ -408,13 +400,20 @@ if (textContent.items.length > 0) {
                             totalErros++;
                         }
                     }
+                } else {
+                    status = 'ALERTA';
+                    mensagem = 'Código sem regra ou especificação não encontrada.';
+                    totalAlertas++;
                 }
 
                 resultados.push({
                     ...item,
                     status: status,
                     mensagem: mensagem,
-                    calculoCorreto: calculoCorreto
+                    prazo: prazo,
+                    calculoCorreto: calculoCorreto,
+                    minLim: item.anosLimite[0],
+                    maxLim: item.anosLimite[1]
                 });
             });
 
@@ -442,21 +441,22 @@ if (textContent.items.length > 0) {
             resultados.sort((a, b) => prioridade[a.status] - prioridade[b.status]);
 
             resultados.forEach(res => {
+                // Filtra para mostrar apenas erros e alertas/obs
                 if(res.status === 'OK') return;
 
                 let badgeClass = 'badge-info';
                 if (res.status === 'ERRO') badgeClass = 'badge-error';
                 if (res.status === 'ALERTA' || res.status === 'OBS') badgeClass = 'badge-warning';
 
-                const pdfDataDisplay = res.anosElimPDF.join(' a ');
-                const limDisplay = res.anosLimite.join(' a ');
+                const pdfDataElimDisplay = res.anosElimPDF.join(' a ');
+                const limDisplay = res.minLim === res.maxLim ? res.minLim : `${res.minLim} a ${res.maxLim}`;
 
                 const html = `
                     <tr>
                         <td style="font-weight:bold;">${res.cod}</td>
-                        <td style="font-size:12px; color:#666; max-width:300px;">${res.raw.substring(0, 60)}...</td>
                         <td>${limDisplay}</td>
-                        <td class="${res.status === 'ERRO' ? 'diff-val' : ''}">${pdfDataDisplay}</td>
+                        <td>${res.prazo !== null ? res.prazo : '-'}</td>
+                        <td class="${res.status === 'ERRO' ? 'diff-val' : ''}">${pdfDataElimDisplay}</td>
                         <td class="${res.status === 'ERRO' ? 'correct-val' : ''}">${res.calculoCorreto || '-'}</td>
                         <td>
                             <span class="badge ${badgeClass}">${res.status}</span>
@@ -478,9 +478,12 @@ if (textContent.items.length > 0) {
         function exportarExcel() {
             const data = dadosExport.filter(d => d.status !== 'OK').map(d => ({
                 COD: d.cod,
-                TEXTO: d.raw,
-                LIMITES_PDF: d.anosLimite.join(' a '),
-                ELIMINACAO_PDF: d.anosElimPDF.join(' a '),
+                TEXTO_COMPLETO: d.raw,
+                BASE_INICIO: d.minLim,
+                BASE_FIM: d.maxLim,
+                PRAZO_ANOS: d.prazo,
+                ELIMINACAO_INICIO_PDF: d.anosElimPDF[0],
+                ELIMINACAO_FIM_PDF: d.anosElimPDF[1],
                 CALCULO_ESPERADO: d.calculoCorreto,
                 STATUS: d.status,
                 DETALHE: d.mensagem
@@ -488,8 +491,8 @@ if (textContent.items.length > 0) {
             
             const ws = XLSX.utils.json_to_sheet(data);
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Erros");
-            XLSX.writeFile(wb, "Auditoria_Intervalos.xlsx");
+            XLSX.utils.book_append_sheet(wb, ws, "Auditoria de Intervalos");
+            XLSX.writeFile(wb, "Auditoria_Intervalos_Completa.xlsx");
         }
     </script>
 </body>
