@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Corretor de Datas de Eliminação - Pro (Intervalos V3)</title>
+    <title>Corretor de Datas de Eliminação - Pro V4 (Dinâmico)</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
@@ -62,13 +62,23 @@
         .content { padding: 40px; }
 
         /* UPLOAD */
-        .upload-section { margin-bottom: 30px; transition: 0.3s; }
+        .upload-sections { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 20px; 
+            margin-bottom: 30px; 
+        }
         .upload-area {
-            border: 3px dashed #cbd5e0; border-radius: 15px; padding: 50px;
+            border: 3px dashed #cbd5e0; border-radius: 15px; padding: 40px;
             text-align: center; background: white; cursor: pointer; transition: 0.3s;
         }
         .upload-area:hover { border-color: #667eea; background: #eef2ff; transform: translateY(-2px); }
-        .upload-icon { font-size: 50px; color: #667eea; margin-bottom: 15px; }
+        .upload-icon { font-size: 40px; color: #667eea; margin-bottom: 10px; }
+        .upload-area.loaded {
+            border: 3px solid var(--success);
+            background: #d1fae5;
+            cursor: default;
+        }
 
         /* DASHBOARD */
         #dashboard { display: none; }
@@ -123,25 +133,37 @@
 
     <div class="loading-overlay" id="loading">
         <div class="spinner"></div>
-        <h3 style="margin-top: 20px; color: #667eea;">Verificando Intervalos...</h3>
-        <p style="color: #666;" id="loadingText">Analisando datas iniciais e finais.</p>
+        <h3 style="margin-top: 20px; color: #667eea;">Preparando Análise...</h3>
+        <p style="color: #666;" id="loadingText">Carregando PDF e cruzando dados de temporalidade.</p>
     </div>
 
     <div class="container">
         <div class="header">
-            <h1><i class="fas fa-calendar-alt"></i> Corretor de Datas (Intervalos V3)</h1>
-            <p>Auditoria Completa de Prazos de Eliminação, verificando o **início e o fim** do intervalo base.</p>
+            <h1><i class="fas fa-calendar-alt"></i> Corretor de Datas (Dinâmico V4)</h1>
+            <p>1. Carregue a Tabela de Temporalidade. 2. Carregue o Relatório PDF.</p>
         </div>
 
         <div class="content">
             
-            <div class="upload-section" id="uploadSection">
-                <div class="upload-area" id="uploadArea">
+            <div class="upload-sections" id="uploadSection">
+                
+                <div class="upload-area" id="rulesUploadArea">
+                    <i class="fas fa-table upload-icon" style="color: #10b981;"></i>
+                    <h3>1. Tabela de Temporalidade (Regras)</h3>
+                    <p style="color:#94a3b8; margin-bottom:15px;">Use o arquivo **CSV/Excel** com as colunas **COD** e **ELIM**.</p>
+                    <input type="file" id="rulesFileInput" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" hidden>
+                    <button id="rulesBtn" onclick="document.getElementById('rulesFileInput').click()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color:white; padding:12px 30px; border:none; border-radius:8px; cursor:pointer; font-weight:600;">
+                        Carregar Tabela (.csv ou .xlsx)
+                    </button>
+                    <p id="rulesStatus" style="margin-top: 10px; font-weight: bold; color: #059669;"></p>
+                </div>
+
+                <div class="upload-area" id="pdfUploadArea" style="opacity: 0.5; pointer-events: none;">
                     <i class="fas fa-file-pdf upload-icon" style="color: #ef4444;"></i>
-                    <h3>Arraste o Relatório PDF aqui</h3>
+                    <h3>2. Relatório PDF para Auditoria</h3>
                     <p style="color:#94a3b8; margin-bottom:15px;">O sistema precisa que o texto seja selecionável (não pode ser PDF escaneado).</p>
-                    <input type="file" id="fileInput" accept=".pdf" hidden>
-                    <button onclick="document.getElementById('fileInput').click()" style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); color:white; padding:12px 30px; border:none; border-radius:8px; cursor:pointer; font-weight:600;">
+                    <input type="file" id="pdfFileInput" accept=".pdf" hidden>
+                    <button id="pdfBtn" onclick="document.getElementById('pdfFileInput').click()" style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); color:white; padding:12px 30px; border:none; border-radius:8px; cursor:pointer; font-weight:600;">
                         Selecionar PDF
                     </button>
                 </div>
@@ -159,11 +181,11 @@
                     </div>
                     <div class="kpi-card" style="border-left-color: var(--warning);">
                         <div class="kpi-val" id="totalAlertas" style="color: var(--warning);">0</div>
-                        <div class="kpi-label">Observações / Sem Regra</div>
+                        <div class="kpi-label">Alertas (Sem Regra / Permanente)</div>
                     </div>
                     <div class="kpi-card" style="border-left-color: var(--success);">
                         <div class="kpi-val" id="taxaAcerto" style="color: var(--success);">0%</div>
-                        <div class="kpi-label">Taxa de Precisão</div>
+                        <div class="kpi-label">Taxa de Precisão (Excluindo Alertas)</div>
                     </div>
                 </div>
 
@@ -172,7 +194,7 @@
                         <div class="report-title">📋 Análise Detalhada</div>
                         <div>
                             <button onclick="location.reload()" style="background: #e2e8f0; border:none; padding:8px 15px; border-radius:6px; cursor:pointer; font-weight:600; color:#475569; margin-right:10px;">
-                                <i class="fas fa-undo"></i> Novo
+                                <i class="fas fa-undo"></i> Novo Processo
                             </button>
                             <button onclick="exportarExcel()" style="background: #10b981; border:none; padding:8px 15px; border-radius:6px; cursor:pointer; font-weight:600; color:white;">
                                 <i class="fas fa-file-excel"></i> Baixar Relatório
@@ -200,42 +222,144 @@
     </div>
 
     <script>
-        // BASE DE REGRAS (Simulando o arquivo 'Temporalidade' do seu script Python)
-        // **ATENÇÃO:** Mantenha esta lista atualizada com seus prazos reais.
-        const REGRAS_TEMPORALIDADE = [
-            { cod: "002.0.10.00.01", espec: "Abono de faltas", elim: 1 },
-            { cod: "002.0.10.00.01", espec: "Boletim de frequência", elim: 5 },
-            { cod: "002.0.10.00.01", espec: "Controle de frequência", elim: 5 },
-            { cod: "002.0.10.00.01", espec: "Folha de ponto", elim: 5 },
-            { cod: "004.2", elim: 5 },
-            { cod: "023.2", elim: 5 },
-            { cod: "024.1", elim: 5 },
-            { cod: "035.1", elim: 1 },
-            { cod: "052.2", obs: "GUARDA PERMANENTE" },
-            { cod: "099.0", elim: 3 }, // Exemplo de regra adicional
-            { cod: "900.2", elim: 10 }
-        ];
+        // Variáveis Globais de Estado
+        let REGRAS_MAP = new Map();
+        let pdfFileLoaded = false;
+        let rulesFileLoaded = false;
+        let dadosExport = [];
 
         // --- UPLOAD HANDLERS ---
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
+        const rulesUploadArea = document.getElementById('rulesUploadArea');
+        const pdfUploadArea = document.getElementById('pdfUploadArea');
+        const rulesFileInput = document.getElementById('rulesFileInput');
+        const pdfFileInput = document.getElementById('pdfFileInput');
+        const rulesStatus = document.getElementById('rulesStatus');
+        const loadingText = document.getElementById('loadingText');
 
-        uploadArea.addEventListener('click', () => fileInput.click());
-        uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.style.background = '#eef2ff'; });
-        uploadArea.addEventListener('dragleave', () => { uploadArea.style.background = 'white'; });
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            if(e.dataTransfer.files.length) processarPDF(e.dataTransfer.files[0]);
+        // Configurações de Arrastar e Soltar (Drag and Drop)
+        [rulesUploadArea, pdfUploadArea].forEach(area => {
+            area.addEventListener('dragover', (e) => { e.preventDefault(); area.style.background = '#eef2ff'; });
+            area.addEventListener('dragleave', () => { if(!area.classList.contains('loaded')) area.style.background = 'white'; });
         });
-        fileInput.addEventListener('change', (e) => {
+
+        rulesUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if(!rulesFileLoaded && e.dataTransfer.files.length) handleTemporalidadeFile(e.dataTransfer.files[0]);
+        });
+        rulesFileInput.addEventListener('change', (e) => {
+            if(e.target.files.length) handleTemporalidadeFile(e.target.files[0]);
+        });
+        
+        pdfUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if(rulesFileLoaded && !pdfFileLoaded && e.dataTransfer.files.length) processarPDF(e.dataTransfer.files[0]);
+        });
+        pdfFileInput.addEventListener('change', (e) => {
             if(e.target.files.length) processarPDF(e.target.files[0]);
         });
+        
+        // --- 1. CARREGAMENTO DA TABELA DE TEMPORALIDADE (CSV/XLSX) ---
+        async function handleTemporalidadeFile(file) {
+            rulesStatus.innerText = 'Lendo arquivo...';
+            try {
+                const data = await file.arrayBuffer();
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+                
+                // Opção para tratar cabeçalhos com espaços ou acentos
+                const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-        // --- PROCESSAMENTO ---
+                // Identificar as colunas COD, ESPEC e ELIM (case-insensitive e tratando espaços)
+                if (json.length === 0) throw new Error("A planilha está vazia.");
+
+                const headers = json[0].map(h => String(h).trim().toUpperCase().replace(/\s/g, ''));
+                const codIndex = headers.indexOf('COD');
+                const especIndex = headers.indexOf('ESPEC');
+                const elimIndex = headers.indexOf('ELIM');
+
+                if (codIndex === -1 || elimIndex === -1) {
+                    throw new Error("Colunas 'COD' e 'ELIM' não encontradas. Verifique o cabeçalho.");
+                }
+
+                REGRAS_MAP.clear();
+                
+                // Processar linhas, começando da segunda (índice 1)
+                for (let i = 1; i < json.length; i++) {
+                    const row = json[i];
+                    if (row && String(row[codIndex]).trim() !== "") {
+                        const cod = String(row[codIndex]).trim();
+                        const espec = especIndex !== -1 ? String(row[especIndex] || "").trim() : "";
+                        const elimValue = String(row[elimIndex] || "").trim().toUpperCase();
+
+                        let prazo = null;
+                        let obs = null;
+
+                        if (elimValue === "PERMANENTE" || elimValue.includes("GP")) {
+                            obs = "GUARDA PERMANENTE";
+                        } else if (!isNaN(parseFloat(elimValue)) && isFinite(elimValue) && parseFloat(elimValue) > 0) {
+                            prazo = parseFloat(elimValue);
+                        } else if (elimValue === "") {
+                            obs = "PRAZO DE ELIMINAÇÃO VAZIO";
+                        } else {
+                            // Tenta buscar por um número em colunas adjacentes (como no seu CSV)
+                            let found = false;
+                            for (let j = elimIndex + 1; j < row.length; j++) {
+                                const adjValue = String(row[j] || "").trim().toUpperCase();
+                                if (!isNaN(parseFloat(adjValue)) && isFinite(adjValue) && parseFloat(adjValue) > 0) {
+                                    prazo = parseFloat(adjValue);
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (!found) {
+                                obs = `Valor não numérico/inválido: ${elimValue}`;
+                            }
+                        }
+
+                        // Chave para a regra: COD + ESPEC (para regras específicas)
+                        const key = espec ? `${cod}|${espec}` : cod;
+
+                        // Se já existir uma regra para o código mais genérico e encontramos um prazo, substituímos.
+                        // Mas o foco é: se tem ESPEC, a chave é COD|ESPEC. Senão, é só COD.
+                        REGRAS_MAP.set(key, { cod, espec, prazo, obs });
+                    }
+                }
+                
+                // Mapeamento concluído com sucesso
+                rulesFileLoaded = true;
+                rulesUploadArea.classList.add('loaded');
+                rulesStatus.innerText = `✓ ${REGRAS_MAP.size} regras carregadas!`;
+                
+                // Habilitar a área de upload do PDF
+                pdfUploadArea.style.opacity = 1;
+                pdfUploadArea.style.pointerEvents = 'auto';
+
+                // Se o usuário já selecionou o PDF (por drag-and-drop antes de regras)
+                if (pdfFileInput.files.length > 0) {
+                    rulesStatus.innerText += "\nIniciando análise do PDF...";
+                    processarPDF(pdfFileInput.files[0]);
+                }
+
+            } catch (error) {
+                rulesStatus.innerText = `❌ Erro ao carregar: ${error.message}`;
+                rulesUploadArea.style.background = '#fee2e2';
+                console.error(error);
+            }
+        }
+
+        // --- 2. PROCESSAMENTO DO PDF ---
         async function processarPDF(file) {
+            if (!rulesFileLoaded) {
+                alert("Por favor, carregue a Tabela de Temporalidade (Regras) primeiro.");
+                return;
+            }
+            
+            pdfFileLoaded = true;
+            pdfUploadArea.classList.add('loaded');
             document.getElementById('loading').style.display = 'flex';
-            document.getElementById('uploadSection').style.display = 'none';
-
+            loadingText.innerText = `Analisando PDF: ${file.name}`;
+            
             const arrayBuffer = await file.arrayBuffer();
             const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
             
@@ -246,11 +370,11 @@
                 const page = await pdf.getPage(i);
                 const textContent = await page.getTextContent();
                 
-                // DIAGNÓSTICO: Verifica se o PDF é escaneado (sem texto)
                 if (textContent.items.length === 0 && i === 1) {
                     alert("ERRO: Nenhum texto foi encontrado neste PDF. O arquivo pode ser uma imagem (escaneado) ou estar codificado.");
                     document.getElementById('loading').style.display = 'none';
-                    document.getElementById('uploadSection').style.display = 'block';
+                    pdfFileLoaded = false; // Permite tentar novamente
+                    pdfUploadArea.classList.remove('loaded');
                     return;
                 }
                 
@@ -258,19 +382,22 @@
                 const linhas = agruparPorLinhas(textContent.items);
                 const dadosPagina = interpretarColunas(linhas);
                 itensExtraidos = itensExtraidos.concat(dadosPagina);
+                loadingText.innerText = `Processando página ${i}/${pdf.numPages}...`;
             }
             
             if (itensExtraidos.length === 0 && totalItensLidos > 0) {
                  alert("ALERTA: O texto foi lido, mas a rotina não conseguiu extrair nenhum item no formato esperado (Código seguido de 2 a 4 anos).");
             }
 
-
+            loadingText.innerText = `Cruzando ${itensExtraidos.length} itens com as regras de temporalidade...`;
             analisarErros(itensExtraidos);
         }
-
+        
+        // Funções de Extração (Mantidas da Versão V3, adaptadas para o contexto)
         function agruparPorLinhas(items) {
-            const linhas = [];
-            const toleranciaY = 5; // Tolerância vertical
+            // ... (mesmo código de agruparPorLinhas da V3) ...
+             const linhas = [];
+            const toleranciaY = 5; 
             items.forEach(item => {
                 if (!item.str.trim()) return;
                 const y = item.transform[5];
@@ -282,53 +409,45 @@
                 }
                 linha.itens.push({ str: item.str, x: x });
             });
-            return linhas.sort((a, b) => b.y - a.y); // Ordem de leitura: de cima para baixo
+            return linhas.sort((a, b) => b.y - a.y);
         }
 
         function interpretarColunas(linhas) {
+            // ... (mesmo código de interpretarColunas da V3) ...
             const dados = [];
             
             linhas.forEach(linha => {
                 const itensOrdenados = linha.itens.sort((a, b) => a.x - b.x);
-                const textoCompleto = itensOrdenados.map(i => i.str).join(" ").replace(/\s{2,}/g, ' '); // Normaliza espaços
+                const textoCompleto = itensOrdenados.map(i => i.str).join(" ").replace(/\s{2,}/g, ' '); 
                 
-                // Regex para capturar código de classificação (ex: 0.2.10.00.01 ou 099.0)
-                // Usando um padrão mais flexível para capturar a maioria dos códigos
                 const matchCod = textoCompleto.match(/^(\d[\.\d]*\d{2}[\.\d]*)/);
                 
                 if (matchCod) {
                     const cod = matchCod[1].trim();
-                    // Captura todos os anos de 4 dígitos
                     const anosEncontrados = textoCompleto.match(/\d{4}/g);
                     
                     if (anosEncontrados && anosEncontrados.length >= 2) {
                         let anosLimite = [];
                         let anosElimPDF = [];
 
-                        // Lógica de separação: Imita a busca por 4, 3 ou 2 anos do script Python
                         if (anosEncontrados.length >= 4) {
-                            // Caso: [2010], [2012], [2015], [2017]
                             anosLimite = [parseInt(anosEncontrados[0]), parseInt(anosEncontrados[1])];
                             anosElimPDF = [parseInt(anosEncontrados[2]), parseInt(anosEncontrados[3])];
                         } else if (anosEncontrados.length === 3) {
-                            // Caso: [2010], [2012], [2017] -> Assume [2010-2012] Limite e [2017] Eliminação
                             anosLimite = [parseInt(anosEncontrados[0]), parseInt(anosEncontrados[1])];
-                            // Eliminação é ano único (Elim_Ini = Elim_Fim)
                             anosElimPDF = [parseInt(anosEncontrados[2]), parseInt(anosEncontrados[2])]; 
                         } else if (anosEncontrados.length === 2) {
-                            // Caso: [2010], [2015] -> Assume [2010] Limite e [2015] Eliminação (Ano único)
-                            anosLimite = [parseInt(anosEncontrados[0]), parseInt(anosEncontrados[0])]; // Limite é ano único
-                            anosElimPDF = [parseInt(anosEncontrados[1]), parseInt(anosEncontrados[1])]; // Eliminação é ano único
+                            anosLimite = [parseInt(anosEncontrados[0]), parseInt(anosEncontrados[0])];
+                            anosElimPDF = [parseInt(anosEncontrados[1]), parseInt(anosEncontrados[1])]; 
                         } else {
-                            // Menos de 2 anos, ignorar
                             return;
                         }
 
                         dados.push({
                             cod: cod,
-                            espec: textoCompleto, // Texto completo da linha
-                            anosLimite: anosLimite, // [Data_Ini, Data_Fim]
-                            anosElimPDF: anosElimPDF, // [Elim_Ini, Elim_Fim]
+                            espec: textoCompleto, 
+                            anosLimite: anosLimite, 
+                            anosElimPDF: anosElimPDF, 
                             raw: textoCompleto
                         });
                     }
@@ -337,7 +456,8 @@
             return dados;
         }
 
-        // --- ANÁLISE E VALIDAÇÃO DE INTERVALOS ---
+
+        // --- ANÁLISE E VALIDAÇÃO DE INTERVALOS (USANDO REGRAS DINÂMICAS) ---
         function analisarErros(itens) {
             let totalErros = 0;
             let totalAlertas = 0;
@@ -350,48 +470,53 @@
                 let mensagem = '';
                 let prazo = null;
 
-                // 1. Busca Regra (Usa o código mais específico primeiro, depois o geral)
-                let regraEspecifica = REGRAS_TEMPORALIDADE.find(r => r.cod === item.cod && r.espec && item.espec.toLowerCase().includes(r.espec.toLowerCase()));
-                let regraGeral = REGRAS_TEMPORALIDADE.find(r => item.cod.startsWith(r.cod) && !r.espec);
+                // 1. Busca Regra: Tenta encontrar a regra mais específica primeiro
+                let regraEncontrada = null;
+                
+                // Opção 1: Busca pelo código exato
+                if (REGRAS_MAP.has(item.cod)) {
+                    regraEncontrada = REGRAS_MAP.get(item.cod);
+                }
+                
+                // O código do CSV não é ideal para ESPECIFICAÇÃO, mas tentamos a lógica anterior:
+                // Tenta encontrar a regra com ESPEC (se a regra tiver ESPEC e o texto contiver a ESPEC)
+                // Isto é complexo com o CSV pois a coluna ESPEC não é um filtro, mas sim a SÉRIE DOCUMENTAL.
+                // Mantemos a busca simplificada apenas pelo COD, que é o que o CSV realmente suporta de forma segura.
 
-                regra = regraEspecifica || regraGeral;
-
-                if (regra) {
-                    prazo = regra.elim;
+                if (regraEncontrada) {
+                    regra = regraEncontrada;
+                    prazo = regra.prazo;
                     
-                    if (regra.obs) {
-                        status = 'OBS';
-                        mensagem = regra.obs;
+                    if (regra.obs || prazo === null) {
+                        status = 'ALERTA';
+                        mensagem = regra.obs || "Prazo Vazio/Não Numérico na Tabela de Regras.";
                         totalAlertas++;
                     } else if (prazo !== undefined && prazo !== null) {
-                        // 2. CÁLCULO E VALIDAÇÃO DE INTERVALOS (Lógica do script Python)
+                        // 2. CÁLCULO E VALIDAÇÃO DE INTERVALOS
                         
-                        const minLim = item.anosLimite[0]; // Ano Base Início (Coluna B)
-                        const maxLim = item.anosLimite[1]; // Ano Base Fim (Coluna C)
+                        const minLim = item.anosLimite[0]; 
+                        const maxLim = item.anosLimite[1]; 
                         
-                        const pdfMin = item.anosElimPDF[0]; // Eliminação Início (Coluna D)
-                        const pdfMax = item.anosElimPDF[1]; // Eliminação Fim (Coluna E)
+                        const pdfMin = item.anosElimPDF[0]; 
+                        const pdfMax = item.anosElimPDF[1]; 
 
                         // Datas Esperadas
-                        const calcMin = minLim + prazo; // Esperado (Início)
-                        const calcMax = maxLim + prazo; // Esperado (Fim)
+                        const calcMin = minLim + prazo;
+                        const calcMax = maxLim + prazo;
 
                         // Define o que deveria ser exibido
                         if (minLim !== maxLim || pdfMin !== pdfMax) {
                             calculoCorreto = `${calcMin} a ${calcMax}`;
                         } else {
-                            // Se for ano único, mostra só o ano final
                             calculoCorreto = `${calcMax}`; 
                         }
 
-                        // 3. Validação Dupla: Checa o início E o fim do intervalo
                         let temErro = false;
                         
                         // Checa se o início da eliminação está correto (B -> D)
                         if (pdfMin !== calcMin) temErro = true;
                         
-                        // Checa se o fim da eliminação está correto (C -> E)
-                        // ESSA É A VERIFICAÇÃO PRINCIPAL DA SOLICITAÇÃO DO USUÁRIO
+                        // Checa se o fim da eliminação está correto (C -> E) - VERIFICAÇÃO CHAVE
                         if (pdfMax !== calcMax) temErro = true;
 
                         if (temErro) {
@@ -402,7 +527,7 @@
                     }
                 } else {
                     status = 'ALERTA';
-                    mensagem = 'Código sem regra ou especificação não encontrada.';
+                    mensagem = 'Código sem regra na Tabela de Temporalidade.';
                     totalAlertas++;
                 }
 
@@ -420,14 +545,13 @@
             renderizarDashboard(resultados, totalErros, totalAlertas);
         }
 
-        let dadosExport = [];
-
+        // --- DASHBOARD E EXPORTAÇÃO ---
         function renderizarDashboard(resultados, erros, alertas) {
             dadosExport = resultados;
             
             const total = resultados.length;
             const acertos = total - erros - alertas;
-            const taxa = total > 0 ? ((acertos/total)*100).toFixed(1) : 0;
+            const taxa = total > 0 ? ((acertos / (total - alertas)) * 100).toFixed(1) : 0; // Taxa excluindo alertas
 
             document.getElementById('totalItens').innerText = total;
             document.getElementById('totalErros').innerText = erros;
@@ -468,7 +592,7 @@
             });
 
             if (tbody.innerHTML === '') {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px; color:#10b981;">✅ Nenhum erro encontrado!</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px; color:#10b981;">✅ Nenhuma inconsistência grave encontrada nos itens analisados!</td></tr>';
             }
 
             document.getElementById('loading').style.display = 'none';
