@@ -3,104 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Blocos para Eliminação</title>
+    <title>📦 Gerador de Blocos para Eliminação</title>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* --- DESIGN SYSTEM PREMIUM --- */
+        :root {
+            --primary-grad: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --bg-light: #f4f7fa;
+            --card-bg: #ffffff;
+            --text-main: #333;
+            --text-muted: #64748b;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --success: #10b981;
+            --info: #3b82f6;
         }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
+            background: var(--primary-grad);
+            padding: 30px;
+            min-height: 100vh;
             line-height: 1.6;
+            color: var(--text-main);
         }
 
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            background: white;
+            background: var(--bg-light);
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             overflow: hidden;
         }
 
+        /* --- HEADER --- */
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--primary-grad);
             color: white;
             padding: 40px;
             text-align: center;
         }
-
         .header h1 {
-            font-size: 42px;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            font-size: 32px;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
+        .header p { opacity: 0.9; font-size: 16px; }
 
         .content {
             padding: 40px;
         }
 
+        /* --- UPLOAD SECTION --- */
         .upload-section {
-            background: #f8f9fa;
-            padding: 30px;
+            background: var(--bg-light);
+            padding: 0; /* Removido padding extra */
             border-radius: 15px;
             margin-bottom: 30px;
         }
 
         .upload-area {
-            border: 3px dashed #667eea;
+            border: 3px dashed #cbd5e0;
             border-radius: 15px;
-            padding: 60px;
+            padding: 50px;
             background: white;
             cursor: pointer;
             transition: all 0.3s;
             text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
 
         .upload-area:hover {
-            border-color: #764ba2;
-            background: #f8f9ff;
-            transform: translateY(-5px);
+            border-color: #667eea;
+            background: #eef2ff;
+            transform: translateY(-2px);
         }
 
         .upload-icon {
-            font-size: 64px;
-            margin-bottom: 20px;
+            font-size: 50px;
+            margin-bottom: 15px;
+            color: #667eea;
         }
 
         #fileInput {
             display: none;
         }
 
+        /* --- BUTTONS --- */
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--primary-grad);
             color: white;
             border: none;
-            padding: 15px 30px;
-            border-radius: 10px;
-            font-size: 16px;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
             margin-top: 20px;
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            opacity: 0.95;
+            box-shadow: 0 6px 15px rgba(102, 126, 234, 0.4);
         }
 
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #475569;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        /* --- CONFIG SECTION --- */
         .config-section {
             display: none;
-            background: #f8f9fa;
+            background: var(--card-bg);
             padding: 30px;
             border-radius: 15px;
             margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
         }
 
         .config-section.show {
@@ -108,7 +148,7 @@
         }
 
         .config-section h2 {
-            color: #333;
+            color: #1e293b;
             margin-bottom: 20px;
             font-size: 24px;
             border-bottom: 3px solid #667eea;
@@ -123,23 +163,24 @@
         }
 
         .config-item {
-            background: white;
+            background: #f8fafc;
             padding: 20px;
             border-radius: 10px;
-            border: 2px solid #e0e0e0;
+            border: 1px solid #e0e0e0;
             transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
         }
 
         .config-item:hover {
             border-color: #667eea;
-            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.2);
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.1);
         }
 
         .objetivo-card {
-            background: white;
+            background: #f8fafc;
             padding: 20px;
             border-radius: 10px;
-            border: 3px solid #e0e0e0;
+            border: 2px solid #e0e0e0;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s;
@@ -166,7 +207,7 @@
 
         .config-label {
             font-weight: 600;
-            color: #333;
+            color: #1e293b;
             font-size: 16px;
         }
 
@@ -178,10 +219,11 @@
             border-radius: 15px;
             cursor: pointer;
             transition: all 0.3s;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
         }
 
         .toggle-switch.active {
-            background: #667eea;
+            background: #4cc9f0; /* Azul claro para o ativo */
         }
 
         .toggle-slider {
@@ -193,6 +235,7 @@
             background: white;
             border-radius: 50%;
             transition: all 0.3s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.4);
         }
 
         .toggle-switch.active .toggle-slider {
@@ -202,7 +245,7 @@
         .config-input {
             width: 100%;
             padding: 10px;
-            border: 2px solid #e0e0e0;
+            border: 1px solid #e0e0e0;
             border-radius: 8px;
             font-size: 16px;
             transition: all 0.3s;
@@ -211,6 +254,7 @@
         .config-input:focus {
             outline: none;
             border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
         }
 
         .config-input:disabled {
@@ -218,6 +262,7 @@
             cursor: not-allowed;
         }
 
+        /* --- LOADING --- */
         .loading {
             display: none;
             padding: 40px;
@@ -243,6 +288,7 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* --- RESULTS SECTION --- */
         .results-section {
             display: none;
         }
@@ -259,38 +305,49 @@
         }
 
         .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: white;
+            color: var(--text-main);
             padding: 25px;
             border-radius: 15px;
             text-align: center;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-left: 5px solid;
         }
+
+        .stat-card:nth-child(1) { border-left-color: #667eea; } /* Boxes */
+        .stat-card:nth-child(2) { border-left-color: #f96a26; } /* Docs */
+        .stat-card:nth-child(3) { border-left-color: #10b981; } /* Códigos */
+        .stat-card:nth-child(4) { border-left-color: #ff6482; } /* Setores */
 
         .stat-value {
             font-size: 36px;
-            font-weight: bold;
+            font-weight: 800;
             margin: 10px 0;
+            color: #1e293b;
         }
 
         .stat-label {
-            font-size: 14px;
+            font-size: 12px;
             opacity: 0.9;
             text-transform: uppercase;
             letter-spacing: 1px;
+            font-weight: 700;
+            color: var(--text-muted);
         }
 
+        /* --- QUALITY METER --- */
         .quality-meter {
             background: white;
             padding: 25px;
             border-radius: 15px;
             margin-bottom: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
         }
 
         .quality-bar {
             height: 30px;
-            background: #e0e0e0;
+            background: #e2e8f0;
             border-radius: 15px;
             overflow: hidden;
             margin: 15px 0;
@@ -306,14 +363,25 @@
             padding-right: 15px;
             color: white;
             font-weight: bold;
+            font-size: 14px;
         }
 
+        /* --- REPORT TABLE --- */
         .report-table {
             background: white;
             border-radius: 15px;
             overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             margin-bottom: 30px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .report-table h3 {
+            background: #f8fafc;
+            padding: 20px;
+            color: #1e293b;
+            font-size: 20px;
+            border-bottom: 1px solid #e2e8f0;
         }
 
         .report-table table {
@@ -322,49 +390,30 @@
         }
 
         .report-table th {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--primary-grad);
             color: white;
-            padding: 15px;
+            padding: 12px 15px;
             text-align: left;
             font-weight: 600;
             text-transform: uppercase;
-            font-size: 13px;
+            font-size: 12px;
         }
 
         .report-table td {
-            padding: 12px 15px;
+            padding: 10px 15px;
             border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
         }
 
         .report-table tbody tr:hover {
             background: #f8f9ff;
         }
 
+        /* --- BUTTON GROUP --- */
         .btn-group {
             display: flex;
             gap: 15px;
             margin-top: 30px;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268;
-            transform: translateY(-2px);
         }
 
         @media print {
@@ -405,30 +454,28 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📦 Gerador de Blocos para Eliminação</h1>
-            <p>Sistema de Otimização Inteligente de Boxes</p>
+            <h1><i class="fas fa-box-open"></i> Gerador de Blocos para Eliminação</h1>
+            <p>Sistema de Otimização Inteligente de Boxes no Padrão Premium</p>
         </div>
 
         <div class="content">
-            <!-- UPLOAD -->
             <div class="upload-section" id="uploadSection">
                 <h2 style="color: #333; margin-bottom: 20px; font-size: 24px;">📂 Upload do Arquivo</h2>
                 <div class="upload-area" id="uploadArea">
-                    <div class="upload-icon">📊</div>
+                    <div class="upload-icon"><i class="fas fa-file-upload"></i></div>
                     <div style="font-size: 18px; color: #333; margin-bottom: 10px;">
                         Arraste o arquivo Excel aqui
                     </div>
                     <div style="font-size: 14px; color: #666; margin-bottom: 20px;">
-                        Arquivo com colunas: SETOR, BOX, COD
+                        Arquivo deve conter as colunas: SETOR, BOX, COD
                     </div>
                     <input type="file" id="fileInput" accept=".xlsx,.xls">
                     <button class="btn-primary" onclick="document.getElementById('fileInput').click()">
-                        Selecionar Arquivo
+                        <i class="fas fa-hand-pointer"></i> Selecionar Arquivo
                     </button>
                 </div>
             </div>
 
-            <!-- CONFIGURAÇÕES -->
             <div class="config-section" id="configSection">
                 <h2>⚙️ Configurações de Otimização</h2>
                 <p style="color: #666; margin-bottom: 20px;">
@@ -442,12 +489,12 @@
                     </p>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                         <div class="objetivo-card active" id="objDocumentos" onclick="selecionarObjetivo('documentos')">
-                            <div style="font-size: 32px; margin-bottom: 10px;">📄</div>
+                            <div style="font-size: 32px; margin-bottom: 10px;"><i class="fas fa-file-alt"></i></div>
                             <div style="font-weight: 600; margin-bottom: 5px;">Maximizar Documentos</div>
                             <div style="font-size: 12px; color: #666;">Prioriza boxes com mais documentos</div>
                         </div>
                         <div class="objetivo-card" id="objBoxes" onclick="selecionarObjetivo('boxes')">
-                            <div style="font-size: 32px; margin-bottom: 10px;">📦</div>
+                            <div style="font-size: 32px; margin-bottom: 10px;"><i class="fas fa-box"></i></div>
                             <div style="font-weight: 600; margin-bottom: 5px;">Maximizar Boxes</div>
                             <div style="font-size: 12px; color: #666;">Prioriza quantidade de boxes</div>
                         </div>
@@ -457,7 +504,7 @@
                 <div class="config-grid">
                     <div class="config-item">
                         <div class="config-header">
-                            <span class="config-label">🔢 Limite de Códigos Únicos</span>
+                            <span class="config-label"><i class="fas fa-hashtag"></i> Limite de Códigos Únicos</span>
                             <div class="toggle-switch active" id="toggleCodigos" onclick="toggleRestriction('codigos')">
                                 <div class="toggle-slider"></div>
                             </div>
@@ -470,7 +517,7 @@
 
                     <div class="config-item">
                         <div class="config-header">
-                            <span class="config-label">🏢 Limite de Setores por Código</span>
+                            <span class="config-label"><i class="fas fa-building"></i> Limite de Setores por Código</span>
                             <div class="toggle-switch active" id="toggleSetores" onclick="toggleRestriction('setores')">
                                 <div class="toggle-slider"></div>
                             </div>
@@ -489,7 +536,6 @@
                 </div>
             </div>
 
-            <!-- LOADING -->
             <div class="loading" id="loading">
                 <div class="spinner"></div>
                 <p style="font-size: 18px; color: #333;">Processando otimização...</p>
@@ -498,16 +544,13 @@
                 </p>
             </div>
 
-            <!-- RESULTADOS -->
             <div class="results-section" id="resultsSection">
                 <h2 style="color: #333; margin-bottom: 20px; font-size: 28px; border-bottom: 3px solid #667eea; padding-bottom: 10px;">
                     📊 Resultados da Otimização
                 </h2>
 
-                <!-- Estatísticas -->
                 <div class="stats-grid" id="statsGrid"></div>
 
-                <!-- Medidor de Qualidade -->
                 <div class="quality-meter">
                     <h3 style="color: #333; margin-bottom: 15px;">🎯 Qualidade da Otimização</h3>
                     <div class="quality-bar">
@@ -516,17 +559,15 @@
                     <p style="color: #666; font-size: 14px;" id="qualityText"></p>
                 </div>
 
-                <!-- Tabela de Boxes Selecionados -->
                 <div class="report-table">
-                    <h3 style="padding: 20px; color: #333; font-size: 20px;">
-                        📋 Boxes Selecionados
+                    <h3>
+                        <i class="fas fa-clipboard-list"></i> Boxes Selecionados
                     </h3>
                     <div style="max-height: 500px; overflow-y: auto;">
                         <table id="reportTable"></table>
                     </div>
                 </div>
 
-                <!-- Botões de Ação -->
                 <div class="btn-group">
                     <button class="btn btn-primary" onclick="imprimirRelatorioCompleto()">
                         🖨️ Imprimir Relatório Completo
@@ -567,13 +608,13 @@
         });
 
         uploadArea.addEventListener('dragleave', () => {
-            uploadArea.style.borderColor = '#667eea';
+            uploadArea.style.borderColor = '#cbd5e0';
             uploadArea.style.background = 'white';
         });
 
         uploadArea.addEventListener('drop', (e) => {
             e.preventDefault();
-            uploadArea.style.borderColor = '#667eea';
+            uploadArea.style.borderColor = '#cbd5e0';
             uploadArea.style.background = 'white';
             const files = e.dataTransfer.files;
             if (files.length > 0) {
@@ -784,20 +825,22 @@
                 <div class="stat-card">
                     <div class="stat-label">Boxes Selecionados</div>
                     <div class="stat-value">${stats.totalBoxes}</div>
-                    <div style="font-size: 12px; opacity: 0.8;">${stats.percBoxes}% do total</div>
+                    <div style="font-size: 12px; opacity: 0.8; color: var(--text-muted);">${stats.percBoxes}% do total</div>
                 </div>
-                <div class="stat-card" style="background: linear-gradient(135deg, #fa8231 0%, #f96a26 100%);">
+                <div class="stat-card">
                     <div class="stat-label">Documentos</div>
                     <div class="stat-value">${stats.totalDocumentos.toLocaleString('pt-BR')}</div>
-                    <div style="font-size: 12px; opacity: 0.8;">${stats.percDocumentos}% do total</div>
+                    <div style="font-size: 12px; opacity: 0.8; color: var(--text-muted);">${stats.percDocumentos}% do total</div>
                 </div>
-                <div class="stat-card" style="background: linear-gradient(135deg, #30D158 0%, #32AE85 100%);">
+                <div class="stat-card">
                     <div class="stat-label">Códigos Únicos</div>
                     <div class="stat-value">${stats.totalCodigos}</div>
+                    <div style="font-size: 12px; opacity: 0.8; color: var(--text-muted);">Restrição: ${restricoes.codigos.valor}</div>
                 </div>
-                <div class="stat-card" style="background: linear-gradient(135deg, #FF375F 0%, #FF6482 100%);">
+                <div class="stat-card">
                     <div class="stat-label">Setores Únicos</div>
                     <div class="stat-value">${stats.totalSetores}</div>
+                    <div style="font-size: 12px; opacity: 0.8; color: var(--text-muted);">Restrição: ${restricoes.setores.valor}</div>
                 </div>
             `;
             document.getElementById('statsGrid').innerHTML = statsHTML;
@@ -809,12 +852,16 @@
 
             let qualidadeTexto = '';
             if (stats.qualidade >= 80) {
+                qualityFill.style.background = 'linear-gradient(90deg, #10b981 0%, #30D158 100%)';
                 qualidadeTexto = '🌟 Excelente! Otimização altamente eficiente.';
             } else if (stats.qualidade >= 60) {
+                qualityFill.style.background = 'linear-gradient(90deg, #f59e0b 0%, #ffc107 100%)';
                 qualidadeTexto = '✅ Boa otimização. Resultado satisfatório.';
             } else if (stats.qualidade >= 40) {
+                qualityFill.style.background = 'linear-gradient(90deg, #f96a26 0%, #fa8231 100%)';
                 qualidadeTexto = '⚠️ Otimização moderada. Considere ajustar as restrições.';
             } else {
+                qualityFill.style.background = 'linear-gradient(90deg, #ef4444 0%, #dc3545 100%)';
                 qualidadeTexto = '❌ Baixa eficiência. Restrições muito limitantes.';
             }
             document.getElementById('qualityText').textContent = qualidadeTexto;
@@ -837,17 +884,24 @@
                 </thead>
                 <tbody>
             `;
+            
+            // Variável para rastrear o BOX da linha anterior para mesclagem visual
+            let lastBoxId = null; 
 
             boxes.forEach(box => {
+                let isFirstDoc = true;
                 box.documentos.forEach((doc, idx) => {
+                    const boxDisplay = isFirstDoc ? '<strong>' + box.id + '</strong>' : '';
+                    
                     html += `
                         <tr>
-                            <td>${idx === 0 ? '<strong>' + box.id + '</strong>' : ''}</td>
+                            <td>${boxDisplay}</td>
                             <td>${doc.SETOR}</td>
                             <td>${doc.COD}</td>
                             <td>1</td>
                         </tr>
                     `;
+                    isFirstDoc = false;
                 });
             });
 
@@ -894,6 +948,7 @@
 
         function reiniciar() {
             document.getElementById('resultsSection').classList.remove('show');
+            document.getElementById('configSection').classList.remove('show');
             document.getElementById('uploadSection').style.display = 'block';
             dadosOriginais = [];
             resultadoOtimizacao = null;
