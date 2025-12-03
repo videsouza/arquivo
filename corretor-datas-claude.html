@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Corretor de Datas de Eliminação</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 42px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .upload-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .upload-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 60px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f8f9ff;
+            transform: translateY(-5px);
+        }
+
+        .upload-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .loading {
+            display: none;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results-section {
+            display: none;
+        }
+
+        .results-section.show {
+            display: block;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .summary-item {
+            text-align: center;
+            background: rgba(255,255,255,0.15);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .summary-value {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .summary-label {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .errors-table {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .errors-table h3 {
+            background: #f8f9fa;
+            padding: 20px;
+            color: #333;
+            font-size: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .errors-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .errors-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+
+        .errors-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .errors-table tbody tr:hover {
+            background: #f8f9ff;
+        }
+
+        .error-badge {
+            background: #ff4444;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .correct-badge {
+            background: #00C851;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .warning-badge {
+            background: #ffbb33;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .info-box h4 {
+            color: #1976D2;
+            margin-bottom: 10px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                border-radius: 0;
+            }
+
+            .header,
+            .upload-section,
+            .btn-group,
+            .loading {
+                display: none !important;
+            }
+
+            .results-section {
+                display: block !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📅 Corretor de Datas de Eliminação</h1>
+            <p>Validação Automática de Prazos de Guarda</p>
+        </div>
+
+        <div class="content">
+            <!-- UPLOAD -->
+            <div class="upload-section" id="uploadSection">
+                <h2>📄 Upload do Relatório PDF</h2>
+                <p style="color: #666; margin-bottom: 20px;">
+                    Faça upload do relatório de eliminação em formato PDF para análise automática.
+                </p>
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📊</div>
+                    <div style="font-size: 18px; color: #333; margin-bottom: 10px;">
+                        Arraste o arquivo PDF aqui
+                    </div>
+                    <div style="font-size: 14px; color: #666; margin-bottom: 20px;">
+                        Relatório de Eliminação (PDF)
+                    </div>
+                    <input type="file" id="fileInput" accept=".pdf">
+                    <button class="btn-primary" onclick="document.getElementById('fileInput').click()">
+                        Selecionar PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- LOADING -->
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p style="font-size: 18px; color: #333;">Analisando relatório...</p>
+                <p style="font-size: 14px; color: #666; margin-top: 10px;">
+                    Extraindo dados e validando datas de eliminação
+                </p>
+            </div>
+
+            <!-- RESULTADOS -->
+            <div class="results-section" id="resultsSection">
+                <h2 style="color: #333; margin-bottom: 20px; font-size: 28px; border-bottom: 3px solid #667eea; padding-bottom: 10px;">
+                    📊 Resultados da Análise
+                </h2>
+
+                <!-- Resumo -->
+                <div class="summary-card">
+                    <h3 style="font-size: 20px; margin-bottom: 15px;">📈 Resumo da Validação</h3>
+                    <div class="summary-grid" id="summaryGrid"></div>
+                </div>
+
+                <!-- Tabela de Erros -->
+                <div class="errors-table" id="errorsTable">
+                    <h3>❌ Datas com Inconsistências</h3>
+                    <div style="max-height: 500px; overflow-y: auto;">
+                        <table id="errorsTableContent"></table>
+                    </div>
+                </div>
+
+                <!-- Avisos Especiais -->
+                <div id="warningsSection"></div>
+
+                <!-- Botões -->
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="window.print()">
+                        🖨️ Imprimir Relatório
+                    </button>
+                    <button class="btn btn-primary" onclick="exportarExcel()">
+                        📥 Exportar Excel
+                    </button>
+                    <button class="btn btn-secondary" onclick="reiniciar()">
+                        🔄 Novo Relatório
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuração do PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        // Base de dados dos códigos (carregada do Excel fornecido)
+        const baseDadosCodigos = {
+            "1.0.01.00.13": { elim: 1, espec: null, obs: "" },
+            "1.0.05.00.02": { elim: 1, espec: null, obs: "" },
+            "1.0.05.00.03": { elim: 1, espec: null, obs: "" },
+            "1.0.05.01.02": { elim: 1, espec: null, obs: "" },
+            "1.0.06.02.02": { elim: 1, espec: null, obs: "" },
+            "2.0.01.00.01": { elim: 1, espec: null, obs: "" },
+            "2.0.01.00.04": { elim: 1, espec: null, obs: "" },
+            "2.0.01.05.01": { elim: 2, espec: null, obs: "" },
+            "2.0.01.05.02": { elim: 8, espec: null, obs: "" },
+            "2.0.01.05.03": { elim: 8, espec: null, obs: "" },
+            "2.0.01.05.04": { elim: 8, espec: null, obs: "" },
+            "2.0.01.05.05": { elim: 40, espec: null, obs: "" },
+            "2.0.01.05.07": { elim: 2, espec: null, obs: "" },
+            "2.0.01.05.08": { elim: 4, espec: null, obs: "" },
+            "2.0.01.05.11": { elim: 10, espec: null, obs: "" },
+            "2.0.01.05.18": { elim: 12, espec: null, obs: "" },
+            "2.0.03.00.01": { elim: null, espec: null, obs: "Use: 2.0.04.01.03" },
+            "2.0.03.00.03": { elim: null, espec: null, obs: "Necessita aprovação do TCE - utilizar cód.: 20040201" },
+            "2.0.04.01.01": { elim: null, espec: null, obs: "Permanente" },
+            "2.0.04.01.02": { elim: 5, espec: null, obs: "" },
+            "2.0.04.01.03": { elim: 2, espec: null, obs: "" },
+            "2.0.04.01.04": { elim: 2, espec: null, obs: "" },
+            "2.0.04.02.01": { elim: 5, espec: null, obs: "" },
+            "2.0.04.02.02": { elim: 5, espec: null, obs: "" },
+            "2.0.04.02.03": { elim: null, espec: null, obs: "" },
+            "2.0.04.02.04": { elim: 2, espec: null, obs: "" },
+            "2.0.04.02.05": { elim: null, espec: null, obs: "" },
+            "2.0.05.00.01": { elim: 1, espec: null, obs: "" },
+            "2.0.05.00.02": { elim: 1, espec: null, obs: "" },
+            "2.0.05.00.03": { elim: 1, espec: null, obs: "" },
+            "2.0.05.00.04": { elim: null, espec: null, obs: "Permanente" },
+            "2.0.05.00.05": { elim: null, espec: null, obs: "Permanente" },
+            "2.0.05.00.06": { elim: 1, espec: null, obs: "" },
+            "2.0.05.00.07": { elim: null, espec: null, obs: "MICROFILMA E ELIMINA; 1 cópia para APM" },
+            "2.0.05.00.08": { elim: null, espec: null, obs: "Totalidade. Elaborada em 2 vias. 1ª via fica no órgão produtor/ gerador; 2ª via fica no AG" },
+            "2.0.05.00.09": { elim: null, espec: null, obs: "Totalidade" },
+            "2.0.05.00.14": { elim: 1, espec: null, obs: "" },
+            "2.0.05.00.15": { elim: null, espec: null, obs: "Permanente" },
+            "2.0.05.00.16": { elim: null, espec: null, obs: "Permanente" },
+            "2.0.07.01.01": { elim: null, espec: null, obs: "Permanente" },
+            "2.0.07.01.06": { elim: null, espec: null, obs: "Permanente" },
+            "2.0.09.00.01": { elim: 5, espec: null, obs: "" },
+            "2.0.09.00.06": { elim: 5, espec: null, obs: "" },
+            "2.0.09.00.07": { elim: 6, espec: null, obs: "" },
+            "2.0.09.00.09": { elim: 5, espec: null, obs: "" },
+            "2.0.10.00.01": { 
+                elim: null, 
+                espec: {
+                    "Circular": 2,
+                    "Telegrama, Telex, Telefax, E-mail": 2,
+                    "Telegrama, Telex, Telefax,  E-mail": 2,
+                    "Convites": 1,
+                    "Comunicados": 1,
+                    "Comunicado": 1,
+                    "Comunicados, Convites, Convocatórias": 1,
+                    "Convocatórias": 1,
+                    "Folha de Expediente Interno/Expediente Interno": 4,
+                    "Memorando/Comunicação Interna": 9,
+                    "Ofício": null
+                }, 
+                obs: "Depende da especificação" 
+            },
+            "2.0.10.00.02": { elim: 1, espec: null, obs: "" },
+            "2.0.10.00.04": { elim: 1, espec: null, obs: "" },
+            "2.0.10.00.05": { elim: 2, espec: null, obs: "" },
+            "2.0.10.00.06": { elim: null, espec: null, obs: "Permanente" },
+            "2.0.10.00.09": { elim: null, espec: null, obs: "Permanente" },
+            "2.0.10.00.11": { elim: 1, espec: null, obs: "" },
+            "2.0.10.00.12": { elim: 2, espec: null, obs: "" },
+            "2.0.10.00.13": { elim: 1, espec: null, obs: "" },
+            "2.0.10.00.14": { elim: 1, espec: null, obs: "" },
+            "2.0.10.00.15": { elim: 4, espec: null, obs: "" },
+            "2.0.10.00.16": { elim: 1, espec: null, obs: "" },
+            "2.0.10.00.17": { elim: 1, espec: null, obs: "" },
+            "2.0.10.00.18": { elim: 1, espec: null, obs: "" },
+            "2.0.10.00.19": { elim: 1, espec: null, obs: "" },
+            "2.0.10.00.20": { elim: 1, espec: null, obs: "" },
+            "2.0.10.00.21": { elim: 1, espec: null, obs: "" },
+            "2.0.10.00.22": { elim: null, espec: null, obs: "Permanente" },
+            "2.0.10.00.23": { elim: 1, espec: null, obs: "" },
+            "2.0.10.00.24": { elim: 1, espec: null, obs: "" },
+            "3.0.03.00.01": { elim: 7, espec: null, obs: "" },
+            "3.0.03.00.03": { elim: 6, espec: null, obs: "" },
+            "3.0.03.00.04": { elim: 1, espec: null, obs: "" },
+            "3.0.03.00.05": { elim: null, espec: null, obs: "Permanente" },
+            "3.0.03.00.07": { elim: 6, espec: null, obs: "" },
+            "3.0.03.00.08": { elim: 6, espec: null, obs: "" },
+            "3.0.03.00.10": { elim: 6, espec: null, obs: "" },
+            "3.0.03.00.11": { elim: null, espec: null, obs: "Permanente" },
+            "3.0.03.00.12": { elim: 22, espec: null, obs: "" },
+            "3.0.03.00.14": { elim: 2, espec: null, obs: "" },
+            "3.0.03.00.15": { elim: 7, espec: null, obs: "" },
+            "3.0.05.00.24": { elim: null, espec: null, obs: "" },
+            "5.3.01.00.01": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.01.00.02": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.01.00.03": { elim: 1, espec: null, obs: "" },
+            "5.3.01.00.04": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.01.00.05": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.01.00.06": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.01.00.07": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.01.00.08": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.01.00.09": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.01.00.10": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.01.00.11": { elim: 1, espec: null, obs: "" },
+            "5.3.01.00.12": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.01.00.13": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.01.00.14": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.01.00.15": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.01.00.16": { elim: 1, espec: null, obs: "" },
+            "5.3.01.00.17": { elim: 1, espec: null, obs: "" },
+            "5.3.01.00.18": { elim: 4, espec: null, obs: "" },
+            "5.3.01.00.19": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.01.00.20": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.01.00.21": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.01.00.22": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.01.00.23": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.01.00.24": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.02.00.01": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.02.00.02": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.02.01.01": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.02.01.02": { elim: 2, espec: null, obs: "" },
+            "5.3.02.01.03": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.02.01.04": { elim: 1, espec: null, obs: "Até o desfazimento do vínculo com a escola" },
+            "5.3.02.01.05": { elim: 1, espec: null, obs: "" },
+            "5.3.02.01.06": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.02.01.07": { elim: null, espec: null, obs: "" },
+            "5.3.02.01.08": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.02.01.09": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.02.01.10": { elim: 1, espec: null, obs: "" },
+            "5.3.02.01.11": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.02.01.12": { elim: null, espec: null, obs: "" },
+            "5.3.02.01.13": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.02.01.14": { elim: 1, espec: null, obs: "" },
+            "5.3.02.01.15": { elim: 10, espec: null, obs: "Relatório Individual do aluno" },
+            "5.3.02.01.17": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.02.01.18": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.02.01.19": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.02.01.20": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.02.01.22": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.02.01.23": { elim: 6, espec: null, obs: "HTC, RPA" },
+            "5.3.02.01.24": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.02.01.25": { elim: 10, espec: null, obs: "" },
+            "5.3.02.01.26": { elim: 1, espec: null, obs: "Ensino Fundamental/Médio/Profissionalizante" },
+            "5.3.02.01.27": { elim: 2, espec: null, obs: "" },
+            "5.3.02.01.28": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.02.01.29": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.02.01.30": { elim: 5, espec: null, obs: "" },
+            "5.3.02.01.31": { elim: 1, espec: null, obs: "" },
+            "5.3.02.01.32": { elim: 10, espec: null, obs: "COMPENSAÇÃO DE AUSÊNCIAS, FICHA DE ACOMPANHAMENTO DE APRENDIZAGEM - FICHA DE ACOMPANHAMENTO DO ALUNO - 'Pasta Branca', PROJETO DE RECUPERAÇÃO INTENSIVA - RI, PROJETO DE REFORÇO EJA, ADAPTAÇÃO CURRICULAR, ATIVIDADES DO PORTAL DO LEDI" },
+            "5.3.02.01.33": { elim: 1, espec: null, obs: "" },
+            "5.3.02.01.34": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.02.01.35": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.02.01.36": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.02.01.37": { elim: 1, espec: null, obs: "" },
+            "5.3.02.01.38": { elim: 2, espec: null, obs: "" },
+            "5.3.02.01.39": { elim: 1, espec: null, obs: "" },
+            "5.3.02.01.40": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.02.01.41": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.02.01.42": { elim: 2, espec: null, obs: "" },
+            "5.3.02.01.43": { elim: 1, espec: null, obs: "" },
+            "5.3.02.01.44": { elim: 2, espec: null, obs: "" },
+            "5.3.02.01.45": { elim: 1, espec: null, obs: "" },
+            "5.3.02.01.46": { elim: 7, espec: null, obs: "" },
+            "5.3.02.01.47": { elim: 7, espec: null, obs: "" },
+            "5.3.02.01.48": { elim: 7, espec: null, obs: "" },
+            "5.3.02.01.49": { elim: 7, espec: null, obs: "" },
+            "5.3.02.01.50": { elim: 7, espec: null, obs: "" },
+            "5.3.02.01.51": { elim: 7, espec: null, obs: "" },
+            "5.3.02.01.52": { elim: 7, espec: null, obs: "" },
+            "5.3.02.01.53": { elim: 7, espec: null, obs: "" },
+            "5.3.02.01.54": { elim: 7, espec: null, obs: "" },
+            "5.3.02.01.55": { elim: 7, espec: null, obs: "" },
+            "5.3.02.01.56": { elim: 7, espec: null, obs: "" },
+            "5.3.02.01.57": { elim: 7, espec: null, obs: "" },
+            "5.3.02.01.58": { elim: 7, espec: null, obs: "" },
+            "5.3.02.01.59": { elim: 7, espec: null, obs: "" },
+            "5.3.02.01.60": { elim: 7, espec: null, obs: "" },
+            "5.3.02.01.61": { elim: 7, espec: null, obs: "" },
+            "5.3.02.01.62": { elim: 7, espec: null, obs: "" },
+            "5.3.02.01.63": { elim: 1, espec: null, obs: "" },
+            "5.3.02.01.64": { elim: 7, espec: null, obs: "" },
+            "5.3.02.01.65": { elim: 7, espec: null, obs: "" },
+            "5.3.02.01.66": { elim: 7, espec: null, obs: "" },
+            "5.3.02.01.67": { elim: 7, espec: null, obs: "" },
+            "5.3.02.01.68": { elim: 7, espec: null, obs: "" },
+            "5.3.02.01.69": { elim: 7, espec: null, obs: "" },
+            "5.3.03.00.01": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.03.00.03": { elim: 1, espec: null, obs: "" },
+            "5.3.03.00.07": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.03.00.08": { elim: 10, espec: null, obs: "Original no DRH" },
+            "5.3.03.00.09": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.03.00.10": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.03.00.11": { elim: 10, espec: null, obs: "" },
+            "5.3.03.00.13": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.03.00.14": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.03.00.15": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.03.00.16": { elim: 1, espec: null, obs: "" },
+            "5.3.03.00.17": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.03.00.18": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.03.00.19": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.03.00.20": { elim: null, espec: null, obs: "Em desuso. Use: 5.3.03.0019" },
+            "5.3.03.00.21": { elim: null, espec: null, obs: "Doações relativas a acervos considerados de valor histórico tridimensionais ou documental: Totalidade GP no APM - Ver código 2.0.04.01.01" },
+            "5.3.03.00.22": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.03.00.23": { elim: 3, espec: null, obs: "" },
+            "5.3.03.00.24": { elim: 11, espec: null, obs: "" },
+            "5.3.04.00.01": { elim: 1, espec: null, obs: "" },
+            "5.3.04.00.02": { elim: 1, espec: null, obs: "" },
+            "5.3.04.00.06": { elim: 1, espec: null, obs: "" },
+            "5.3.04.00.07": { elim: 1, espec: null, obs: "" },
+            "5.3.04.00.10": { elim: 4, espec: null, obs: "" },
+            "5.3.04.00.12": { elim: 2, espec: null, obs: "" },
+            "5.3.04.00.13": { elim: 4, espec: null, obs: "" },
+            "5.3.04.00.14": { elim: 2, espec: null, obs: "" },
+            "5.3.04.00.15": { elim: 2, espec: null, obs: "" },
+            "5.3.04.00.16": { elim: 2, espec: null, obs: "" },
+            "5.3.04.00.17": { elim: 4, espec: null, obs: "" },
+            "5.3.04.00.18": { elim: 5, espec: null, obs: "" },
+            "5.3.04.00.19": { elim: 4, espec: null, obs: "" },
+            "5.3.04.00.20": { elim: 4, espec: null, obs: "GP apenas para candidatos contemplados" },
+            "5.3.04.00.21": { elim: 7, espec: null, obs: "programa extinto, relatórios iam para SDS/SASC" },
+            "5.3.04.00.22": { elim: null, espec: null, obs: "Ver TT código 2.0.10.00.05" },
+            "5.3.04.00.23": { elim: null, espec: null, obs: "Ver TT código 3.0.05.00.24 Microfilma e Elimina. Relatórios encaminhados à Fiscalização Tributária" },
+            "5.3.04.00.24": { elim: 2, espec: null, obs: "" },
+            "5.3.05.00.01": { elim: null, espec: null, obs: "Originais no DRM (Paço)" },
+            "5.3.05.00.02": { elim: null, espec: null, obs: "Em desuso. Use: 3.0.03.00.15" },
+            "5.3.05.00.03": { elim: null, espec: null, obs: "Em desuso. Use: 3.0.03.00.15" },
+            "5.3.05.00.04": { elim: 6, espec: null, obs: "" },
+            "5.3.05.00.05": { elim: 10, espec: null, obs: "" },
+            "5.3.05.00.06": { elim: null, espec: null, obs: "Em desuso. Use: 2.0.01" },
+            "5.3.05.00.07": { elim: null, espec: null, obs: "Em desuso. Use: 2.0.04" },
+            "5.3.05.00.08": { elim: null, espec: null, obs: "Em desuso. Use: 2.0.10.00.01" },
+            "5.3.05.00.09": { elim: null, espec: null, obs: "Em desuso. Use: 2.0.04.02.01" },
+            "5.3.05.00.10": { elim: 2, espec: null, obs: "" },
+            "5.3.05.00.11": { elim: 2, espec: null, obs: "" },
+            "5.3.05.00.12": { elim: 2, espec: null, obs: "" },
+            "5.3.05.00.13": { elim: null, espec: null, obs: "Permanente" },
+            "5.3.05.00.14": { elim: 1, espec: null, obs: "" },
+            "5.3.05.00.15": { elim: null, espec: null, obs: "Em desuso. Use: 2.0.09.00.01" },
+            "5.3.05.00.16": { elim: null, espec: null, obs: "Em desuso. Use: 2.0.09.00.06" },
+            "5.3.05.00.17": { elim: 4, espec: null, obs: "" },
+            "5.3.05.00.18": { elim: null, espec: null, obs: "Em desuso. Use: 2.0.09.00.01" },
+            "5.3.05.00.19": { elim: 3, espec: null, obs: "" },
+            "5.3.05.00.20": { elim: null, espec: null, obs: "Para NF e Formulários use: 2.0.09.00.09" },
+            "5.3.05.00.21": { elim: 5, espec: null, obs: "" },
+            "5.3.05.00.22": { elim: 3, espec: null, obs: "" },
+            "5.3.05.00.23": { elim: null, espec: null, obs: "Em desuso. Use: 5.3.05.00.20" },
+            "5.3.05.00.24": { elim: 10, espec: null, obs: "Em desuso. Use: 5.3.05.00.20" },
+            "5.4.03.00.10": { elim: 1, espec: null, obs: "" },
+            "5.4.03.00.17": { elim: 5, espec: null, obs: "" }
+        };
+
+        let resultadosAnalise = null;
+
+        // Upload de arquivo
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#764ba2';
+            uploadArea.style.background = '#e8eeff';
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.borderColor = '#667eea';
+            uploadArea.style.background = 'white';
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#667eea';
+            uploadArea.style.background = 'white';
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].type === 'application/pdf') {
+                processarPDF(files[0]);
+            } else {
+                alert('Por favor, selecione um arquivo PDF válido.');
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                processarPDF(e.target.files[0]);
+            }
+        });
+
+        async function processarPDF(file) {
+            document.getElementById('uploadSection').style.display = 'none';
+            document.getElementById('loading').classList.add('show');
+
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+                
+                let textoCompleto = '';
+                
+                // Extrair texto de todas as páginas
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const textContent = await page.getTextContent();
+                    const pageText = textContent.items.map(item => item.str).join(' ');
+                    textoCompleto += pageText + '\n';
+                }
+
+                // Analisar o texto extraído
+                const resultado = analisarRelatorio(textoCompleto);
+                
+                setTimeout(() => {
+                    document.getElementById('loading').classList.remove('show');
+                    document.getElementById('resultsSection').classList.add('show');
+                    mostrarResultados(resultado);
+                }, 500);
+
+            } catch (error) {
+                console.error('Erro ao processar PDF:', error);
+                alert('Erro ao processar o PDF. Verifique se o arquivo está correto.');
+                document.getElementById('loading').classList.remove('show');
+                document.getElementById('uploadSection').style.display = 'block';
+            }
+        }
+
+        function analisarRelatorio(texto) {
+            // Esta função precisa ser implementada com a lógica de extração
+            // Aqui vai a análise do PDF e validação das datas
+            
+            const registros = extrairRegistros(texto);
+            const erros = [];
+            const avisos = [];
+            let totalRegistros = registros.length;
+            let registrosCorretos = 0;
+            let registrosComErro = 0;
+            let registrosPermanentes = 0;
+
+            registros.forEach(registro => {
+                const validacao = validarData(registro);
+                
+                if (validacao.status === 'erro') {
+                    registrosComErro++;
+                    erros.push({
+                        codigo: registro.codigo,
+                        especificacao: registro.especificacao,
+                        dataLimite: registro.dataLimite,
+                        dataEliminacaoInformada: registro.dataEliminacao,
+                        dataEliminacaoCorreta: validacao.dataCorreta,
+                        diferenca: validacao.diferenca
+                    });
+                } else if (validacao.status === 'aviso') {
+                    avisos.push({
+                        codigo: registro.codigo,
+                        mensagem: validacao.mensagem
+                    });
+                } else if (validacao.status === 'permanente') {
+                    registrosPermanentes++;
+                } else {
+                    registrosCorretos++;
+                }
+            });
+
+            return {
+                totalRegistros,
+                registrosCorretos,
+                registrosComErro,
+                registrosPermanentes,
+                erros,
+                avisos
+            };
+        }
+
+        function extrairRegistros(texto) {
+            // Implementar extração de registros do PDF
+            // Esta é uma implementação simplificada
+            const registros = [];
+            
+            // Lógica de extração (precisa ser adaptada ao formato real do PDF)
+            const linhas = texto.split('\n');
+            
+            // TODO: Implementar parser real baseado no formato do PDF
+            
+            return registros;
+        }
+
+        function validarData(registro) {
+            const codigo = registro.codigo;
+            const dadosCodigo = baseDadosCodigos[codigo];
+
+            if (!dadosCodigo) {
+                return {
+                    status: 'aviso',
+                    mensagem: 'Código não encontrado na base de dados'
+                };
+            }
+
+            if (dadosCodigo.elim === null) {
+                if (dadosCodigo.obs) {
+                    return {
+                        status: 'aviso',
+                        mensagem: dadosCodigo.obs
+                    };
+                }
+                return {
+                    status: 'permanente'
+                };
+            }
+
+            // Extrair ano da data limite
+            const anoLimite = extrairAno(registro.dataLimite);
+            if (!anoLimite) {
+                return {
+                    status: 'erro',
+                    mensagem: 'Data limite inválida'
+                };
+            }
+
+            // Calcular data correta
+            const dataCorreta = anoLimite + dadosCodigo.elim;
+            const dataInformada = extrairAno(registro.dataEliminacao);
+
+            if (dataInformada !== dataCorreta) {
+                return {
+                    status: 'erro',
+                    dataCorreta: dataCorreta,
+                    diferenca: dataInformada - dataCorreta
+                };
+            }
+
+            return { status: 'correto' };
+        }
+
+        function extrairAno(texto) {
+            // Extrair ano do formato "xxxx" ou "xxxx ATÉ yyyy"
+            const match = texto.match(/(\d{4})/);
+            return match ? parseInt(match[1]) : null;
+        }
+
+        function mostrarResultados(resultado) {
+            resultadosAnalise = resultado;
+
+            // Resumo
+            const summaryHTML = `
+                <div class="summary-item">
+                    <div class="summary-value">${resultado.totalRegistros}</div>
+                    <div class="summary-label">Total Analisados</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value">${resultado.registrosCorretos}</div>
+                    <div class="summary-label">Datas Corretas</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value">${resultado.registrosComErro}</div>
+                    <div class="summary-label">Com Erros</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value">${resultado.registrosPermanentes}</div>
+                    <div class="summary-label">Permanentes</div>
+                </div>
+            `;
+            document.getElementById('summaryGrid').innerHTML = summaryHTML;
+
+            // Tabela de erros
+            if (resultado.erros.length > 0) {
+                let tableHTML = `
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Especificação</th>
+                            <th>Data Limite</th>
+                            <th>Data Informada</th>
+                            <th>Data Correta</th>
+                            <th>Diferença</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                `;
+
+                resultado.erros.forEach(erro => {
+                    tableHTML += `
+                        <tr>
+                            <td><strong>${erro.codigo}</strong></td>
+                            <td>${erro.especificacao || '-'}</td>
+                            <td>${erro.dataLimite}</td>
+                            <td><span class="error-badge">${erro.dataEliminacaoInformada}</span></td>
+                            <td><span class="correct-badge">${erro.dataEliminacaoCorreta}</span></td>
+                            <td>${erro.diferenca > 0 ? '+' : ''}${erro.diferenca} anos</td>
+                        </tr>
+                    `;
+                });
+
+                tableHTML += '</tbody>';
+                document.getElementById('errorsTableContent').innerHTML = tableHTML;
+            } else {
+                document.getElementById('errorsTable').innerHTML = `
+                    <div style="padding: 40px; text-align: center; color: #00C851;">
+                        <div style="font-size: 48px; margin-bottom: 15px;">✅</div>
+                        <h3>Nenhum erro encontrado!</h3>
+                        <p>Todas as datas de eliminação estão corretas.</p>
+                    </div>
+                `;
+            }
+
+            // Avisos
+            if (resultado.avisos.length > 0) {
+                let warningsHTML = '<div class="info-box"><h4>⚠️ Avisos Importantes</h4><ul>';
+                resultado.avisos.forEach(aviso => {
+                    warningsHTML += `<li><strong>${aviso.codigo}:</strong> ${aviso.mensagem}</li>`;
+                });
+                warningsHTML += '</ul></div>';
+                document.getElementById('warningsSection').innerHTML = warningsHTML;
+            }
+        }
+
+        function exportarExcel() {
+            // Implementar exportação
+            alert('Funcionalidade de exportação será implementada');
+        }
+
+        function reiniciar() {
+            document.getElementById('resultsSection').classList.remove('show');
+            document.getElementById('uploadSection').style.display = 'block';
+            resultadosAnalise = null;
+            fileInput.value = '';
+        }
+    </script>
+</body>
+</html>
