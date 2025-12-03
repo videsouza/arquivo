@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Corretor de Datas de Eliminação - Pro V5 (Robusto)</title>
+    <title>Corretor de Datas de Eliminação - Pro V6 (Lógica Exata)</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
@@ -139,7 +139,7 @@
 
     <div class="container">
         <div class="header">
-            <h1><i class="fas fa-calendar-alt"></i> Corretor de Datas (Robusto V5)</h1>
+            <h1><i class="fas fa-calendar-alt"></i> Corretor de Datas (Lógica Exata V6)</h1>
             <p>1. Carregue a Tabela de Temporalidade. 2. Carregue o Relatório PDF.</p>
         </div>
 
@@ -150,7 +150,7 @@
                 <div class="upload-area" id="rulesUploadArea">
                     <i class="fas fa-table upload-icon" style="color: #10b981;"></i>
                     <h3>1. Tabela de Temporalidade (Regras)</h3>
-                    <p style="color:#94a3b8; margin-bottom:15px;">Use o arquivo **CSV/Excel** com as colunas **COD**, **OBS** e **ELIM**.</p>
+                    <p style="color:#94a3b8; margin-bottom:15px;">A busca é feita na coluna **ELIM**. A coluna **ESPEC** é usada apenas para o código **2.0.10.00.01**.</p>
                     <input type="file" id="rulesFileInput" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" hidden>
                     <button id="rulesBtn" onclick="document.getElementById('rulesFileInput').click()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color:white; padding:12px 30px; border:none; border-radius:8px; cursor:pointer; font-weight:600;">
                         Carregar Tabela (.csv ou .xlsx)
@@ -181,7 +181,7 @@
                     </div>
                     <div class="kpi-card" style="border-left-color: var(--warning);">
                         <div class="kpi-val" id="totalAlertas" style="color: var(--warning);">0</div>
-                        <div class="kpi-label">Alertas (Sem Regra / Permanente)</div>
+                        <div class="kpi-label">Alertas (Sem Regra / Textual)</div>
                     </div>
                     <div class="kpi-card" style="border-left-color: var(--success);">
                         <div class="kpi-val" id="taxaAcerto" style="color: var(--success);">0%</div>
@@ -206,8 +206,9 @@
                             <thead>
                                 <tr>
                                     <th>Cód. Classificação</th>
+                                    <th>Espec. (PDF)</th>
+                                    <th>Prazo/Texto Regra</th>
                                     <th>Intervalo Base (PDF)</th>
-                                    <th>Prazo (Anos)</th>
                                     <th>Eliminação (PDF)</th>
                                     <th>Cálculo Correto</th>
                                     <th>Status</th>
@@ -227,6 +228,9 @@
         let pdfFileLoaded = false;
         let rulesFileLoaded = false;
         let dadosExport = [];
+
+        // Código do caso especial
+        const CODIGO_ESPECIAL = "2.0.10.00.01";
 
         // --- UPLOAD HANDLERS ---
         const rulesUploadArea = document.getElementById('rulesUploadArea');
@@ -255,10 +259,10 @@
             if(rulesFileLoaded && !pdfFileLoaded && e.dataTransfer.files.length) processarPDF(e.dataTransfer.files[0]);
         });
         pdfFileInput.addEventListener('change', (e) => {
-            if(e.target.files.length) processarPDF(e.target.files[0]);
+            if(rulesFileLoaded && e.target.files.length) processarPDF(e.target.files[0]);
         });
         
-        // --- 1. CARREGAMENTO DA TABELA DE TEMPORALIDADE (CSV/XLSX) - LÓGICA ROBUSTA ---
+        // --- 1. CARREGAMENTO DA TABELA DE TEMPORALIDADE (CSV/XLSX) - LÓGICA EXATA ---
         async function handleTemporalidadeFile(file) {
             rulesStatus.innerText = 'Lendo arquivo...';
             try {
@@ -267,30 +271,23 @@
                 const sheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[sheetName];
                 
-                // Opção para tratar cabeçalhos com espaços ou acentos
                 const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
                 if (json.length === 0) throw new Error("A planilha está vazia.");
 
-                // 1. Identificar as colunas de forma robusta
+                // Identificar as colunas de forma robusta
                 const headers = json[0].map(h => String(h).trim().toUpperCase().replace(/[^A-Z]/g, ''));
                 
                 let codIndex = headers.findIndex(h => h.includes('COD'));
                 let especIndex = headers.findIndex(h => h.includes('ESPEC'));
                 let elimIndex = headers.findIndex(h => h.includes('ELIM'));
-                let obsIndex = headers.findIndex(h => h.includes('OBS')); 
                 
-                if (codIndex === -1 || (elimIndex === -1 && obsIndex === -1)) {
-                    throw new Error("Colunas essenciais ('COD' e 'ELIM' ou 'OBS') não encontradas. Verifique o cabeçalho.");
+                if (codIndex === -1 || elimIndex === -1) {
+                    throw new Error("Colunas essenciais ('COD' e 'ELIM') não encontradas. Verifique o cabeçalho.");
                 }
-                
-                // Se ELIM não foi encontrado, assume-se que OBS é a coluna de prazo
-                if (elimIndex === -1) {
-                    elimIndex = obsIndex;
-                }
-                // Se OBS não foi encontrado, define um valor seguro para evitar erros
-                if (obsIndex === -1) {
-                    obsIndex = -1; 
+                if (especIndex === -1) {
+                    // Se ESPEC não for encontrada, assumimos que é uma coluna vazia e a indexamos
+                    especIndex = -1; 
                 }
 
 
@@ -306,35 +303,31 @@
                         let prazo = null;
                         let obs = null;
 
-                        // Pega o valor da coluna ELIM (pode ser o valor de prazo)
+                        // Pega o valor da coluna ELIM (pode ser o valor de prazo ou o texto)
                         const elimValueRaw = String(row[elimIndex] || "").trim().toUpperCase(); 
                         
-                        // Pega o valor da coluna OBS
-                        const obsValueRaw = obsIndex !== -1 ? String(row[obsIndex] || "").trim().toUpperCase() : ""; 
-                        
-                        // 1. CHECAGEM DE GUARDA PERMANENTE (GP)
-                        if (elimValueRaw.includes("PERMANENTE") || elimValueRaw.includes("GP") || obsValueRaw.includes("PERMANENTE") || obsValueRaw.includes("GP")) {
-                            obs = "GUARDA PERMANENTE";
-                        } 
-                        // 2. CHECAGEM NUMÉRICA na coluna ELIM
-                        else if (!isNaN(parseFloat(elimValueRaw)) && isFinite(elimValueRaw) && parseFloat(elimValueRaw) > 0) {
-                            prazo = parseFloat(elimValueRaw);
-                        } 
-                        // 3. FALLBACK: CHECAGEM NUMÉRICA na coluna OBS (ou outra coluna próxima)
-                        else if (obsIndex !== -1 && !isNaN(parseFloat(obsValueRaw)) && isFinite(obsValueRaw) && parseFloat(obsValueRaw) > 0) {
-                            prazo = parseFloat(obsValueRaw);
-                            obs = "Prazo (ELIM) encontrado na coluna OBS (ajuste manual recomendado).";
-                        }
-                        
-                        if (prazo === null && obs === null) {
-                            // Último fallback: valor não identificado ou vazio.
-                            obs = `Prazo Vazio/Não Numérico ou não reconhecido. Valores lidos: ELIM='${elimValueRaw}', OBS='${obsValueRaw}'`;
+                        const numericElim = parseFloat(elimValueRaw);
+
+                        if (!isNaN(numericElim) && isFinite(numericElim) && numericElim > 0) {
+                            // Se ELIM é um número, é o prazo
+                            prazo = numericElim;
+                        } else if (elimValueRaw !== "") {
+                            // Se ELIM é um texto, ele é a regra/observação e não deve ser calculado
+                            obs = elimValueRaw;
+                        } else {
+                            // Valor vazio
+                            obs = "Prazo Vazio/Não Encontrado na Tabela de Regras.";
                         }
 
-                        // Chave para a regra: Usamos apenas o COD para simplificar a busca
-                        const key = cod; 
+                        let key = cod;
 
-                        REGRAS_MAP.set(key, { cod, espec, prazo, obs });
+                        // Se for o código especial, a chave é COD|ESPEC
+                        if (cod === CODIGO_ESPECIAL) {
+                            key = `${cod}|${espec.toUpperCase()}`;
+                        }
+
+                        // Mapeia a regra
+                        REGRAS_MAP.set(key, { cod, espec: espec.toUpperCase(), prazo, obs });
                     }
                 }
                 
@@ -398,14 +391,14 @@
             }
             
             if (itensExtraidos.length === 0 && totalItensLidos > 0) {
-                 alert("ALERTA: O texto foi lido, mas a rotina não conseguiu extrair nenhum item no formato esperado (Código seguido de 2 a 4 anos).");
+                 alert("ALERTA: O texto foi lido, mas a rotina não conseguiu extrair nenhum item no formato de tabela esperado.");
             }
 
             loadingText.innerText = `Cruzando ${itensExtraidos.length} itens com as regras de temporalidade...`;
             analisarErros(itensExtraidos);
         }
         
-        // Funções de Extração (Mantidas da Versão V4)
+        // Funções de Extração (Mantidas da Versão V4/V5)
         function agruparPorLinhas(items) {
              const linhas = [];
             const toleranciaY = 5; 
@@ -428,34 +421,36 @@
             
             linhas.forEach(linha => {
                 const itensOrdenados = linha.itens.sort((a, b) => a.x - b.x);
-                const textoCompleto = itensOrdenados.map(i => i.str).join(" ").replace(/\s{2,}/g, ' '); 
+                const textoCompleto = itensOrdenados.map(i => i.str).join("").replace(/\s{2,}/g, ' '); 
                 
-                const matchCod = textoCompleto.match(/^(\d[\.\d]*\d{2}[\.\d]*)/);
+                // Regex para capturar as principais colunas de uma linha do PDF
+                // Estrutura esperada: "COD","SÉRIE DOCUMENTAL","DATAS - LIMITE","QUANTIDADE","ESPECIFICAÇÃO","DATAS ELIMINAÇÃO"
                 
-                if (matchCod) {
-                    const cod = matchCod[1].trim();
-                    const anosEncontrados = textoCompleto.match(/\d{4}/g);
-                    
-                    if (anosEncontrados && anosEncontrados.length >= 2) {
-                        let anosLimite = [];
-                        let anosElimPDF = [];
+                // Usamos uma regex para pegar as colunas entre aspas, o que é comum em PDFs tabulares exportados
+                // Grupo 1: COD
+                // Grupo 2: ESPECIFICAÇÃO (Quinta coluna)
+                // Grupo 3: Datas Limite
+                // Grupo 4: Datas Eliminação
+                
+                const match = textoCompleto.match(/^"(\d[\.\d]*\d{2}[\.\d]*)",\s*".*?",\s*"(.*?)",\s*".*?",\s*"(.*?)",\s*"(.*?)"/);
 
-                        if (anosEncontrados.length >= 4) {
-                            anosLimite = [parseInt(anosEncontrados[0]), parseInt(anosEncontrados[1])];
-                            anosElimPDF = [parseInt(anosEncontrados[2]), parseInt(anosEncontrados[3])];
-                        } else if (anosEncontrados.length === 3) {
-                            anosLimite = [parseInt(anosEncontrados[0]), parseInt(anosEncontrados[1])];
-                            anosElimPDF = [parseInt(anosEncontrados[2]), parseInt(anosEncontrados[2])]; 
-                        } else if (anosEncontrados.length === 2) {
-                            anosLimite = [parseInt(anosEncontrados[0]), parseInt(anosEncontrados[0])];
-                            anosElimPDF = [parseInt(anosEncontrados[1]), parseInt(anosEncontrados[1])]; 
-                        } else {
-                            return;
-                        }
+                if (match) {
+                    const cod = match[1].trim();
+                    const datasLimiteRaw = match[2].trim();
+                    const espec_from_pdf = match[3].trim().toUpperCase(); // O texto ESPECIFICAÇÃO do PDF
+                    const datasEliminacaoRaw = match[4].trim();
+
+                    // Extrair anos
+                    const anosLimiteMatch = datasLimiteRaw.match(/\d{4}/g);
+                    const anosElimMatch = datasEliminacaoRaw.match(/\d{4}/g);
+                    
+                    if (anosLimiteMatch && anosElimMatch) {
+                        const anosLimite = [parseInt(anosLimiteMatch[0]), parseInt(anosLimiteMatch.length > 1 ? anosLimiteMatch[1] : anosLimiteMatch[0])];
+                        const anosElimPDF = [parseInt(anosElimMatch[0]), parseInt(anosElimMatch.length > 1 ? anosElimMatch[1] : anosElimMatch[0])];
 
                         dados.push({
                             cod: cod,
-                            espec: textoCompleto, 
+                            espec_from_pdf: espec_from_pdf, 
                             anosLimite: anosLimite, 
                             anosElimPDF: anosElimPDF, 
                             raw: textoCompleto
@@ -480,19 +475,41 @@
                 let mensagem = '';
                 let prazo = null;
 
-                // 1. Busca Regra: Busca pelo COD exato no mapa de regras
-                const regraEncontrada = REGRAS_MAP.get(item.cod);
+                // 1. Determinar a chave de busca
+                let key = item.cod;
+                if (item.cod === CODIGO_ESPECIAL) {
+                    // Para o código especial, a chave é COD|ESPECIFICAÇÃO do PDF
+                    // É crucial que o texto ESPEC na CSV e no PDF sejam idênticos (ou pelo menos que o PDF contenha a ESPEC da CSV)
+                    
+                    // Como a regra de busca é pela ESPEC exata do CSV, vamos tentar a busca direta.
+                    key = `${item.cod}|${item.espec_from_pdf}`;
+                    regra = REGRAS_MAP.get(key);
+
+                    if (!regra) {
+                        // Tenta uma busca mais flexível para o código 2.0.10.00.01 
+                        // se a ESPEC do PDF for mais detalhada que a do CSV.
+                        
+                        // Busca todas as regras para o CODIGO_ESPECIAL e checa se o PDF ESPEC contém a CSV ESPEC
+                        for (const [k, r] of REGRAS_MAP.entries()) {
+                            if (k.startsWith(item.cod) && item.espec_from_pdf.includes(r.espec) && r.espec !== "") {
+                                regra = r;
+                                key = k; // Usa a chave encontrada
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    // Para todos os outros códigos, a chave é apenas o COD
+                    regra = REGRAS_MAP.get(key);
+                }
+
+
                 
-                if (regraEncontrada) {
-                    regra = regraEncontrada;
+                if (regra) {
                     prazo = regra.prazo;
                     
-                    if (regra.obs && regra.obs.includes("PERMANENTE")) {
-                        status = 'OBS';
-                        mensagem = regra.obs;
-                        totalAlertas++;
-                    } else if (prazo !== undefined && prazo !== null) {
-                        // 2. CÁLCULO E VALIDAÇÃO DE INTERVALOS
+                    if (prazo !== undefined && prazo !== null) {
+                        // 2. CÁLCULO E VALIDAÇÃO DE INTERVALOS (Prazo Numérico)
                         
                         const minLim = item.anosLimite[0]; 
                         const maxLim = item.anosLimite[1]; 
@@ -521,18 +538,20 @@
 
                         if (temErro) {
                             status = 'ERRO';
-                            mensagem = `Esperado: ${calculoCorreto} (Prazo: ${prazo}). Encontrado: ${item.anosElimPDF.join(' a ')}`;
+                            mensagem = `Esperado: ${calculoCorreto} (Prazo: ${prazo}). Encontrado: ${pdfMin} a ${pdfMax}`;
                             totalErros++;
                         }
                     } else {
-                         // Regra encontrada, mas prazo não numérico/inválido
+                         // 3. REGRA TEXTUAL (Ex: PERMANENTE)
                         status = 'ALERTA';
-                        mensagem = regra.obs || "Prazo Vazio/Não Numérico na Tabela de Regras.";
+                        mensagem = regra.obs || "Regra Encontrada, mas Prazo Não Numérico/Vazio.";
                         totalAlertas++;
+                        calculoCorreto = regra.obs || '-';
                     }
                 } else {
+                    // 4. REGRA NÃO ENCONTRADA
                     status = 'ALERTA';
-                    mensagem = 'Código sem regra na Tabela de Temporalidade.';
+                    mensagem = `Código sem regra na Tabela de Temporalidade. Chave de busca: ${key}`;
                     totalAlertas++;
                 }
 
@@ -584,8 +603,9 @@
                 const html = `
                     <tr>
                         <td style="font-weight:bold;">${res.cod}</td>
+                        <td>${res.espec_from_pdf}</td>
+                        <td>${res.prazo !== null ? res.prazo : res.calculoCorreto || '-'}</td>
                         <td>${limDisplay}</td>
-                        <td>${res.prazo !== null ? res.prazo : '-'}</td>
                         <td class="${res.status === 'ERRO' ? 'diff-val' : ''}">${pdfDataElimDisplay}</td>
                         <td class="${res.status === 'ERRO' ? 'correct-val' : ''}">${res.calculoCorreto || '-'}</td>
                         <td>
@@ -598,7 +618,7 @@
             });
 
             if (tbody.innerHTML === '') {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px; color:#10b981;">✅ Nenhuma inconsistência grave encontrada nos itens analisados!</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:#10b981;">✅ Nenhuma inconsistência grave encontrada nos itens analisados!</td></tr>';
             }
 
             document.getElementById('loading').style.display = 'none';
@@ -608,10 +628,12 @@
         function exportarExcel() {
             const data = dadosExport.filter(d => d.status !== 'OK').map(d => ({
                 COD: d.cod,
+                ESPECIFICACAO_PDF: d.espec_from_pdf,
                 TEXTO_COMPLETO: d.raw,
                 BASE_INICIO: d.minLim,
                 BASE_FIM: d.maxLim,
-                PRAZO_ANOS: d.prazo,
+                PRAZO_ANOS_REGRA: d.prazo,
+                REGRA_TEXTUAL: d.prazo === null ? d.calculoCorreto : null,
                 ELIMINACAO_INICIO_PDF: d.anosElimPDF[0],
                 ELIMINACAO_FIM_PDF: d.anosElimPDF[1],
                 CALCULO_ESPERADO: d.calculoCorreto,
@@ -622,7 +644,7 @@
             const ws = XLSX.utils.json_to_sheet(data);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Auditoria de Intervalos");
-            XLSX.writeFile(wb, "Auditoria_Intervalos_Completa.xlsx");
+            XLSX.writeFile(wb, "Auditoria_Intervalos_Completa_V6.xlsx");
         }
     </script>
 </body>
