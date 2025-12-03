@@ -1,476 +1,536 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Validador de Planilha de Eliminação – Versão Final</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Validador de Eliminação — Final (Único Arquivo)</title>
 
-<!-- Fonte moderna -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<!-- Fonte -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 
-<!-- PDF.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.10.111/pdf.min.js"></script>
+<!-- pdf.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+
+<!-- xlsx -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <style>
-    body {
-        margin: 0;
-        font-family: 'Inter', sans-serif;
-        background: #f5f7fa;
-        color: #222;
-    }
-
-    header {
-        background: #005f99;
-        color: white;
-        padding: 22px 30px;
-        font-size: 22px;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-        box-shadow: 0 2px 5px rgba(0,0,0,.15);
-    }
-
-    main {
-        padding: 25px 30px;
-        max-width: 1400px;
-        margin: auto;
-    }
-
-    .card {
-        background: white;
-        padding: 24px;
-        margin: 18px 0;
-        border-radius: 14px;
-        box-shadow: 0 3px 12px rgba(0,0,0,.08);
-        border: 1px solid #e4e4e4;
-    }
-
-    .titulo-card {
-        font-size: 20px;
-        font-weight: 600;
-        margin-bottom: 16px;
-        color: #005f99;
-    }
-
-    input[type="file"] {
-        padding: 12px;
-        background: #eef3f8;
-        border-radius: 8px;
-        border: 1px solid #ccc;
-        cursor: pointer;
-    }
-
-    #loading {
-        padding: 12px 20px;
-        background: #ffcc00;
-        border-radius: 8px;
-        font-weight: 600;
-        margin-top: 10px;
-        display: none;
-    }
-
-    #dashboard {
-        display: none;
-        margin-top: 20px;
-    }
-
-    .grid-3 {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-        gap: 18px;
-    }
-
-    .dash-item {
-        background: #ffffff;
-        border-left: 6px solid #005f99;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 3px 10px rgba(0,0,0,.07);
-    }
-
-    .dash-num {
-        font-size: 32px;
-        font-weight: 700;
-        color: #004d80;
-    }
-
-    .dash-label {
-        margin-top: 4px;
-        font-size: 15px;
-        color: #555;
-    }
-
-    #log {
-        white-space: pre-wrap;
-        font-family: monospace;
-        background: #111;
-        color: #0f0;
-        padding: 20px;
-        border-radius: 10px;
-        height: 250px;
-        overflow-y: auto;
-        margin-top: 20px;
-    }
+  :root{
+    --bg:#f4f7fb;
+    --card:#fff;
+    --accent:#0f57a1;
+    --muted:#6b7280;
+    --success:#059669;
+    --danger:#ef4444;
+    --glass: rgba(255,255,255,0.8);
+  }
+  *{box-sizing:border-box}
+  body{font-family:Inter,system-ui,Segoe UI,Arial; margin:0; background:var(--bg); color:#111;}
+  header{background:linear-gradient(90deg,#0f57a1,#0b72c6); color:white; padding:22px 28px}
+  header h1{margin:0;font-weight:700;font-size:20px}
+  main{max-width:1300px;margin:26px auto;padding:0 18px}
+  .grid{display:grid;grid-template-columns:1fr 420px;gap:18px}
+  .card{background:var(--card);border-radius:12px;padding:18px;box-shadow:0 8px 30px rgba(12,20,40,0.06);border:1px solid rgba(15,21,38,0.04)}
+  .card h2{margin:0 0 12px;font-size:16px;color:var(--accent)}
+  .small{font-size:13px;color:var(--muted)}
+  .controls{display:flex;gap:10px;flex-wrap:wrap}
+  button{background:var(--accent);color:white;border:0;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:600}
+  button.ghost{background:#eef2ff;color:var(--accent);border:1px solid rgba(15,87,161,0.08)}
+  input[type=file]{display:none}
+  .filebtn{background:#eef2ff;color:var(--accent);border:1px dashed rgba(15,87,161,0.12);padding:12px 14px;border-radius:10px;cursor:pointer}
+  #loading{display:none;padding:12px;border-radius:10px;background:#fff3cd;color:#735c0f;margin-top:12px}
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+  .kpi{padding:14px;border-radius:10px;background:linear-gradient(180deg,#fff,#fbfdff);border:1px solid #eef2f7}
+  .kpi .num{font-size:20px;font-weight:800;color:#0b4f86}
+  .table-wrap{max-height:420px;overflow:auto;margin-top:12px;border-radius:8px;border:1px solid #eef2f7}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:10px;border-bottom:1px solid #f1f5f9;text-align:left}
+  th{background:#fbfdff;color:var(--muted);font-weight:700;position:sticky;top:0}
+  .badge{display:inline-block;padding:6px 8px;border-radius:8px;font-weight:700;font-size:12px}
+  .ok{background:#d1fae5;color:#065f46}
+  .err{background:#fee2e2;color:#991b1b}
+  .warn{background:#fff4e6;color:#92400e}
+  #log{background:#0b1220;color:#9be3ff;padding:12px;border-radius:8px;height:220px;overflow:auto;font-family:monospace;margin-top:12px}
+  footer{max-width:1300px;margin:22px auto 60px;text-align:center;color:var(--muted);font-size:13px}
+  @media (max-width:980px){ .grid{grid-template-columns:1fr} .kpis{grid-template-columns:repeat(2,1fr)} }
 </style>
 </head>
-
 <body>
-
 <header>
-    Validador de Planilha de Eliminação (Versão Final Profissional)
+  <h1>Validador de Planilha de Eliminação — Versão Final</h1>
 </header>
 
 <main>
+  <div class="grid">
+    <!-- LEFT: Controls and results -->
+    <div>
+      <div class="card">
+        <h2>1 • Carregar Arquivos</h2>
+        <p class="small">1) Carregue a Tabela de Temporalidade (.xlsx ou .csv). 2) Carregue o Relatório PDF (texto selecionável).</p>
 
-<!-- Regras -->
-<div class="card">
-    <div class="titulo-card">1) Carregar tabela de regras (Excel)</div>
-    <input type="file" id="fileRegras" accept=".xlsx">
-</div>
+        <div style="margin-top:12px" class="controls">
+          <label class="filebtn" id="rulesBtn">📁 Carregar Regras (CSV/XLSX)
+            <input type="file" id="rulesFile" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
+          </label>
 
-<!-- PDF -->
-<div class="card">
-    <div class="titulo-card">2) Carregar PDF de eliminação</div>
-    <input type="file" id="filePDF" accept=".pdf">
-    <div id="loading">⏳ Lendo PDF... <span id="loadingInfo"></span></div>
-</div>
+          <label class="filebtn" id="pdfBtn">📄 Carregar PDF
+            <input type="file" id="pdfFile" accept=".pdf">
+          </label>
 
-<!-- Dashboard -->
-<div id="dashboard" class="card">
-    <div class="titulo-card">3) Resultados da Validação</div>
-
-    <div class="grid-3">
-        <div class="dash-item">
-            <div class="dash-num" id="dashTotal">0</div>
-            <div class="dash-label">Registros encontrados</div>
+          <button id="exportBtn" class="ghost" disabled>📥 Exportar (Excel)</button>
+          <button id="resetBtn" class="ghost">🔁 Reiniciar</button>
         </div>
 
-        <div class="dash-item">
-            <div class="dash-num" id="dashErros">0</div>
-            <div class="dash-label">Erros identificados</div>
+        <div id="rulesStatus" class="small" style="margin-top:10px;color:var(--muted)"></div>
+        <div id="loading" style="margin-top:10px">⏳ Processando... <span id="loadingText"></span></div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <h2>2 • Indicadores</h2>
+        <div class="kpis">
+          <div class="kpi"><div class="num" id="k_total">0</div><div class="small">Itens analisados</div></div>
+          <div class="kpi"><div class="num" id="k_errors">0</div><div class="small">Datas incorretas</div></div>
+          <div class="kpi"><div class="num" id="k_alerts">0</div><div class="small">Alertas / Regras textuais</div></div>
         </div>
 
-        <div class="dash-item">
-            <div class="dash-num" id="dashOK">0</div>
-            <div class="dash-label">Registros corretos</div>
+        <div class="table-wrap">
+          <table id="resultsTable">
+            <thead><tr><th>COD</th><th>ESPEC (PDF)</th><th>PRAZO/REGRA</th><th>BASE</th><th>ELIM (PDF)</th><th>CALCULO</th><th>STATUS</th></tr></thead>
+            <tbody id="resultsBody"></tbody>
+          </table>
         </div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <h2>3 • Logs & Debug</h2>
+        <div id="log">Aguardando ação...</div>
+      </div>
     </div>
-</div>
 
-<!-- Log -->
-<div class="card">
-    <div class="titulo-card">Log do Sistema</div>
-    <div id="log">Aguardando ações...</div>
-</div>
+    <!-- RIGHT: Help / preview -->
+    <div>
+      <div class="card">
+        <h2>Como funciona (resumo)</h2>
+        <ul class="small">
+          <li>Se <strong>ELIM</strong> na planilha for número → é interpretado como <em>prazo (anos)</em> e somado às DATAS-LIMITE do PDF para gerar a eliminação esperada.</li>
+          <li>Se <strong>ELIM</strong> for texto → exibimos o texto como alerta.</li>
+          <li>Código especial <strong>2.0.10.00.01</strong>: será buscado por <strong>COD|ESPEC</strong>. Se não encontrar chave exata, tenta busca flexível por palavra-chave na ESPEC.</li>
+          <li>Não efetuamos redirecionamentos "Use: código".</li>
+        </ul>
+      </div>
 
+      <div class="card" style="margin-top:14px">
+        <h2>Preview regras carregadas</h2>
+        <pre id="rulesPreview" style="height:240px;overflow:auto;background:#f7fbff;padding:10px;border-radius:8px"></pre>
+      </div>
+    </div>
+  </div>
 </main>
 
+<footer>Desenvolvido para uso interno — extração e validação por Vinicius A. de Souza</footer>
 
 <script>
-/* ==========================================================
-   UTIL: LOG
-========================================================== */
-function log(msg) {
-    const box = document.getElementById("log");
-    box.textContent += "\n" + msg;
-    box.scrollTop = box.scrollHeight;
+/* ================================
+   UTILIDADES
+   ================================ */
+const CODIGO_ESPECIAL = "2.0.10.00.01";
+let REGRAS_MAP = new Map(); // keys: COD or COD|ESPEC (upper)
+let ULTIMOS_RESULTADOS = [];
+const logBox = document.getElementById('log');
+function log(msg){ const t = new Date().toLocaleTimeString(); logBox.textContent += `\n[${t}] ${msg}`; logBox.scrollTop = logBox.scrollHeight; }
+
+/* normalização de strings para comparação */
+function normStr(s){
+  if(!s) return "";
+  // remover acentos, normalizar espaços e barras para espaços
+  let t = String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  t = t.replace(/\/+/g,' ').replace(/[^A-Za-z0-9\s]/g,' ');
+  t = t.replace(/\s+/g,' ').trim().toUpperCase();
+  return t;
 }
 
-/* ==========================================================
-   1) LER REGRAS (Excel)
-========================================================== */
+/* extrair anos 4 dígitos de um text */
+function extractYearsFromText(text){
+  if(!text) return [];
+  const m = text.match(/\b(19|20)\d{2}\b/g);
+  return m ? m.map(x=>parseInt(x,10)) : [];
+}
 
-/* ======= Leitura robusta da planilha de regras (detecta COD, ELIM, ESPEC) ======= */
-document.getElementById("fileRegras").addEventListener("change", async function() {
-    const file = this.files[0];
-    if (!file) return;
-    log("📘 Lendo regras: " + file.name);
+/* ================================
+   LEITURA DA PLANILHA (REGRAS)
+   ================================ */
 
-    try {
-        const ar = await file.arrayBuffer();
-        const wb = XLSX.read(ar, { type: "array" });
-        const sheet = wb.Sheets[wb.SheetNames[0]];
-        const table = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+document.getElementById('rulesFile').addEventListener('change', async (ev) => {
+  const file = ev.target.files[0];
+  if(!file) return;
+  log(`Carregando regras: ${file.name}`);
+  document.getElementById('rulesStatus').textContent = 'Lendo arquivo...';
 
-        if (table.length === 0) throw new Error("Planilha vazia.");
+  try {
+    const ab = await file.arrayBuffer();
+    const wb = XLSX.read(ab, {type:'array'});
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    const table = XLSX.utils.sheet_to_json(sheet, {header:1, defval: ""});
+    if(table.length === 0) throw new Error("Planilha vazia.");
 
-        // Normalizar cabeçalho
-        const rawHeaders = table[0].map(h => String(h || "").trim());
-        const headers = rawHeaders.map(h => String(h).toUpperCase().replace(/[^A-Z0-9]/g, ''));
+    // detectar índices
+    const rawHeaders = table[0].map(h => String(h || '').trim());
+    const headers = rawHeaders.map(h => String(h).toUpperCase().replace(/[^A-Z0-9]/g,''));
+    const codIndex = headers.findIndex(h => h.includes('COD'));
+    const elimIndex = headers.findIndex(h => h.includes('ELIM'));
+    const especIndex = headers.findIndex(h => h.includes('ESPEC'));
 
-        const codIndex = headers.findIndex(h => h.includes('COD'));
-        const elimIndex = headers.findIndex(h => h.includes('ELIM'));
-        const especIndex = headers.findIndex(h => h.includes('ESPEC'));
-
-        if (codIndex === -1 || elimIndex === -1) {
-            throw new Error("Cabeçalho inválido: não encontrei colunas esperadas 'COD' e 'ELIM'.");
-        }
-
-        REGRAS_MAP.clear();
-
-        for (let r = 1; r < table.length; r++) {
-            const row = table[r];
-            const cod = String(row[codIndex] || "").trim();
-            if (!cod) continue;
-            const espec = especIndex !== -1 ? String(row[especIndex] || "").trim() : "";
-            const elimRaw = String(row[elimIndex] || "").trim().toUpperCase();
-
-            // Tentar número (prazo em anos) — aceita vírgula e ponto
-            const numeric = parseFloat(elimRaw.replace(',', '.'));
-            let prazo = null;
-            let obs = null;
-            if (!isNaN(numeric) && isFinite(numeric) && numeric > 0) {
-                prazo = numeric;
-            } else if (elimRaw !== "") {
-                obs = elimRaw; // regra textual
-            } else {
-                obs = "Prazo vazio";
-            }
-
-            let key = cod;
-            // chave especial para ESPEC se for código especial
-            if (cod === "2.0.10.00.01") {
-                key = `${cod}|${espec.toUpperCase()}`;
-            }
-
-            REGRAS_MAP.set(key, { cod, espec: espec.toUpperCase(), prazo, obs });
-        }
-
-        log(`✔ Regras carregadas: ${REGRAS_MAP.size}`);
-        // mostra alguns exemplos para debug
-        let preview = Array.from(REGRAS_MAP.entries()).slice(0,6).map(([k,v]) => `${k} => ${JSON.stringify(v)}`).join('\n');
-        log("Preview regras:\n" + preview);
-    } catch (err) {
-        log("❌ Erro ao ler regras: " + err.message);
-        alert("Erro ao ler planilha de regras: " + err.message);
+    if(codIndex === -1 || elimIndex === -1){
+      throw new Error("Cabeçalho inválido: não encontrei colunas 'COD' e 'ELIM'.");
     }
+
+    REGRAS_MAP.clear();
+    for(let r=1; r<table.length; r++){
+      const row = table[r];
+      const codRaw = String(row[codIndex] || '').trim();
+      if(!codRaw) continue;
+      const cod = codRaw;
+      const especRaw = (especIndex !== -1) ? String(row[especIndex] || '').trim() : '';
+      const elimRaw = String(row[elimIndex] || '').trim();
+
+      // interpretar elim: número => prazo, texto => obs
+      const elimNum = parseFloat(elimRaw.replace(',', '.'));
+      let prazo = null, obs = null;
+      if(!isNaN(elimNum) && isFinite(elimNum) && elimNum > 0){
+        prazo = Math.round(elimNum);
+      } else if(elimRaw !== ""){
+        obs = elimRaw; // texto, inclusive "Permanente" ou "Use: ..."
+      } else {
+        obs = "VAZIO";
+      }
+
+      const key = (cod === CODIGO_ESPECIAL) ? `${cod}|${normStr(especRaw)}` : cod;
+      REGRAS_MAP.set(key, { cod, espec: normStr(especRaw), prazo, obs, rawRow: row });
+    }
+
+    document.getElementById('rulesStatus').textContent = `✓ ${REGRAS_MAP.size} regras carregadas.`;
+    // preview
+    const preview = Array.from(REGRAS_MAP.entries()).slice(0,80).map(([k,v])=>`${k} → ${v.prazo!==null?('prazo='+v.prazo):('obs='+v.obs)}`).join('\n');
+    document.getElementById('rulesPreview').textContent = preview || "(nenhuma regra para mostrar)";
+    log(`Regras carregadas: ${REGRAS_MAP.size}`);
+
+  } catch(err){
+    log(`Erro ao ler planilha: ${err.message}`);
+    document.getElementById('rulesStatus').textContent = `Erro: ${err.message}`;
+  }
 });
 
+/* ================================
+   EXTRAÇÃO DO PDF (texto linear style)
+   ================================ */
 
-/* ==========================================================
-   2) EXTRAÇÃO DO PDF – TEXTO LINEAR (ESTILO pdfplumber)
-========================================================== */
+async function extrairLinhasTextoDoPDF(pdf){
+  const linhas = [];
+  for(let p=1; p<=pdf.numPages; p++){
+    const page = await pdf.getPage(p);
+    const textContent = await page.getTextContent();
+    let linha = "";
+    let lastY = null;
+    const tolerance = 6; // ajuste, px
 
-async function extrairTextoLinearDoPDF(pdf) {
-    const linhas = [];
+    for(const item of textContent.items){
+      const y = (item.transform && item.transform[5]) ? item.transform[5] : 0;
+      const s = String(item.str || '').trim();
+      if(!s) continue;
 
-    for (let p = 1; p <= pdf.numPages; p++) {
-        const page = await pdf.getPage(p);
-        const textContent = await page.getTextContent();
+      if(lastY === null) lastY = y;
 
-        let linha = "";
-        let lastY = null;
-
-        for (const item of textContent.items) {
-            const y = item.transform[5];
-            const str = item.str || "";
-
-            if (lastY === null) lastY = y;
-
-            if (Math.abs(y - lastY) > 5) {
-                if (linha.trim()) linhas.push(linha.trim());
-                linha = str;
-                lastY = y;
-            } else {
-                linha += " " + str;
-            }
-        }
-
-        if (linha.trim()) linhas.push(linha.trim());
+      if(Math.abs(y - lastY) > tolerance){
+        if(linha.trim()) linhas.push(linha.trim());
+        linha = s;
+        lastY = y;
+      } else {
+        linha += " " + s;
+      }
     }
-
-    return linhas;
+    if(linha.trim()) linhas.push(linha.trim());
+  }
+  return linhas;
 }
 
-/* ==========================================================
-   3) PARSER IGUAL AO PYTHON
-========================================================== */
+/* ================================
+   Interpretador de linhas (imita seu script Python)
+   ================================ */
 
-function interpretarLinhasComoPython(linhas) {
-    const registros = [];
-    const regexCodigo = /^(\d\.\d\.\d{2}\.\d{2}\.\d{2})\s+/;
+function interpretarLinhasComoPython(linhas){
+  const registros = [];
+  // padrão de código flexível: pode ser 1.0.01.00.13 ou 2.0.01.05.02 (variações)
+  const regexCodigo = /^(\d+(?:\.\d+){4,5})\b/;
 
-    for (let linha of linhas) {
-        const m = linha.match(regexCodigo);
-        if (!m) continue;
+  for(const linha of linhas){
+    const match = linha.match(regexCodigo);
+    if(!match) continue;
+    const codigo = match[1].trim();
 
-        const codigo = m[1];
-        const partes = linha.split(/\s+/);
-        const anos = partes.filter(x => /^\d{4}$/.test(x));
+    // dividir por espaços e coletar tokens com 4 dígitos (anos)
+    const tokens = linha.split(/\s+/);
+    const anosEncontrados = tokens.filter(t => /^\d{4}$/.test(t));
 
-        let data_ini="", data_fim="", elim_ini="", elim_fim="", obs="";
+    let data_ini="", data_fim="", elim_ini="", elim_fim="", obs="";
 
-        if (anos.length >= 2) {
-            const up = linha.toUpperCase();
-
-            if (up.includes("ATÉ")) {
-                data_ini = anos[0];
-                data_fim = anos[1];
-
-                if (anos.length >= 4) {
-                    elim_ini = anos[2];
-                    elim_fim = anos[3];
-                } else if (anos.length >= 3) {
-                    elim_ini = anos[2];
-                    elim_fim = anos[2];
-                }
-
-            } else {
-                data_ini = anos[0];
-                data_fim = anos[0];
-                if (anos.length >= 2) {
-                    elim_ini = anos[1];
-                    elim_fim = anos[1];
-                }
-            }
+    if(anosEncontrados.length >= 2){
+      const up = linha.toUpperCase();
+      if(up.includes("ATÉ") || up.includes("ATE")){
+        data_ini = anosEncontrados[0];
+        data_fim = anosEncontrados[1];
+        if(anosEncontrados.length >= 4){
+          elim_ini = anosEncontrados[2];
+          elim_fim = anosEncontrados[3];
+        } else if(anosEncontrados.length >= 3){
+          elim_ini = anosEncontrados[2];
+          elim_fim = anosEncontrados[2];
         }
-
-        const obsMatch = linha.match(/(SE -.*|EMEI.*|EMEF.*|IMI.*|NEI.*|CECOI.*|CENTRO.*|SECRETARIA.*)/);
-        if (obsMatch) obs = obsMatch[1].trim();
-
-        if (elim_ini && elim_fim) {
-            registros.push({
-                cod: codigo,
-                espec_from_pdf: obs,
-                anosLimite: [parseInt(data_ini), parseInt(data_fim)],
-                anosElimPDF: [parseInt(elim_ini), parseInt(elim_fim)],
-                raw: linha
-            });
+      } else {
+        // sem ATÉ: parear sequencialmente
+        data_ini = anosEncontrados[0];
+        data_fim = anosEncontrados[0];
+        if(anosEncontrados.length >= 2){
+          elim_ini = anosEncontrados[1];
+          elim_fim = anosEncontrados[1];
         }
+      }
     }
 
-    return registros;
+    // tentar extrair observação/ESPEC (padrões comuns)
+    const obsMatch = linha.match(/(SE -.*|EMEI.*|EMEF.*|IMI.*|NEI.*|CECOI.*|CENTRO.*|SECRETARIA.*|SE - .*|SE -.*)/i);
+    if(obsMatch) obs = obsMatch[1].trim();
+
+    // se tiver eliminação, adiciona
+    if(elim_ini && elim_fim){
+      registros.push({
+        cod: codigo,
+        espec_from_pdf: obs ? obs.toUpperCase() : '', // pode ser vazio, será tratado pela regra
+        anosLimite: [parseInt(data_ini) || null, parseInt(data_fim) || null],
+        anosElimPDF: [parseInt(elim_ini) || null, parseInt(elim_fim) || null],
+        raw: linha
+      });
+    }
+  }
+  return registros;
 }
 
-/* ==========================================================
-   4) VALIDAÇÃO
-========================================================== */
+/* ================================
+   Validação (com base no seu pedido)
+   ================================ */
 
-/* ======= Validação usando as regras (prazo numérico ou textual) ======= */
-function analisarErros(registros) {
-    let erros = 0;
-    let alertas = 0;
-    let ok = 0;
-    const resultados = [];
+function analisarErros(registros){
+  let total = registros.length;
+  let totalErros = 0;
+  let totalAlertas = 0;
+  const resultados = [];
 
-    registros.forEach(item => {
-        let regra = null;
-        let key = item.cod;
-        if (item.cod === "2.0.10.00.01") {
-            // primeiro tenta chave exata COD|ESPEC
-            key = `${item.cod}|${item.espec_from_pdf}`;
-            regra = REGRAS_MAP.get(key);
-            if (!regra) {
-                // busca flexível: procura uma regra cuja ESPEC esteja contida no texto do PDF
-                for (const [k, r] of REGRAS_MAP.entries()) {
-                    if (k.startsWith(item.cod) && r.espec && item.espec_from_pdf.includes(r.espec)) {
-                        regra = r; key = k; break;
-                    }
-                }
+  for(const item of registros){
+    let regra = null;
+    let key = item.cod;
+
+    if(item.cod === CODIGO_ESPECIAL){
+      // primeira tentativa: COD|ESPEC normalizado
+      key = `${item.cod}|${normStr(item.espec_from_pdf)}`;
+      regra = REGRAS_MAP.get(key);
+
+      if(!regra){
+        // busca flexível: procurar quaisquer regras com mesmo COD em REGRAS_MAP e comparar ESPEC por inclusão
+        for(const [k,r] of REGRAS_MAP.entries()){
+          if(k.startsWith(item.cod) && r.espec){
+            // r.espec já normalizada
+            const pdfEspecNorm = normStr(item.espec_from_pdf || '');
+            if(pdfEspecNorm.includes(r.espec) || r.espec.includes(pdfEspecNorm) || pdfEspecNorm.split(' ').some(tok => r.espec.includes(tok) && tok.length > 2)){
+              regra = r;
+              key = k;
+              break;
             }
+          }
+        }
+      }
+    } else {
+      regra = REGRAS_MAP.get(key);
+    }
+
+    let status = 'OK';
+    let mensagem = '';
+    let calculoCorreto = '';
+    let prazo = null;
+
+    if(regra){
+      prazo = regra.prazo;
+      if(prazo !== null && prazo !== undefined){
+        // precisa de anos-base
+        const baseMin = item.anosLimite[0];
+        const baseMax = item.anosLimite[1] !== null ? item.anosLimite[1] : item.anosLimite[0];
+        const pdfMin = item.anosElimPDF[0];
+        const pdfMax = item.anosElimPDF[1] !== null ? item.anosElimPDF[1] : item.anosElimPDF[0];
+
+        if(baseMin == null || pdfMin == null){
+          status = 'ALERTA';
+          mensagem = 'Falta ano-base ou ano eliminação no PDF.';
+          totalAlertas++;
         } else {
-            regra = REGRAS_MAP.get(key);
+          const calcMin = baseMin + prazo;
+          const calcMax = baseMax + prazo;
+          calculoCorreto = (calcMin === calcMax) ? `${calcMax}` : `${calcMin} a ${calcMax}`;
+
+          let erro = false;
+          if(pdfMin !== calcMin) erro = true;
+          if(pdfMax !== calcMax) erro = true;
+
+          if(erro){
+            status = 'ERRO';
+            mensagem = `Esperado: ${calculoCorreto} (Prazo: ${prazo}). Encontrado: ${pdfMin}${pdfMax && pdfMax!==pdfMin ? (' a ' + pdfMax) : ''}`;
+            totalErros++;
+          }
         }
-
-        let status = "OK";
-        let mensagem = "";
-        let calculoCorreto = "";
-        let prazo = null;
-
-        if (regra) {
-            prazo = regra.prazo;
-            if (prazo !== null && prazo !== undefined) {
-                // precisamos de anos base
-                const baseMin = (item.anosLimite && item.anosLimite.length>0) ? item.anosLimite[0] : null;
-                const baseMax = (item.anosLimite && item.anosLimite.length>1) ? item.anosLimite[1] : baseMin;
-                const pdfMin = (item.anosElimPDF && item.anosElimPDF.length>0) ? item.anosElimPDF[0] : null;
-                const pdfMax = (item.anosElimPDF && item.anosElimPDF.length>1) ? item.anosElimPDF[1] : pdfMin;
-
-                if (baseMin == null || pdfMin == null) {
-                    status = "ALERTA";
-                    mensagem = "Faltam anos-base ou anos de eliminação no PDF para comparar.";
-                    alertas++;
-                } else {
-                    const calcMin = baseMin + prazo;
-                    const calcMax = baseMax + prazo;
-                    calculoCorreto = (calcMin === calcMax) ? `${calcMax}` : `${calcMin} a ${calcMax}`;
-                    // comparar
-                    let temErro = false;
-                    if (pdfMin !== calcMin) temErro = true;
-                    if (pdfMax !== calcMax) temErro = true;
-                    if (temErro) {
-                        status = "ERRO";
-                        mensagem = `Esperado ${calculoCorreto} (Prazo ${prazo} anos). Encontrado: ${pdfMin}${pdfMax && pdfMax!==pdfMin ? ' a ' + pdfMax : ''}`;
-                        erros++;
-                    } else {
-                        ok++;
-                    }
-                }
-            } else {
-                // regra textual (PERMANENTE etc.)
-                status = "ALERTA";
-                mensagem = regra.obs || "Regra textual (sem prazo numérico)";
-                alertas++;
-            }
-        } else {
-            status = "ALERTA";
-            mensagem = `Código sem regra na tabela. Chave de busca: ${key}`;
-            alertas++;
-        }
-
-        resultados.push({
-            ...item,
-            status, mensagem, prazo, calculoCorreto
-        });
-    });
-
-    // Render simplificado no dashboard (mantém sua UI atual)
-    document.getElementById("dashboard").style.display = "block";
-    document.getElementById("dashTotal").textContent = resultados.length;
-    document.getElementById("dashErros").textContent = erros;
-    document.getElementById("dashOK").textContent = ok;
-
-    // Log resumido
-    log(`✔ Validação finalizada — registros: ${resultados.length}, erros: ${erros}, alertas: ${alertas}, corretos: ${ok}`);
-    // Guarda resultados para export se quiser
-    window._ULTIMOS_RESULTADOS = resultados;
-}
-
-
-/* ==========================================================
-   5) PROCESSAR PDF
-========================================================== */
-
-document.getElementById("filePDF").addEventListener("change", async function() {
-    if (!REGRAS_MAP.size) {
-        alert("Carregue primeiro a planilha de regras.");
-        return;
+      } else {
+        // regra textual (permanente etc.)
+        status = 'ALERTA';
+        mensagem = regra.obs || 'Regra textual';
+        totalAlertas++;
+      }
+    } else {
+      status = 'ALERTA';
+      mensagem = `Código sem regra: chave buscada = ${key}`;
+      totalAlertas++;
     }
 
-    const file = this.files[0];
-    if (!file) return;
+    resultados.push({...item, status, mensagem, calculoCorreto, prazo});
+  }
 
-    document.getElementById("loading").style.display = "block";
-    document.getElementById("loadingInfo").textContent = file.name;
+  // renderizar resultados
+  ULTIMOS_RESULTADOS = resultados;
+  renderResults(resultados);
+  document.getElementById('k_total').textContent = total;
+  document.getElementById('k_errors').textContent = totalErros;
+  document.getElementById('k_alerts').textContent = totalAlertas;
+  log(`Validação finalizada — total: ${total}, erros: ${totalErros}, alertas: ${totalAlertas}`);
+}
 
+/* ================================
+   UI: renderizar resultados e export
+   ================================ */
+
+function renderResults(resultados){
+  const tbody = document.getElementById('resultsBody');
+  tbody.innerHTML = '';
+  if(resultados.length === 0){
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:18px;color:${'#0b4f86'}">Nenhum registro para exibir</td></tr>`;
+    return;
+  }
+
+  resultados.forEach(r=>{
+    const pdfElimDisplay = (r.anosElimPDF && r.anosElimPDF.length>0) ? r.anosElimPDF.join(' a ') : '-';
+    const baseDisplay = (r.anosLimite && r.anosLimite[0]) ? ( (r.anosLimite[0] === r.anosLimite[1]) ? `${r.anosLimite[0]}` : `${r.anosLimite[0]} a ${r.anosLimite[1]}` ) : '-';
+    const prazoDisplay = (r.prazo !== null && r.prazo !== undefined) ? r.prazo : (r.calculoCorreto || '-');
+
+    const cls = r.status === 'ERRO' ? 'err' : (r.status === 'ALERTA' ? 'warn' : 'ok');
+    const statusBadge = `<span class="badge ${cls}">${r.status}</span>`;
+    const row = `<tr>
+      <td style="font-weight:700">${r.cod}</td>
+      <td>${escapeHtml(r.espec_from_pdf||'-')}</td>
+      <td>${escapeHtml(prazoDisplay)}</td>
+      <td>${escapeHtml(baseDisplay)}</td>
+      <td ${r.status === 'ERRO' ? 'style="text-decoration:line-through;color:'+ 'var(--danger) + \';"' : ''}>${escapeHtml(pdfElimDisplay)}</td>
+      <td>${escapeHtml(r.calculoCorreto || '-')}</td>
+      <td>${statusBadge}<div style="font-size:12px;color:#515766;margin-top:6px">${escapeHtml(r.mensagem||'')}</div></td>
+    </tr>`;
+    tbody.insertAdjacentHTML('beforeend', row);
+  });
+
+  // habilitar export
+  document.getElementById('exportBtn').disabled = false;
+}
+
+function escapeHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+document.getElementById('exportBtn').addEventListener('click', () => {
+  if(!ULTIMOS_RESULTADOS || ULTIMOS_RESULTADOS.length===0) return alert('Nenhum resultado para exportar.');
+  const data = ULTIMOS_RESULTADOS.map(r => ({
+    COD: r.cod,
+    ESPEC_PDF: r.espec_from_pdf,
+    BASE_INICIO: r.anosLimite[0] || '',
+    BASE_FIM: r.anosLimite[1] || '',
+    ELIM_PDF_INI: r.anosElimPDF[0] || '',
+    ELIM_PDF_FIM: r.anosElimPDF[1] || '',
+    PRAZO_REGRA: r.prazo !== null && r.prazo !== undefined ? r.prazo : '',
+    REGRA_TEXTUAL: r.prazo === null || r.prazo === undefined ? r.mensagem : '',
+    CALCULO_ESPERADO: r.calculoCorreto || '',
+    STATUS: r.status,
+    DETALHE: r.mensagem || '',
+    RAW: r.raw || ''
+  }));
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Auditoria');
+  XLSX.writeFile(wb, 'Auditoria_Intervalos_VFINAL.xlsx');
+  log('Arquivo exportado: Auditoria_Intervalos_VFINAL.xlsx');
+});
+
+/* ================================
+   PROCESSAMENTO DO PDF (evento)
+   ================================ */
+
+document.getElementById('pdfFile').addEventListener('change', async (ev) => {
+  const file = ev.target.files[0];
+  if(!file) return;
+  if(REGRAS_MAP.size === 0){
+    alert('Por favor carregue a tabela de regras antes do PDF.');
+    return;
+  }
+
+  // limpar UI
+  document.getElementById('resultsBody').innerHTML = '';
+  document.getElementById('k_total').textContent = '0';
+  document.getElementById('k_errors').textContent = '0';
+  document.getElementById('k_alerts').textContent = '0';
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('loadingText').textContent = file.name;
+  log(`Abrindo PDF: ${file.name}`);
+
+  try{
     const ab = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+    const pdf = await pdfjsLib.getDocument({data:ab}).promise;
+    log(`PDF carregado: ${pdf.numPages} páginas`);
+    const linhas = await extrairLinhasTextoDoPDF(pdf);
+    log(`Linhas extraídas (estimadas): ${linhas.length}`);
 
-    log("📄 Lendo PDF: " + file.name);
-
-    const linhas = await extrairTextoLinearDoPDF(pdf);
-    log("✔ Linhas extraídas: " + linhas.length);
+    // debug: mostrar primeiras 15 linhas no log (compacto)
+    log('--- primeiras linhas extraídas ---');
+    linhas.slice(0,15).forEach((l,i)=> log(`${i+1}: ${l.substring(0,220)}`));
 
     const registros = interpretarLinhasComoPython(linhas);
-    log("✔ Registros identificados: " + registros.length);
+    log(`Registros identificados: ${registros.length}`);
 
     analisarErros(registros);
+  } catch(err){
+    log(`Erro ao processar PDF: ${err.message}`);
+    alert('Erro ao processar PDF: ' + err.message);
+  } finally {
+    document.getElementById('loading').style.display = 'none';
+  }
+});
 
-    document.getElementById("loading").style.display = "none";
+/* ================================
+   Reset
+   ================================ */
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if(!confirm('Reiniciar a aplicação (limpar regras e resultados)?')) return;
+  REGRAS_MAP.clear();
+  ULTIMOS_RESULTADOS = [];
+  document.getElementById('rulesPreview').textContent = '';
+  document.getElementById('rulesStatus').textContent = '';
+  document.getElementById('resultsBody').innerHTML = '';
+  document.getElementById('k_total').textContent = '0';
+  document.getElementById('k_errors').textContent = '0';
+  document.getElementById('k_alerts').textContent = '0';
+  document.getElementById('exportBtn').disabled = true;
+  document.getElementById('log').textContent = 'Aguardando ação...';
+  log('Aplicação reiniciada.');
 });
 </script>
-
-<!-- XLSX -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 </body>
 </html>
