@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Corretor de Datas de Eliminação - Pro V4 (Dinâmico)</title>
+    <title>Corretor de Datas de Eliminação - Pro V5 (Robusto)</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
@@ -139,7 +139,7 @@
 
     <div class="container">
         <div class="header">
-            <h1><i class="fas fa-calendar-alt"></i> Corretor de Datas (Dinâmico V4)</h1>
+            <h1><i class="fas fa-calendar-alt"></i> Corretor de Datas (Robusto V5)</h1>
             <p>1. Carregue a Tabela de Temporalidade. 2. Carregue o Relatório PDF.</p>
         </div>
 
@@ -150,7 +150,7 @@
                 <div class="upload-area" id="rulesUploadArea">
                     <i class="fas fa-table upload-icon" style="color: #10b981;"></i>
                     <h3>1. Tabela de Temporalidade (Regras)</h3>
-                    <p style="color:#94a3b8; margin-bottom:15px;">Use o arquivo **CSV/Excel** com as colunas **COD** e **ELIM**.</p>
+                    <p style="color:#94a3b8; margin-bottom:15px;">Use o arquivo **CSV/Excel** com as colunas **COD**, **OBS** e **ELIM**.</p>
                     <input type="file" id="rulesFileInput" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" hidden>
                     <button id="rulesBtn" onclick="document.getElementById('rulesFileInput').click()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color:white; padding:12px 30px; border:none; border-radius:8px; cursor:pointer; font-weight:600;">
                         Carregar Tabela (.csv ou .xlsx)
@@ -258,7 +258,7 @@
             if(e.target.files.length) processarPDF(e.target.files[0]);
         });
         
-        // --- 1. CARREGAMENTO DA TABELA DE TEMPORALIDADE (CSV/XLSX) ---
+        // --- 1. CARREGAMENTO DA TABELA DE TEMPORALIDADE (CSV/XLSX) - LÓGICA ROBUSTA ---
         async function handleTemporalidadeFile(file) {
             rulesStatus.innerText = 'Lendo arquivo...';
             try {
@@ -270,58 +270,70 @@
                 // Opção para tratar cabeçalhos com espaços ou acentos
                 const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-                // Identificar as colunas COD, ESPEC e ELIM (case-insensitive e tratando espaços)
                 if (json.length === 0) throw new Error("A planilha está vazia.");
 
-                const headers = json[0].map(h => String(h).trim().toUpperCase().replace(/\s/g, ''));
-                const codIndex = headers.indexOf('COD');
-                const especIndex = headers.indexOf('ESPEC');
-                const elimIndex = headers.indexOf('ELIM');
-
-                if (codIndex === -1 || elimIndex === -1) {
-                    throw new Error("Colunas 'COD' e 'ELIM' não encontradas. Verifique o cabeçalho.");
+                // 1. Identificar as colunas de forma robusta
+                const headers = json[0].map(h => String(h).trim().toUpperCase().replace(/[^A-Z]/g, ''));
+                
+                let codIndex = headers.findIndex(h => h.includes('COD'));
+                let especIndex = headers.findIndex(h => h.includes('ESPEC'));
+                let elimIndex = headers.findIndex(h => h.includes('ELIM'));
+                let obsIndex = headers.findIndex(h => h.includes('OBS')); 
+                
+                if (codIndex === -1 || (elimIndex === -1 && obsIndex === -1)) {
+                    throw new Error("Colunas essenciais ('COD' e 'ELIM' ou 'OBS') não encontradas. Verifique o cabeçalho.");
                 }
+                
+                // Se ELIM não foi encontrado, assume-se que OBS é a coluna de prazo
+                if (elimIndex === -1) {
+                    elimIndex = obsIndex;
+                }
+                // Se OBS não foi encontrado, define um valor seguro para evitar erros
+                if (obsIndex === -1) {
+                    obsIndex = -1; 
+                }
+
 
                 REGRAS_MAP.clear();
                 
-                // Processar linhas, começando da segunda (índice 1)
+                // 2. Processar linhas
                 for (let i = 1; i < json.length; i++) {
                     const row = json[i];
-                    if (row && String(row[codIndex]).trim() !== "") {
+                    if (row && String(row[codIndex] || "").trim() !== "") {
                         const cod = String(row[codIndex]).trim();
                         const espec = especIndex !== -1 ? String(row[especIndex] || "").trim() : "";
-                        const elimValue = String(row[elimIndex] || "").trim().toUpperCase();
-
+                        
                         let prazo = null;
                         let obs = null;
 
-                        if (elimValue === "PERMANENTE" || elimValue.includes("GP")) {
+                        // Pega o valor da coluna ELIM (pode ser o valor de prazo)
+                        const elimValueRaw = String(row[elimIndex] || "").trim().toUpperCase(); 
+                        
+                        // Pega o valor da coluna OBS
+                        const obsValueRaw = obsIndex !== -1 ? String(row[obsIndex] || "").trim().toUpperCase() : ""; 
+                        
+                        // 1. CHECAGEM DE GUARDA PERMANENTE (GP)
+                        if (elimValueRaw.includes("PERMANENTE") || elimValueRaw.includes("GP") || obsValueRaw.includes("PERMANENTE") || obsValueRaw.includes("GP")) {
                             obs = "GUARDA PERMANENTE";
-                        } else if (!isNaN(parseFloat(elimValue)) && isFinite(elimValue) && parseFloat(elimValue) > 0) {
-                            prazo = parseFloat(elimValue);
-                        } else if (elimValue === "") {
-                            obs = "PRAZO DE ELIMINAÇÃO VAZIO";
-                        } else {
-                            // Tenta buscar por um número em colunas adjacentes (como no seu CSV)
-                            let found = false;
-                            for (let j = elimIndex + 1; j < row.length; j++) {
-                                const adjValue = String(row[j] || "").trim().toUpperCase();
-                                if (!isNaN(parseFloat(adjValue)) && isFinite(adjValue) && parseFloat(adjValue) > 0) {
-                                    prazo = parseFloat(adjValue);
-                                    found = true;
-                                    break;
-                                }
-                            }
-                            if (!found) {
-                                obs = `Valor não numérico/inválido: ${elimValue}`;
-                            }
+                        } 
+                        // 2. CHECAGEM NUMÉRICA na coluna ELIM
+                        else if (!isNaN(parseFloat(elimValueRaw)) && isFinite(elimValueRaw) && parseFloat(elimValueRaw) > 0) {
+                            prazo = parseFloat(elimValueRaw);
+                        } 
+                        // 3. FALLBACK: CHECAGEM NUMÉRICA na coluna OBS (ou outra coluna próxima)
+                        else if (obsIndex !== -1 && !isNaN(parseFloat(obsValueRaw)) && isFinite(obsValueRaw) && parseFloat(obsValueRaw) > 0) {
+                            prazo = parseFloat(obsValueRaw);
+                            obs = "Prazo (ELIM) encontrado na coluna OBS (ajuste manual recomendado).";
+                        }
+                        
+                        if (prazo === null && obs === null) {
+                            // Último fallback: valor não identificado ou vazio.
+                            obs = `Prazo Vazio/Não Numérico ou não reconhecido. Valores lidos: ELIM='${elimValueRaw}', OBS='${obsValueRaw}'`;
                         }
 
-                        // Chave para a regra: COD + ESPEC (para regras específicas)
-                        const key = espec ? `${cod}|${espec}` : cod;
+                        // Chave para a regra: Usamos apenas o COD para simplificar a busca
+                        const key = cod; 
 
-                        // Se já existir uma regra para o código mais genérico e encontramos um prazo, substituímos.
-                        // Mas o foco é: se tem ESPEC, a chave é COD|ESPEC. Senão, é só COD.
                         REGRAS_MAP.set(key, { cod, espec, prazo, obs });
                     }
                 }
@@ -393,9 +405,8 @@
             analisarErros(itensExtraidos);
         }
         
-        // Funções de Extração (Mantidas da Versão V3, adaptadas para o contexto)
+        // Funções de Extração (Mantidas da Versão V4)
         function agruparPorLinhas(items) {
-            // ... (mesmo código de agruparPorLinhas da V3) ...
              const linhas = [];
             const toleranciaY = 5; 
             items.forEach(item => {
@@ -413,7 +424,6 @@
         }
 
         function interpretarColunas(linhas) {
-            // ... (mesmo código de interpretarColunas da V3) ...
             const dados = [];
             
             linhas.forEach(linha => {
@@ -457,7 +467,7 @@
         }
 
 
-        // --- ANÁLISE E VALIDAÇÃO DE INTERVALOS (USANDO REGRAS DINÂMICAS) ---
+        // --- ANÁLISE E VALIDAÇÃO DE INTERVALOS ---
         function analisarErros(itens) {
             let totalErros = 0;
             let totalAlertas = 0;
@@ -470,26 +480,16 @@
                 let mensagem = '';
                 let prazo = null;
 
-                // 1. Busca Regra: Tenta encontrar a regra mais específica primeiro
-                let regraEncontrada = null;
+                // 1. Busca Regra: Busca pelo COD exato no mapa de regras
+                const regraEncontrada = REGRAS_MAP.get(item.cod);
                 
-                // Opção 1: Busca pelo código exato
-                if (REGRAS_MAP.has(item.cod)) {
-                    regraEncontrada = REGRAS_MAP.get(item.cod);
-                }
-                
-                // O código do CSV não é ideal para ESPECIFICAÇÃO, mas tentamos a lógica anterior:
-                // Tenta encontrar a regra com ESPEC (se a regra tiver ESPEC e o texto contiver a ESPEC)
-                // Isto é complexo com o CSV pois a coluna ESPEC não é um filtro, mas sim a SÉRIE DOCUMENTAL.
-                // Mantemos a busca simplificada apenas pelo COD, que é o que o CSV realmente suporta de forma segura.
-
                 if (regraEncontrada) {
                     regra = regraEncontrada;
                     prazo = regra.prazo;
                     
-                    if (regra.obs || prazo === null) {
-                        status = 'ALERTA';
-                        mensagem = regra.obs || "Prazo Vazio/Não Numérico na Tabela de Regras.";
+                    if (regra.obs && regra.obs.includes("PERMANENTE")) {
+                        status = 'OBS';
+                        mensagem = regra.obs;
                         totalAlertas++;
                     } else if (prazo !== undefined && prazo !== null) {
                         // 2. CÁLCULO E VALIDAÇÃO DE INTERVALOS
@@ -521,9 +521,14 @@
 
                         if (temErro) {
                             status = 'ERRO';
-                            mensagem = `Esperado: ${calculoCorreto}. Encontrado: ${item.anosElimPDF.join(' a ')}`;
+                            mensagem = `Esperado: ${calculoCorreto} (Prazo: ${prazo}). Encontrado: ${item.anosElimPDF.join(' a ')}`;
                             totalErros++;
                         }
+                    } else {
+                         // Regra encontrada, mas prazo não numérico/inválido
+                        status = 'ALERTA';
+                        mensagem = regra.obs || "Prazo Vazio/Não Numérico na Tabela de Regras.";
+                        totalAlertas++;
                     }
                 } else {
                     status = 'ALERTA';
@@ -550,8 +555,9 @@
             dadosExport = resultados;
             
             const total = resultados.length;
-            const acertos = total - erros - alertas;
-            const taxa = total > 0 ? ((acertos / (total - alertas)) * 100).toFixed(1) : 0; // Taxa excluindo alertas
+            const itensVerificados = total - alertas;
+            const acertos = itensVerificados - erros;
+            const taxa = itensVerificados > 0 ? ((acertos / itensVerificados) * 100).toFixed(1) : 0; 
 
             document.getElementById('totalItens').innerText = total;
             document.getElementById('totalErros').innerText = erros;
