@@ -1,482 +1,373 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Corretor de Datas — V6 Autoparse</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Validador de Planilha de Eliminação – Versão Final</title>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script>
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-</script>
+<!-- Fonte moderna -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- PDF.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.10.111/pdf.min.js"></script>
 
 <style>
-  body{font-family:Inter,Segoe UI,Arial;padding:18px;background:#f3f6fb}
-  .card{background:#fff;border-radius:10px;padding:18px;box-shadow:0 6px 18px rgba(0,0,0,0.06);max-width:1200px;margin:0 auto}
-  .row{display:flex;gap:12px;align-items:center}
-  input[type=file]{display:none}
-  table{width:100%;border-collapse:collapse;margin-top:12px}
-  th,td{padding:8px;border-bottom:1px solid #eee;text-align:left;font-size:13px}
-  .badge{padding:4px 8px;border-radius:6px;font-weight:700;font-size:12px}
-  .err{background:#fee2e2;color:#991b1b}
-  .warn{background:#fef3c7;color:#92400e}
-  .ok{background:#d1fae5;color:#065f46}
-  pre{background:#0b1220;color:#9be3ff;padding:10px;border-radius:8px;overflow:auto}
+    body {
+        margin: 0;
+        font-family: 'Inter', sans-serif;
+        background: #f5f7fa;
+        color: #222;
+    }
+
+    header {
+        background: #005f99;
+        color: white;
+        padding: 22px 30px;
+        font-size: 22px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        box-shadow: 0 2px 5px rgba(0,0,0,.15);
+    }
+
+    main {
+        padding: 25px 30px;
+        max-width: 1400px;
+        margin: auto;
+    }
+
+    .card {
+        background: white;
+        padding: 24px;
+        margin: 18px 0;
+        border-radius: 14px;
+        box-shadow: 0 3px 12px rgba(0,0,0,.08);
+        border: 1px solid #e4e4e4;
+    }
+
+    .titulo-card {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 16px;
+        color: #005f99;
+    }
+
+    input[type="file"] {
+        padding: 12px;
+        background: #eef3f8;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        cursor: pointer;
+    }
+
+    #loading {
+        padding: 12px 20px;
+        background: #ffcc00;
+        border-radius: 8px;
+        font-weight: 600;
+        margin-top: 10px;
+        display: none;
+    }
+
+    #dashboard {
+        display: none;
+        margin-top: 20px;
+    }
+
+    .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 18px;
+    }
+
+    .dash-item {
+        background: #ffffff;
+        border-left: 6px solid #005f99;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 3px 10px rgba(0,0,0,.07);
+    }
+
+    .dash-num {
+        font-size: 32px;
+        font-weight: 700;
+        color: #004d80;
+    }
+
+    .dash-label {
+        margin-top: 4px;
+        font-size: 15px;
+        color: #555;
+    }
+
+    #log {
+        white-space: pre-wrap;
+        font-family: monospace;
+        background: #111;
+        color: #0f0;
+        padding: 20px;
+        border-radius: 10px;
+        height: 250px;
+        overflow-y: auto;
+        margin-top: 20px;
+    }
 </style>
 </head>
+
 <body>
 
+<header>
+    Validador de Planilha de Eliminação (Versão Final Profissional)
+</header>
+
+<main>
+
+<!-- Regras -->
 <div class="card">
-  <h2>Corretor de Datas — V6 (Extração automática de colunas)</h2>
-  <p>1) Carregue a tabela (.csv/.xlsx). 2) Carregue o PDF (texto selecionável).</p>
-
-  <div style="display:flex;gap:12px;margin-top:12px">
-    <div>
-      <button id="btnRules">Carregar Regras (.xlsx / .csv)</button>
-      <input id="rulesFile" type="file" accept=".csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel">
-      <div id="rulesMsg" style="margin-top:6px;color:green;font-weight:700"></div>
-    </div>
-
-    <div>
-      <button id="btnPdf">Carregar PDF</button>
-      <input id="pdfFile" type="file" accept=".pdf">
-      <div id="pdfMsg" style="margin-top:6px;color:#333"></div>
-    </div>
-
-    <div style="margin-left:auto">
-      <button id="btnExport" disabled>Exportar Erros (.xlsx)</button>
-    </div>
-  </div>
-
-  <div id="loading" style="display:none;margin-top:12px">Processando PDF... <span id="loadingInfo"></span></div>
-
-  <div id="dashboard" style="display:none;margin-top:18px">
-    <div style="display:flex;gap:18px;margin-bottom:12px">
-      <div><strong id="totalItens">0</strong><div>Itens</div></div>
-      <div><strong id="totalErros">0</strong><div>Erros</div></div>
-      <div><strong id="totalAlertas">0</strong><div>Alertas</div></div>
-    </div>
-
-    <div class="card" style="padding:12px">
-      <table>
-        <thead>
-          <tr><th>COD</th><th>ESPEC (PDF)</th><th>PRAZO/REGRA</th><th>BASE</th><th>ELIM (PDF)</th><th>CALCULO</th><th>STATUS</th></tr>
-        </thead>
-        <tbody id="resultsBody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <h4 style="margin-top:12px">Logs / Saída de debug (útil para calibrar)</h4>
-  <pre id="logOutput" style="height:240px"></pre>
+    <div class="titulo-card">1) Carregar tabela de regras (Excel)</div>
+    <input type="file" id="fileRegras" accept=".xlsx">
 </div>
 
+<!-- PDF -->
+<div class="card">
+    <div class="titulo-card">2) Carregar PDF de eliminação</div>
+    <input type="file" id="filePDF" accept=".pdf">
+    <div id="loading">⏳ Lendo PDF... <span id="loadingInfo"></span></div>
+</div>
+
+<!-- Dashboard -->
+<div id="dashboard" class="card">
+    <div class="titulo-card">3) Resultados da Validação</div>
+
+    <div class="grid-3">
+        <div class="dash-item">
+            <div class="dash-num" id="dashTotal">0</div>
+            <div class="dash-label">Registros encontrados</div>
+        </div>
+
+        <div class="dash-item">
+            <div class="dash-num" id="dashErros">0</div>
+            <div class="dash-label">Erros identificados</div>
+        </div>
+
+        <div class="dash-item">
+            <div class="dash-num" id="dashOK">0</div>
+            <div class="dash-label">Registros corretos</div>
+        </div>
+    </div>
+</div>
+
+<!-- Log -->
+<div class="card">
+    <div class="titulo-card">Log do Sistema</div>
+    <div id="log">Aguardando ações...</div>
+</div>
+
+</main>
+
+
 <script>
-/* ====== Estado Global ====== */
+/* ==========================================================
+   UTIL: LOG
+========================================================== */
+function log(msg) {
+    const box = document.getElementById("log");
+    box.textContent += "\n" + msg;
+    box.scrollTop = box.scrollHeight;
+}
+
+/* ==========================================================
+   1) LER REGRAS (Excel)
+========================================================== */
+
 let REGRAS_MAP = new Map();
-const CODIGO_ESPECIAL = "2.0.10.00.01";
-let dadosExport = [];
 
-/* ====== UI glue ====== */
-const rulesFileInput = document.getElementById('rulesFile');
-const pdfFileInput = document.getElementById('pdfFile');
-document.getElementById('btnRules').onclick = () => rulesFileInput.click();
-document.getElementById('btnPdf').onclick = () => pdfFileInput.click();
-document.getElementById('btnExport').onclick = exportarExcel;
+document.getElementById("fileRegras").addEventListener("change", async function() {
+    const file = this.files[0];
+    if (!file) return;
 
-rulesFileInput.addEventListener('change', (e)=> {
-  if(e.target.files.length) handleTemporalidadeFile(e.target.files[0]);
-});
-pdfFileInput.addEventListener('change', (e)=> {
-  if(e.target.files.length) processarPDF(e.target.files[0]);
-});
+    log("📘 Lendo regras: " + file.name);
 
-const log = (s)=> {
-  const out = document.getElementById('logOutput');
-  out.textContent = (out.textContent + "\n" + s).slice(-50000);
-};
+    const ar = await file.arrayBuffer();
+    const wb = XLSX.read(ar, { type: "array" });
 
-/* ====== 1) Leitura da tabela de regras (mesma lógica anterior) ====== */
-async function handleTemporalidadeFile(file) {
-  try {
-    document.getElementById('rulesMsg').innerText = 'Lendo...';
-    const data = await file.arrayBuffer();
-    const workbook = XLSX.read(data, { type: 'array' });
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-
-    if(json.length === 0) throw new Error("Planilha vazia.");
-    const headers = json[0].map(h => String(h||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,''));
-    let codIndex = headers.findIndex(h=>h.includes('COD'));
-    let elimIndex = headers.findIndex(h=>h.includes('ELIM'));
-    let especIndex = headers.findIndex(h=>h.includes('ESPEC'));
-
-    if(codIndex===-1 || elimIndex===-1) throw new Error("Não achei COLUNAS COD/ELIM no cabeçalho.");
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    const dados = XLSX.utils.sheet_to_json(sheet, { defval: "" });
 
     REGRAS_MAP.clear();
-    for(let i=1;i<json.length;i++){
-      const row = json[i];
-      if(!row || String(row[codIndex]||'').trim()==='') continue;
-      const cod = String(row[codIndex]||'').trim();
-      const espec = especIndex!==-1 ? String(row[especIndex]||'').trim() : '';
-      const elimRaw = String(row[elimIndex]||'').trim();
-      const numeric = parseFloat(elimRaw.replace(',', '.'));
-      let prazo = null, obs = null;
-      if(!isNaN(numeric) && isFinite(numeric) && numeric>0) prazo = numeric;
-      else if(elimRaw !== '') obs = elimRaw;
-      else obs = "Prazo vazio";
-      let key = cod;
-      if(cod === CODIGO_ESPECIAL) key = `${cod}|${espec.toUpperCase()}`;
-      REGRAS_MAP.set(key, {cod, espec: espec.toUpperCase(), prazo, obs});
-    }
-    document.getElementById('rulesMsg').innerText = `✓ ${REGRAS_MAP.size} regras carregadas.`;
-  } catch(err){
-    document.getElementById('rulesMsg').innerText = `Erro: ${err.message}`;
-    console.error(err);
-  }
-}
 
-/* ====== 2) PROCESSAMENTO DO PDF (nova rotina de extração automática) ====== */
-async function processarPDF(file) {
-  if(REGRAS_MAP.size === 0) {
-    alert("Carregue a tabela de regras primeiro.");
-    return;
-  }
-
-  document.getElementById('loading').style.display = 'block';
-  document.getElementById('loadingInfo').innerText = file.name;
-  log("Abrindo PDF: " + file.name);
-
-  const arrayBuffer = await file.arrayBuffer();
-  const loadingTask = pdfjsLib.getDocument({data: arrayBuffer});
-  const pdf = await loadingTask.promise;
-  log(`PDF: ${pdf.numPages} páginas`);
-
-  let todosRegistros = [];
-  for(let p=1;p<=pdf.numPages;p++){
-    const page = await pdf.getPage(p);
-    const textContent = await page.getTextContent();
-    log(`Página ${p} — fragments: ${textContent.items.length}`);
-    // Agrupar por linha (y) com tolerância
-    const linhas = agruparPorLinhas(textContent.items);
-    // Interpretar colunas por clustering X
-    const registros = interpretarColunasAutomatico(linhas);
-    log(`Página ${p} — registros extraídos: ${registros.length}`);
-    todosRegistros = todosRegistros.concat(registros);
-    document.getElementById('loadingInfo').innerText = `Página ${p}/${pdf.numPages}`;
-  }
-
-  if(todosRegistros.length === 0) {
-    alert("O PDF foi lido, mas nenhum registro no formato esperado foi extraído. Veja o log para diagnosticar.");
-    log("Nenhum registro extraído.");
-  } else {
-    analisarErros(todosRegistros);
-  }
-  document.getElementById('loading').style.display = 'none';
-}
-
-/* Agrupar fragments do pdf.js por linhas usando transform[5] (y) */
-function agruparPorLinhas(items) {
-  const linhas = [];
-  const toleranciaY = 6; // px — ajuste se preciso
-  items.forEach(it=>{
-    const text = (it.str||'').trim();
-    if(!text) return;
-    const y = (it.transform && it.transform[5]) ? it.transform[5] : 0;
-    const x = (it.transform && it.transform[4]) ? it.transform[4] : 0;
-    let linha = linhas.find(l => Math.abs(l.y - y) < toleranciaY);
-    if(!linha){
-      linha = {y, itens: []};
-      linhas.push(linha);
-    }
-    linha.itens.push({str: text, x});
-  });
-  // ordenar de cima pra baixo (y decrescente)
-  linhas.sort((a,b)=>b.y - a.y);
-  // ordenar itens dentro da linha por x
-  linhas.forEach(l => l.itens.sort((a,b)=>a.x - b.x));
-  return linhas;
-}
-
-/* Heurísticas:
-   - detecta centros de coluna a partir de todos os x
-   - aloca cada token na coluna mais próxima
-   - monta string por coluna por linha
-   - identifica coluna de código (padrão com pontos), colunas de anos (19xx/20xx) e coluna de especificação
-   - gera registros somente quando a linha tem um código válido; concatena linhas sem código à última especificação
-*/
-function interpretarColunasAutomatico(linhas) {
-  // Reunir todos os x
-  const xs = [];
-  linhas.forEach(l => l.itens.forEach(it => xs.push(it.x)));
-  if(xs.length === 0) return [];
-
-  xs.sort((a,b)=>a-b);
-
-  // Agrupar xs em centros de coluna (clustering simples por gap)
-  const gapThreshold = 45; // px — ajuste se necessário
-  const centers = [];
-  let current = [xs[0]];
-  for(let i=1;i<xs.length;i++){
-    if(Math.abs(xs[i] - xs[i-1]) <= gapThreshold) current.push(xs[i]);
-    else { centers.push(avg(current)); current = [xs[i]]; }
-  }
-  centers.push(avg(current));
-  centers.sort((a,b)=>a-b);
-
-  // Se houve muitas colunas detectadas por causa de tokens, reduz para um número razoável (p.ex. 6)
-  // mas preferimos manter o que a página trouxe; normalmente 5-7 colunas
-  // log para debug
-  log(`Detected column centers: ${centers.map(c=>Math.round(c)).join(', ')}`);
-
-  // Construir linhas em colunas
-  const registros = [];
-  let ultimoRegistro = null;
-
-  linhas.forEach((linha, idx) => {
-    const colTexts = Array(centers.length).fill('').map(()=>[]);
-    linha.itens.forEach(it => {
-      // achar centro mais próximo
-      let nearestIdx = 0;
-      let minD = Math.abs(it.x - centers[0]);
-      for(let i=1;i<centers.length;i++){
-        const d = Math.abs(it.x - centers[i]);
-        if(d < minD){ minD = d; nearestIdx = i; }
-      }
-      colTexts[nearestIdx].push(it.str);
-    });
-    // juntar tokens de cada coluna
-    const cols = colTexts.map(arr => arr.join(' ').replace(/\s+/g,' ').trim());
-
-    // Heurísticas para achar cod, datas e espec
-    // Código: algo com padrão n.n.nn.nn.nn (pontos em posição); usar regex
-    const codePattern = /\b\d{1,2}(?:\.\d{1,2}){2,5}\b/; // flexível
-    const yearPattern = /\b(19|20)\d{2}\b/g;
-
-    // avaliar cada coluna
-    const metrics = centers.map((c,i)=>{
-      const text = cols[i]||'';
-      const codeMatch = (text.match(codePattern) || []).length;
-      const yearMatches = (text.match(yearPattern) || []).length;
-      const textLen = text.length;
-      return {i, text, codeMatch, yearMatches, textLen};
-    });
-
-    // escolher coluna do código (maior codeMatch, ou primeira coluna com padrão)
-    metrics.sort((a,b)=>{
-      if(a.codeMatch !== b.codeMatch) return b.codeMatch - a.codeMatch;
-      return a.i - b.i;
-    });
-    const maybeCode = metrics[0];
-    // Em muitos casos código aparece na primeira coluna; se none, procurar por token no início
-    let codeColIdx = maybeCode.codeMatch > 0 ? maybeCode.i : null;
-    if(codeColIdx === null){
-      for(const m of metrics){
-        if(/\d/.test(m.text) && /^\d/.test(m.text)) { codeColIdx = m.i; break; }
-      }
+    for (let r of dados) {
+        REGRAS_MAP.set(String(r.cod).trim(), {
+            min: parseInt(r.min),
+            max: parseInt(r.max)
+        });
     }
 
-    // identificar colunas com anos
-    const yearCols = metrics.filter(m=>m.yearMatches>0).sort((a,b)=>a.i - b.i).map(m=>m.i);
+    log("✔ Regras carregadas: " + REGRAS_MAP.size);
+});
 
-    // escolher datas-limite como leftmost year col e datas-elim como rightmost year col (heurística)
-    let datasLimCol = yearCols.length>0 ? yearCols[0] : null;
-    let datasElimCol = yearCols.length>1 ? yearCols[yearCols.length-1] : (yearCols.length===1 ? yearCols[0] : null);
+/* ==========================================================
+   2) EXTRAÇÃO DO PDF – TEXTO LINEAR (ESTILO pdfplumber)
+========================================================== */
 
-    // especificação = coluna com maior textLen que não é código e que não foi escolhida para datas
-    let especCandidate = metrics.filter(m=>m.i !== codeColIdx && m.i !== datasLimCol && m.i !== datasElimCol)
-                               .sort((a,b)=>b.textLen - a.textLen)[0];
-    let especCol = especCandidate ? especCandidate.i : (codeColIdx===0?1:0);
+async function extrairTextoLinearDoPDF(pdf) {
+    const linhas = [];
 
-    // montar string com parse
-    const codRaw = codeColIdx !== null ? (cols[codeColIdx] || '') : '';
-    const codMatch = codRaw.match(codePattern);
-    const cod = codMatch ? codMatch[0] : (codRaw.split(' ')[0]||'').trim();
+    for (let p = 1; p <= pdf.numPages; p++) {
+        const page = await pdf.getPage(p);
+        const textContent = await page.getTextContent();
 
-    // datas limite anos
-    const datasLimText = datasLimCol !== null ? (cols[datasLimCol]||'') : '';
-    const datasElimText = datasElimCol !== null ? (cols[datasElimCol]||'') : '';
+        let linha = "";
+        let lastY = null;
 
-    const anosLim = extractYears(datasLimText);
-    const anosElim = extractYears(datasElimText);
+        for (const item of textContent.items) {
+            const y = item.transform[5];
+            const str = item.str || "";
 
-    const especText = (cols[especCol]||'').trim();
+            if (lastY === null) lastY = y;
 
-    // Se linha contém um código válido => é um novo registro
-    if(cod && /\d/.test(cod)) {
-      const registro = {
-        cod: cod,
-        espec_from_pdf: especText.toUpperCase(),
-        anosLimite: anosLim.length>0 ? anosLim : [],
-        anosElimPDF: anosElim.length>0 ? anosElim : [],
-        raw: cols.join(' | ')
-      };
-      registros.push(registro);
-      ultimoRegistro = registro;
-    } else {
-      // linha sem código: podemos anexar ao último registro (continuação de especificação)
-      if(ultimoRegistro) {
-        // anexar ao campo raw e à especificação (se houver algo)
-        const continueText = cols.join(' ').trim();
-        if(continueText) {
-          ultimoRegistro.raw += ' ' + continueText;
-          ultimoRegistro.espec_from_pdf = (ultimoRegistro.espec_from_pdf + ' ' + continueText).trim().toUpperCase();
+            if (Math.abs(y - lastY) > 5) {
+                if (linha.trim()) linhas.push(linha.trim());
+                linha = str;
+                lastY = y;
+            } else {
+                linha += " " + str;
+            }
         }
-      }
+
+        if (linha.trim()) linhas.push(linha.trim());
     }
-  });
 
-  // Normalizar anos: garantir pares [min,max]
-  registros.forEach(r=>{
-    if(r.anosLimite.length === 1) r.anosLimite = [r.anosLimite[0], r.anosLimite[0]];
-    if(r.anosElimPDF.length === 1) r.anosElimPDF = [r.anosElimPDF[0], r.anosElimPDF[0]];
-  });
-
-  return registros;
+    return linhas;
 }
 
-/* util: média */
-function avg(arr){ return arr.reduce((s,v)=>s+v,0)/arr.length; }
+/* ==========================================================
+   3) PARSER IGUAL AO PYTHON
+========================================================== */
 
-/* util: extrai anos (4 dígitos) com tolerância para diversos formatos */
-function extractYears(text) {
-  if(!text) return [];
-  // normalizar hífens e / para espaços
-  const cleaned = text.replace(/[\u2013\u2014–—]/g,'-').replace(/[^\d\- ]/g,' ');
-  // captura sequências de 4 dígitos
-  const m = cleaned.match(/\b(19|20)\d{2}\b/g);
-  if(m && m.length>0) return m.map(x=>parseInt(x,10));
-  // fallback: capturar 2 dígitos (ex. 98, 04) e resolver como 19xx/20xx — evitamos usar por agora
-  return [];
-}
+function interpretarLinhasComoPython(linhas) {
+    const registros = [];
+    const regexCodigo = /^(\d\.\d\.\d{2}\.\d{2}\.\d{2})\s+/;
 
-/* ====== Função de análise cruzada (reaproveita grande parte da lógica original) ====== */
-function analisarErros(itens) {
-  let totalErros = 0, totalAlertas = 0;
-  const resultados = [];
+    for (let linha of linhas) {
+        const m = linha.match(regexCodigo);
+        if (!m) continue;
 
-  itens.forEach(item => {
-    let regra = null;
-    let calculoCorreto = "";
-    let status = 'OK';
-    let mensagem = '';
-    let prazo = null;
+        const codigo = m[1];
+        const partes = linha.split(/\s+/);
+        const anos = partes.filter(x => /^\d{4}$/.test(x));
 
-    // chave
-    let key = item.cod;
-    if(item.cod === CODIGO_ESPECIAL) {
-      key = `${item.cod}|${item.espec_from_pdf}`;
-      regra = REGRAS_MAP.get(key);
-      if(!regra) {
-        // busca flexível
-        for(const [k,r] of REGRAS_MAP.entries()){
-          if(k.startsWith(item.cod) && r.espec && item.espec_from_pdf.includes(r.espec)) { regra = r; key = k; break; }
+        let data_ini="", data_fim="", elim_ini="", elim_fim="", obs="";
+
+        if (anos.length >= 2) {
+            const up = linha.toUpperCase();
+
+            if (up.includes("ATÉ")) {
+                data_ini = anos[0];
+                data_fim = anos[1];
+
+                if (anos.length >= 4) {
+                    elim_ini = anos[2];
+                    elim_fim = anos[3];
+                } else if (anos.length >= 3) {
+                    elim_ini = anos[2];
+                    elim_fim = anos[2];
+                }
+
+            } else {
+                data_ini = anos[0];
+                data_fim = anos[0];
+                if (anos.length >= 2) {
+                    elim_ini = anos[1];
+                    elim_fim = anos[1];
+                }
+            }
         }
-      }
-    } else {
-      regra = REGRAS_MAP.get(key);
+
+        const obsMatch = linha.match(/(SE -.*|EMEI.*|EMEF.*|IMI.*|NEI.*|CECOI.*|CENTRO.*|SECRETARIA.*)/);
+        if (obsMatch) obs = obsMatch[1].trim();
+
+        if (elim_ini && elim_fim) {
+            registros.push({
+                cod: codigo,
+                espec_from_pdf: obs,
+                anosLimite: [parseInt(data_ini), parseInt(data_fim)],
+                anosElimPDF: [parseInt(elim_ini), parseInt(elim_fim)],
+                raw: linha
+            });
+        }
     }
 
-    if(regra) {
-      prazo = regra.prazo;
-      if(prazo !== undefined && prazo !== null) {
-        const minLim = item.anosLimite.length>0 ? item.anosLimite[0] : null;
-        const maxLim = item.anosLimite.length>1 ? item.anosLimite[1] : minLim;
-        const pdfMin = item.anosElimPDF.length>0 ? item.anosElimPDF[0] : null;
-        const pdfMax = item.anosElimPDF.length>1 ? item.anosElimPDF[1] : pdfMin;
+    return registros;
+}
 
-        if(minLim==null || pdfMin==null) {
-          status = 'ALERTA';
-          mensagem = "Falta ano base ou ano eliminação no PDF para comparar.";
-          totalAlertas++;
+/* ==========================================================
+   4) VALIDAÇÃO
+========================================================== */
+
+function analisarErros(registros) {
+    let erros = 0;
+    let ok = 0;
+
+    for (let r of registros) {
+        const regra = REGRAS_MAP.get(r.cod);
+
+        if (!regra) {
+            erros++;
+            log("❌ Código SEM regra: " + r.cod);
+            continue;
+        }
+
+        const [elimIni, elimFim] = r.anosElimPDF;
+
+        if (elimIni < regra.min || elimFim > regra.max) {
+            erros++;
+            log(`⚠ Erro ${r.cod} → (${elimIni}–${elimFim}) fora do permitido ${regra.min}–${regra.max}`);
         } else {
-          const calcMin = minLim + prazo;
-          const calcMax = maxLim + prazo;
-          calculoCorreto = (calcMin === calcMax) ? `${calcMax}` : `${calcMin} a ${calcMax}`;
-          let temErro = false;
-          if(pdfMin !== calcMin) temErro = true;
-          if(pdfMax !== calcMax) temErro = true;
-          if(temErro) {
-            status = 'ERRO';
-            mensagem = `Esperado: ${calculoCorreto} (Prazo: ${prazo}). Encontrado: ${pdfMin}${pdfMax && pdfMax!==pdfMin ? (' a ' + pdfMax) : ''}`;
-            totalErros++;
-          }
+            ok++;
         }
-      } else {
-        status = 'ALERTA';
-        mensagem = regra.obs || "Regra textual (sem prazo numérico).";
-        totalAlertas++;
-        calculoCorreto = regra.obs || '-';
-      }
-    } else {
-      status = 'ALERTA';
-      mensagem = `Código sem regra. Chave de busca: ${key}`;
-      totalAlertas++;
     }
 
-    resultados.push({
-      ...item,
-      status, mensagem, prazo, calculoCorreto,
-      minLim: item.anosLimite.length>0 ? item.anosLimite[0] : '',
-      maxLim: item.anosLimite.length>1 ? item.anosLimite[1] : (item.anosLimite[0]||'')
-    });
-  });
-
-  renderizarDashboard(resultados, totalErros, totalAlertas);
+    document.getElementById("dashboard").style.display = "block";
+    document.getElementById("dashTotal").textContent = registros.length;
+    document.getElementById("dashErros").textContent = erros;
+    document.getElementById("dashOK").textContent = ok;
 }
 
-/* ====== Renderização e export ====== */
-function renderizarDashboard(resultados, erros, alertas) {
-  dadosExport = resultados;
+/* ==========================================================
+   5) PROCESSAR PDF
+========================================================== */
 
-  document.getElementById('totalItens').innerText = resultados.length;
-  document.getElementById('totalErros').innerText = erros;
-  document.getElementById('totalAlertas').innerText = alertas;
-  document.getElementById('dashboard').style.display = 'block';
-  document.getElementById('btnExport').disabled = false;
+document.getElementById("filePDF").addEventListener("change", async function() {
+    if (!REGRAS_MAP.size) {
+        alert("Carregue primeiro a planilha de regras.");
+        return;
+    }
 
-  const tbody = document.getElementById('resultsBody');
-  tbody.innerHTML = '';
-  resultados.forEach(r=>{
-    const pdfDataElimDisplay = (r.anosElimPDF && r.anosElimPDF.length>0) ? r.anosElimPDF.join(' a ') : '-';
-    const limDisplay = (r.minLim !== '' && r.maxLim !== '') ? (r.minLim === r.maxLim ? r.minLim : `${r.minLim} a ${r.maxLim}`) : '-';
-    const statusClass = r.status === 'ERRO' ? 'err' : (r.status === 'ALERTA' ? 'warn' : 'ok');
-    const row = `<tr>
-      <td style="font-weight:700">${r.cod}</td>
-      <td>${escapeHtml(r.espec_from_pdf||'')}</td>
-      <td>${r.prazo !== null && r.prazo !== undefined ? r.prazo : (r.calculoCorreto||'-')}</td>
-      <td>${limDisplay}</td>
-      <td>${pdfDataElimDisplay}</td>
-      <td>${r.calculoCorreto || '-'}</td>
-      <td><span class="badge ${statusClass}">${r.status}</span><div style="font-size:11px;color:#666">${escapeHtml(r.mensagem||'')}</div></td>
-    </tr>`;
-    tbody.insertAdjacentHTML('beforeend', row);
-  });
-}
+    const file = this.files[0];
+    if (!file) return;
 
-function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    document.getElementById("loading").style.display = "block";
+    document.getElementById("loadingInfo").textContent = file.name;
 
-function exportarExcel(){
-  const data = dadosExport.map(d=>({
-    COD: d.cod,
-    ESPECIFICACAO_PDF: d.espec_from_pdf,
-    RAW: d.raw,
-    BASE_INICIO: d.minLim,
-    BASE_FIM: d.maxLim,
-    PRAZO_ANOS_REGRA: d.prazo,
-    ELIM_INICIO_PDF: d.anosElimPDF[0]||'',
-    ELIM_FIM_PDF: d.anosElimPDF[1]||'',
-    CALCULO_ESPERADO: d.calculoCorreto,
-    STATUS: d.status,
-    DETALHE: d.mensagem
-  }));
-  const ws = XLSX.utils.json_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Auditoria");
-  XLSX.writeFile(wb, "auditoria_intervalos_v6.xlsx");
-}
+    const ab = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+
+    log("📄 Lendo PDF: " + file.name);
+
+    const linhas = await extrairTextoLinearDoPDF(pdf);
+    log("✔ Linhas extraídas: " + linhas.length);
+
+    const registros = interpretarLinhasComoPython(linhas);
+    log("✔ Registros identificados: " + registros.length);
+
+    analisarErros(registros);
+
+    document.getElementById("loading").style.display = "none";
+});
 </script>
+
+<!-- XLSX -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
 </body>
 </html>
