@@ -179,31 +179,72 @@ function log(msg) {
    1) LER REGRAS (Excel)
 ========================================================== */
 
-let REGRAS_MAP = new Map();
-
+/* ======= Leitura robusta da planilha de regras (detecta COD, ELIM, ESPEC) ======= */
 document.getElementById("fileRegras").addEventListener("change", async function() {
     const file = this.files[0];
     if (!file) return;
-
     log("📘 Lendo regras: " + file.name);
 
-    const ar = await file.arrayBuffer();
-    const wb = XLSX.read(ar, { type: "array" });
+    try {
+        const ar = await file.arrayBuffer();
+        const wb = XLSX.read(ar, { type: "array" });
+        const sheet = wb.Sheets[wb.SheetNames[0]];
+        const table = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
 
-    const sheet = wb.Sheets[wb.SheetNames[0]];
-    const dados = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+        if (table.length === 0) throw new Error("Planilha vazia.");
 
-    REGRAS_MAP.clear();
+        // Normalizar cabeçalho
+        const rawHeaders = table[0].map(h => String(h || "").trim());
+        const headers = rawHeaders.map(h => String(h).toUpperCase().replace(/[^A-Z0-9]/g, ''));
 
-    for (let r of dados) {
-        REGRAS_MAP.set(String(r.cod).trim(), {
-            min: parseInt(r.min),
-            max: parseInt(r.max)
-        });
+        const codIndex = headers.findIndex(h => h.includes('COD'));
+        const elimIndex = headers.findIndex(h => h.includes('ELIM'));
+        const especIndex = headers.findIndex(h => h.includes('ESPEC'));
+
+        if (codIndex === -1 || elimIndex === -1) {
+            throw new Error("Cabeçalho inválido: não encontrei colunas esperadas 'COD' e 'ELIM'.");
+        }
+
+        REGRAS_MAP.clear();
+
+        for (let r = 1; r < table.length; r++) {
+            const row = table[r];
+            const cod = String(row[codIndex] || "").trim();
+            if (!cod) continue;
+            const espec = especIndex !== -1 ? String(row[especIndex] || "").trim() : "";
+            const elimRaw = String(row[elimIndex] || "").trim().toUpperCase();
+
+            // Tentar número (prazo em anos) — aceita vírgula e ponto
+            const numeric = parseFloat(elimRaw.replace(',', '.'));
+            let prazo = null;
+            let obs = null;
+            if (!isNaN(numeric) && isFinite(numeric) && numeric > 0) {
+                prazo = numeric;
+            } else if (elimRaw !== "") {
+                obs = elimRaw; // regra textual
+            } else {
+                obs = "Prazo vazio";
+            }
+
+            let key = cod;
+            // chave especial para ESPEC se for código especial
+            if (cod === "2.0.10.00.01") {
+                key = `${cod}|${espec.toUpperCase()}`;
+            }
+
+            REGRAS_MAP.set(key, { cod, espec: espec.toUpperCase(), prazo, obs });
+        }
+
+        log(`✔ Regras carregadas: ${REGRAS_MAP.size}`);
+        // mostra alguns exemplos para debug
+        let preview = Array.from(REGRAS_MAP.entries()).slice(0,6).map(([k,v]) => `${k} => ${JSON.stringify(v)}`).join('\n');
+        log("Preview regras:\n" + preview);
+    } catch (err) {
+        log("❌ Erro ao ler regras: " + err.message);
+        alert("Erro ao ler planilha de regras: " + err.message);
     }
-
-    log("✔ Regras carregadas: " + REGRAS_MAP.size);
 });
+
 
 /* ==========================================================
    2) EXTRAÇÃO DO PDF – TEXTO LINEAR (ESTILO pdfplumber)
@@ -304,34 +345,96 @@ function interpretarLinhasComoPython(linhas) {
    4) VALIDAÇÃO
 ========================================================== */
 
+/* ======= Validação usando as regras (prazo numérico ou textual) ======= */
 function analisarErros(registros) {
     let erros = 0;
+    let alertas = 0;
     let ok = 0;
+    const resultados = [];
 
-    for (let r of registros) {
-        const regra = REGRAS_MAP.get(r.cod);
-
-        if (!regra) {
-            erros++;
-            log("❌ Código SEM regra: " + r.cod);
-            continue;
-        }
-
-        const [elimIni, elimFim] = r.anosElimPDF;
-
-        if (elimIni < regra.min || elimFim > regra.max) {
-            erros++;
-            log(`⚠ Erro ${r.cod} → (${elimIni}–${elimFim}) fora do permitido ${regra.min}–${regra.max}`);
+    registros.forEach(item => {
+        let regra = null;
+        let key = item.cod;
+        if (item.cod === "2.0.10.00.01") {
+            // primeiro tenta chave exata COD|ESPEC
+            key = `${item.cod}|${item.espec_from_pdf}`;
+            regra = REGRAS_MAP.get(key);
+            if (!regra) {
+                // busca flexível: procura uma regra cuja ESPEC esteja contida no texto do PDF
+                for (const [k, r] of REGRAS_MAP.entries()) {
+                    if (k.startsWith(item.cod) && r.espec && item.espec_from_pdf.includes(r.espec)) {
+                        regra = r; key = k; break;
+                    }
+                }
+            }
         } else {
-            ok++;
+            regra = REGRAS_MAP.get(key);
         }
-    }
 
+        let status = "OK";
+        let mensagem = "";
+        let calculoCorreto = "";
+        let prazo = null;
+
+        if (regra) {
+            prazo = regra.prazo;
+            if (prazo !== null && prazo !== undefined) {
+                // precisamos de anos base
+                const baseMin = (item.anosLimite && item.anosLimite.length>0) ? item.anosLimite[0] : null;
+                const baseMax = (item.anosLimite && item.anosLimite.length>1) ? item.anosLimite[1] : baseMin;
+                const pdfMin = (item.anosElimPDF && item.anosElimPDF.length>0) ? item.anosElimPDF[0] : null;
+                const pdfMax = (item.anosElimPDF && item.anosElimPDF.length>1) ? item.anosElimPDF[1] : pdfMin;
+
+                if (baseMin == null || pdfMin == null) {
+                    status = "ALERTA";
+                    mensagem = "Faltam anos-base ou anos de eliminação no PDF para comparar.";
+                    alertas++;
+                } else {
+                    const calcMin = baseMin + prazo;
+                    const calcMax = baseMax + prazo;
+                    calculoCorreto = (calcMin === calcMax) ? `${calcMax}` : `${calcMin} a ${calcMax}`;
+                    // comparar
+                    let temErro = false;
+                    if (pdfMin !== calcMin) temErro = true;
+                    if (pdfMax !== calcMax) temErro = true;
+                    if (temErro) {
+                        status = "ERRO";
+                        mensagem = `Esperado ${calculoCorreto} (Prazo ${prazo} anos). Encontrado: ${pdfMin}${pdfMax && pdfMax!==pdfMin ? ' a ' + pdfMax : ''}`;
+                        erros++;
+                    } else {
+                        ok++;
+                    }
+                }
+            } else {
+                // regra textual (PERMANENTE etc.)
+                status = "ALERTA";
+                mensagem = regra.obs || "Regra textual (sem prazo numérico)";
+                alertas++;
+            }
+        } else {
+            status = "ALERTA";
+            mensagem = `Código sem regra na tabela. Chave de busca: ${key}`;
+            alertas++;
+        }
+
+        resultados.push({
+            ...item,
+            status, mensagem, prazo, calculoCorreto
+        });
+    });
+
+    // Render simplificado no dashboard (mantém sua UI atual)
     document.getElementById("dashboard").style.display = "block";
-    document.getElementById("dashTotal").textContent = registros.length;
+    document.getElementById("dashTotal").textContent = resultados.length;
     document.getElementById("dashErros").textContent = erros;
     document.getElementById("dashOK").textContent = ok;
+
+    // Log resumido
+    log(`✔ Validação finalizada — registros: ${resultados.length}, erros: ${erros}, alertas: ${alertas}, corretos: ${ok}`);
+    // Guarda resultados para export se quiser
+    window._ULTIMOS_RESULTADOS = resultados;
 }
+
 
 /* ==========================================================
    5) PROCESSAR PDF
