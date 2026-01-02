@@ -23,20 +23,19 @@
             --border-hover: #1351b4;
             
             /* Tipografia */
-            --text-primary: #131313; /* Quase preto para alto contraste */
+            --text-primary: #131313;
             --text-secondary: #555555;
             --text-link: #1351b4;
             
             /* Espaçamentos e Formas */
-            --radius-gov: 4px; /* Bordas retas/suaves */
-            --container-width: 1140px;
+            --radius-gov: 4px;
+            --container-width: 1200px; /* Levemente aumentado para acomodar bem 3 colunas */
         }
 
         /* --- RESET & BASE --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            /* Stack de fontes oficial + fallbacks seguros */
             font-family: 'Rawline', 'Roboto', 'Segoe UI', Arial, sans-serif;
             background-color: var(--bg-body);
             color: var(--text-primary);
@@ -119,11 +118,25 @@
             color: var(--text-secondary);
         }
 
-        /* --- GRID DE SERVIÇOS --- */
+        /* --- GRID DE SERVIÇOS (CONFIGURAÇÃO DE 3 COLUNAS) --- */
         .services-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            /* Força exatas 3 colunas de tamanho igual */
+            grid-template-columns: repeat(3, 1fr);
             gap: 24px;
+        }
+
+        /* Responsividade para evitar quebras em telas menores */
+        @media (max-width: 992px) {
+            .services-grid {
+                grid-template-columns: repeat(2, 1fr); /* 2 colunas em tablets/notebooks pequenos */
+            }
+        }
+
+        @media (max-width: 600px) {
+            .services-grid {
+                grid-template-columns: 1fr; /* 1 coluna em mobile */
+            }
         }
 
         /* --- CARD INSTITUCIONAL --- */
@@ -134,16 +147,15 @@
             padding: 24px;
             display: flex;
             flex-direction: column;
-            transition: border-color 0.2s ease, transform 0.2s ease;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
             position: relative;
             height: 100%;
         }
 
-        /* Hover funcional: Apenas destaca a borda (foco) */
         .service-card:hover {
             border-color: var(--border-hover);
-            /* Leve elevação sem sombra difusa excessiva */
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); /* Sombra um pouco mais presente para destacar na grid */
+            z-index: 1;
         }
 
         /* Cabeçalho do Card */
@@ -155,9 +167,9 @@
         }
 
         .card-icon {
-            width: 40px;
-            height: 40px;
-            background-color: #f2f7fd; /* Azul muito pálido */
+            width: 42px;
+            height: 42px;
+            background-color: #f2f7fd;
             color: var(--gov-blue);
             border-radius: var(--radius-gov);
             display: flex;
@@ -185,7 +197,7 @@
             font-size: 14px;
             color: var(--text-secondary);
             margin-bottom: 24px;
-            flex-grow: 1; /* Empurra o rodapé para baixo */
+            flex-grow: 1;
             line-height: 1.6;
         }
 
@@ -205,10 +217,12 @@
             text-decoration: underline;
         }
 
+        /* Estado Desativado/Em Breve */
         .status-dev {
             color: #777;
             cursor: not-allowed;
             background: #f9f9f9;
+            opacity: 0.8;
         }
         
         .status-dev:hover {
@@ -218,7 +232,7 @@
         }
         
         .status-dev .card-footer {
-            color: #777;
+            color: #999;
             text-decoration: none !important;
         }
 
@@ -246,7 +260,7 @@
 
         @media (max-width: 768px) {
             .header-container { flex-direction: column; align-items: flex-start; padding: 15px 20px; }
-            .user-area { display: none; } /* Simplifica no mobile */
+            .user-area { display: none; }
             .system-title { font-size: 18px; margin-bottom: 10px; }
             .footer-container { flex-direction: column; text-align: left; align-items: flex-start; }
         }
@@ -355,7 +369,7 @@
                 <p>Versão 2.1.0 - Atualizado em 2025</p>
             </div>
             <div class="footer-info" style="text-align: right;">
-                               <p style="font-size: 11px;">Desenvolvimento Técnico: IA Assistida (Claude/Gemini/GPT)</p>
+                <p style="font-size: 11px;">Desenvolvimento Técnico: IA Assistida (Claude/Gemini/GPT)</p>
             </div>
         </div>
     </footer>
