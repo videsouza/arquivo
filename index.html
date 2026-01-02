@@ -29,7 +29,7 @@
             
             /* Espaçamentos e Formas */
             --radius-gov: 4px;
-            --container-width: 1200px; /* Levemente aumentado para acomodar bem 3 colunas */
+            --container-width: 1200px;
         }
 
         /* --- RESET & BASE --- */
@@ -48,11 +48,12 @@
 
         a { text-decoration: none; color: inherit; }
 
-        /* --- BARRA DE GOVERNO / INSTITUCIONAL --- */
+        /* --- BARRA DE GOVERNO / INSTITUCIONAL (AJUSTADA) --- */
         .br-header {
             background-color: var(--gov-blue);
             color: white;
-            padding: 15px 0;
+            /* Altura reduzida: padding ajustado de 15px para 8px */
+            padding: 8px 0; 
             border-bottom: 4px solid var(--gov-blue-dark);
         }
 
@@ -62,34 +63,15 @@
             padding: 0 20px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            /* Centraliza verticalmente o conteúdo reduzido */
+            height: 100%; 
         }
 
-        .header-logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 600;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .header-logo i { font-size: 18px; }
-
-        .system-title {
-            font-size: 20px;
+        .header-brand {
             font-weight: 700;
-            margin-top: 5px;
-        }
-
-        .user-area {
-            font-size: 13px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            opacity: 0.9;
+            font-size: 16px; /* Tamanho ajustado para proporção */
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
 
         /* --- CONTEÚDO PRINCIPAL --- */
@@ -118,25 +100,19 @@
             color: var(--text-secondary);
         }
 
-        /* --- GRID DE SERVIÇOS (CONFIGURAÇÃO DE 3 COLUNAS) --- */
+        /* --- GRID DE SERVIÇOS --- */
         .services-grid {
             display: grid;
-            /* Força exatas 3 colunas de tamanho igual */
             grid-template-columns: repeat(3, 1fr);
             gap: 24px;
         }
 
-        /* Responsividade para evitar quebras em telas menores */
         @media (max-width: 992px) {
-            .services-grid {
-                grid-template-columns: repeat(2, 1fr); /* 2 colunas em tablets/notebooks pequenos */
-            }
+            .services-grid { grid-template-columns: repeat(2, 1fr); }
         }
 
         @media (max-width: 600px) {
-            .services-grid {
-                grid-template-columns: 1fr; /* 1 coluna em mobile */
-            }
+            .services-grid { grid-template-columns: 1fr; }
         }
 
         /* --- CARD INSTITUCIONAL --- */
@@ -154,11 +130,10 @@
 
         .service-card:hover {
             border-color: var(--border-hover);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08); /* Sombra um pouco mais presente para destacar na grid */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             z-index: 1;
         }
 
-        /* Cabeçalho do Card */
         .card-header {
             display: flex;
             align-items: center;
@@ -192,7 +167,6 @@
             line-height: 1.2;
         }
 
-        /* Corpo do Card */
         .card-desc {
             font-size: 14px;
             color: var(--text-secondary);
@@ -201,7 +175,6 @@
             line-height: 1.6;
         }
 
-        /* Rodapé do Card (Ação) */
         .card-footer {
             border-top: 1px solid #f0f0f0;
             padding-top: 15px;
@@ -217,7 +190,6 @@
             text-decoration: underline;
         }
 
-        /* Estado Desativado/Em Breve */
         .status-dev {
             color: #777;
             cursor: not-allowed;
@@ -236,33 +208,25 @@
             text-decoration: none !important;
         }
 
-        /* --- FOOTER --- */
+        /* --- FOOTER (AJUSTADO) --- */
         .br-footer {
             background-color: var(--gov-blue-dark);
             color: white;
-            padding: 30px 0;
-            font-size: 13px;
+            /* Altura reduzida: padding ajustado de 30px para 15px */
+            padding: 15px 0;
+            font-size: 12px; /* Fonte levemente reduzida para ficar mais discreto */
             margin-top: auto;
+            text-align: center; /* Centralizado conforme comum em footers minimalistas */
         }
 
         .footer-container {
             max-width: var(--container-width);
             margin: 0 auto;
             padding: 0 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
         }
 
-        .footer-info p { opacity: 0.8; margin-bottom: 4px; }
-
         @media (max-width: 768px) {
-            .header-container { flex-direction: column; align-items: flex-start; padding: 15px 20px; }
-            .user-area { display: none; }
-            .system-title { font-size: 18px; margin-bottom: 10px; }
-            .footer-container { flex-direction: column; text-align: left; align-items: flex-start; }
+            .header-container { justify-content: center; } /* Centraliza no mobile */
         }
     </style>
 </head>
@@ -270,15 +234,8 @@
 
     <header class="br-header">
         <div class="header-container">
-            <div>
-                <div class="header-logo">
-                    <i class="fas fa-landmark"></i>
-                    <span>Sistema Interno</span>
-                </div>
-                <div class="system-title">Gestão e Controle de Acervo</div>
-            </div>
-            <div class="user-area">
-                <i class="fas fa-user-circle"></i> Acesso Administrativo
+            <div class="header-brand">
+                ARQUIVO / SEC
             </div>
         </div>
     </header>
@@ -364,13 +321,7 @@
 
     <footer class="br-footer">
         <div class="footer-container">
-            <div class="footer-info">
-                <p><strong>Sistema de Apoio à Gestão Documental</strong></p>
-                <p>Versão 2.1.0 - Atualizado em 2025</p>
-            </div>
-            <div class="footer-info" style="text-align: right;">
-                <p style="font-size: 11px;">Desenvolvimento Técnico: IA Assistida (Claude/Gemini/GPT)</p>
-            </div>
+            <p>© 2026 Desenvolvido por Vinicius A. de Souza com Claude.ai, Gemini e ChatGPT</p>
         </div>
     </footer>
 
