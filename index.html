@@ -48,11 +48,10 @@
 
         a { text-decoration: none; color: inherit; }
 
-        /* --- BARRA DE GOVERNO / INSTITUCIONAL (AJUSTADA) --- */
+        /* --- BARRA DE GOVERNO / INSTITUCIONAL --- */
         .br-header {
             background-color: var(--gov-blue);
             color: white;
-            /* Altura reduzida: padding ajustado de 15px para 8px */
             padding: 8px 0; 
             border-bottom: 4px solid var(--gov-blue-dark);
         }
@@ -63,13 +62,12 @@
             padding: 0 20px;
             display: flex;
             align-items: center;
-            /* Centraliza verticalmente o conteúdo reduzido */
             height: 100%; 
         }
 
         .header-brand {
             font-weight: 700;
-            font-size: 16px; /* Tamanho ajustado para proporção */
+            font-size: 16px;
             letter-spacing: 0.5px;
             text-transform: uppercase;
         }
@@ -80,24 +78,6 @@
             margin: 40px auto;
             padding: 0 20px;
             flex: 1;
-        }
-
-        .page-title-area {
-            margin-bottom: 30px;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 15px;
-        }
-
-        .page-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 5px;
-        }
-
-        .page-subtitle {
-            font-size: 14px;
-            color: var(--text-secondary);
         }
 
         /* --- GRID DE SERVIÇOS --- */
@@ -208,15 +188,14 @@
             text-decoration: none !important;
         }
 
-        /* --- FOOTER (AJUSTADO) --- */
+        /* --- FOOTER --- */
         .br-footer {
             background-color: var(--gov-blue-dark);
             color: white;
-            /* Altura reduzida: padding ajustado de 30px para 15px */
             padding: 15px 0;
-            font-size: 12px; /* Fonte levemente reduzida para ficar mais discreto */
+            font-size: 12px;
             margin-top: auto;
-            text-align: center; /* Centralizado conforme comum em footers minimalistas */
+            text-align: center;
         }
 
         .footer-container {
@@ -226,7 +205,7 @@
         }
 
         @media (max-width: 768px) {
-            .header-container { justify-content: center; } /* Centraliza no mobile */
+            .header-container { justify-content: center; }
         }
     </style>
 </head>
@@ -242,11 +221,6 @@
 
     <main class="main-container">
         
-        <div class="page-title-area">
-            <h1 class="page-title">Módulos Disponíveis</h1>
-            <p class="page-subtitle">Selecione uma ferramenta para iniciar as operações de arquivo.</p>
-        </div>
-
         <section class="services-grid">
 
             <a href="super-analista.html" class="service-card">
