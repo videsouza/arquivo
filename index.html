@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestão Documental | Portal Interno</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        /* --- VARIÁVEIS DO SISTEMA (Padrão GOV.BR / Corporativo) --- */
+        :root {
+            /* Cores Institucionais */
+            --gov-blue: #1351b4;
+            --gov-blue-dark: #0c326f;
+            --gov-blue-hover: #08204b;
+            
+            /* Tons de Cinza e Fundo */
+            --bg-body: #f8f8f8;
+            --bg-card: #ffffff;
+            --border-card: #e5e5e5;
+            --border-hover: #1351b4;
+            
+            /* Tipografia */
+            --text-primary: #131313; /* Quase preto para alto contraste */
+            --text-secondary: #555555;
+            --text-link: #1351b4;
+            
+            /* Espaçamentos e Formas */
+            --radius-gov: 4px; /* Bordas retas/suaves */
+            --container-width: 1140px;
+        }
+
+        /* --- RESET & BASE --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            /* Stack de fontes oficial + fallbacks seguros */
+            font-family: 'Rawline', 'Roboto', 'Segoe UI', Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        a { text-decoration: none; color: inherit; }
+
+        /* --- BARRA DE GOVERNO / INSTITUCIONAL --- */
+        .br-header {
+            background-color: var(--gov-blue);
+            color: white;
+            padding: 15px 0;
+            border-bottom: 4px solid var(--gov-blue-dark);
+        }
+
+        .header-container {
+            max-width: var(--container-width);
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .header-logo i { font-size: 18px; }
+
+        .system-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-top: 5px;
+        }
+
+        .user-area {
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0.9;
+        }
+
+        /* --- CONTEÚDO PRINCIPAL --- */
+        .main-container {
+            max-width: var(--container-width);
+            margin: 40px auto;
+            padding: 0 20px;
+            flex: 1;
+        }
+
+        .page-title-area {
+            margin-bottom: 30px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 15px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .page-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* --- GRID DE SERVIÇOS --- */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        /* --- CARD INSTITUCIONAL --- */
+        .service-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-gov);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            transition: border-color 0.2s ease, transform 0.2s ease;
+            position: relative;
+            height: 100%;
+        }
+
+        /* Hover funcional: Apenas destaca a borda (foco) */
+        .service-card:hover {
+            border-color: var(--border-hover);
+            /* Leve elevação sem sombra difusa excessiva */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+        }
+
+        /* Cabeçalho do Card */
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #f2f7fd; /* Azul muito pálido */
+            color: var(--gov-blue);
+            border-radius: var(--radius-gov);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .service-card:hover .card-icon {
+            background-color: var(--gov-blue);
+            color: white;
+            transition: 0.2s;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+
+        /* Corpo do Card */
+        .card-desc {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            flex-grow: 1; /* Empurra o rodapé para baixo */
+            line-height: 1.6;
+        }
+
+        /* Rodapé do Card (Ação) */
+        .card-footer {
+            border-top: 1px solid #f0f0f0;
+            padding-top: 15px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-link);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .service-card:hover .card-footer {
+            text-decoration: underline;
+        }
+
+        .status-dev {
+            color: #777;
+            cursor: not-allowed;
+            background: #f9f9f9;
+        }
+        
+        .status-dev:hover {
+            border-color: #e5e5e5;
+            box-shadow: none;
+            text-decoration: none;
+        }
+        
+        .status-dev .card-footer {
+            color: #777;
+            text-decoration: none !important;
+        }
+
+        /* --- FOOTER --- */
+        .br-footer {
+            background-color: var(--gov-blue-dark);
+            color: white;
+            padding: 30px 0;
+            font-size: 13px;
+            margin-top: auto;
+        }
+
+        .footer-container {
+            max-width: var(--container-width);
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .footer-info p { opacity: 0.8; margin-bottom: 4px; }
+
+        @media (max-width: 768px) {
+            .header-container { flex-direction: column; align-items: flex-start; padding: 15px 20px; }
+            .user-area { display: none; } /* Simplifica no mobile */
+            .system-title { font-size: 18px; margin-bottom: 10px; }
+            .footer-container { flex-direction: column; text-align: left; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="br-header">
+        <div class="header-container">
+            <div>
+                <div class="header-logo">
+                    <i class="fas fa-landmark"></i>
+                    <span>Sistema Interno</span>
+                </div>
+                <div class="system-title">Gestão e Controle de Acervo</div>
+            </div>
+            <div class="user-area">
+                <i class="fas fa-user-circle"></i> Acesso Administrativo
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        
+        <div class="page-title-area">
+            <h1 class="page-title">Módulos Disponíveis</h1>
+            <p class="page-subtitle">Selecione uma ferramenta para iniciar as operações de arquivo.</p>
+        </div>
+
+        <section class="services-grid">
+
+            <a href="super-analista.html" class="service-card">
+                <div class="card-header">
+                    <div class="card-icon"><i class="fas fa-chart-bar"></i></div>
+                    <h3 class="card-title">Painel Analítico</h3>
+                </div>
+                <p class="card-desc">Geração de dashboards e extração de métricas quantitativas a partir das planilhas de controle de acervo.</p>
+                <div class="card-footer">
+                    Acessar Módulo <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+
+            <a href="otimizador-eliminacao.html" class="service-card">
+                <div class="card-header">
+                    <div class="card-icon"><i class="fas fa-check-double"></i></div>
+                    <h3 class="card-title">Otimizador de Eliminação</h3>
+                </div>
+                <p class="card-desc">Algoritmo para seleção de boxes de eliminação, visando a maximização do espaço físico liberado.</p>
+                <div class="card-footer">
+                    Iniciar Seleção <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+
+            <a href="etiqueta-gemini.html" class="service-card">
+                <div class="card-header">
+                    <div class="card-icon"><i class="fas fa-tag"></i></div>
+                    <h3 class="card-title">Gerador de Etiquetas</h3>
+                </div>
+                <p class="card-desc">Emissão automática de etiquetas padronizadas (9x9cm) para identificação de caixas e processos.</p>
+                <div class="card-footer">
+                    Emitir Etiquetas <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+
+            <a href="visualiza-boxes-gemini.html" class="service-card">
+                <div class="card-header">
+                    <div class="card-icon"><i class="fas fa-cubes"></i></div>
+                    <h3 class="card-title">Mapa de Ocupação</h3>
+                </div>
+                <p class="card-desc">Visualização interativa da disposição física do acervo (visão topográfica 7x7) para gestão de espaço.</p>
+                <div class="card-footer">
+                    Visualizar Mapa <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+
+             <a href="https://corretor-datas.onrender.com/" class="service-card">
+                <div class="card-header">
+                    <div class="card-icon"><i class="fas fa-calendar-alt"></i></div>
+                    <h3 class="card-title">Validador Temporal</h3>
+                </div>
+                <p class="card-desc">Auditoria automática de datas prováveis de eliminação para garantir conformidade com a TTD.</p>
+                <div class="card-footer">
+                    Validar Datas <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+
+            <div class="service-card status-dev">
+                <div class="card-header">
+                    <div class="card-icon"><i class="fas fa-project-diagram"></i></div>
+                    <h3 class="card-title">Controle de Fluxos</h3>
+                </div>
+                <p class="card-desc">Gestão dos trâmites de eliminação e guarda permanente de documentos.</p>
+                <div class="card-footer">
+                    <i class="fas fa-tools"></i> Módulo em Desenvolvimento
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <footer class="br-footer">
+        <div class="footer-container">
+            <div class="footer-info">
+                <p><strong>Sistema de Apoio à Gestão Documental</strong></p>
+                <p>Versão 2.1.0 - Atualizado em 2025</p>
+            </div>
+            <div class="footer-info" style="text-align: right;">
+                <p>Ambiente Seguro</p>
+                <p style="font-size: 11px;">Desenvolvimento Técnico: IA Assistida (Claude/Gemini/GPT)</p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
