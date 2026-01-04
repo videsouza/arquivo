@@ -10,7 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <style>
-        /* --- VARIÁVEIS DO SISTEMA (Padrão Definido) --- */
+        /* --- VARIÁVEIS DO SISTEMA --- */
         :root {
             /* Cores Institucionais */
             --gov-blue: #1351b4;
@@ -18,8 +18,7 @@
             --gov-blue-light: #f2f7fd;
             
             /* Cores Funcionais */
-            --success: #168821;      /* Verde Institucional */
-            --danger: #e60000;       /* Vermelho Institucional */
+            --success: #168821;
             --text-primary: #131313;
             --text-secondary: #555555;
             --border-color: #e5e5e5;
@@ -28,7 +27,7 @@
             --bg-body: #f8f8f8;
             --bg-card: #ffffff;
             --radius-gov: 4px;
-            --container-width: 1400px; /* Mais largo para o mapa */
+            --container-width: 1450px; /* Aumentado para comportar 4 blocos maiores */
         }
 
         /* --- RESET & BASE --- */
@@ -77,7 +76,6 @@
             width: 100%;
         }
 
-        /* Título da Página Interna */
         .page-header {
             display: flex;
             justify-content: space-between;
@@ -109,7 +107,7 @@
             border-radius: var(--radius-gov);
         }
 
-        /* --- ÁREA DE UPLOAD (Estilo Formal) --- */
+        /* --- UPLOAD --- */
         .upload-section { margin-bottom: 30px; }
         
         .upload-area {
@@ -131,7 +129,6 @@
         .upload-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
         .upload-hint { font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; }
 
-        /* Botões Institucionais */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -148,23 +145,15 @@
             letter-spacing: 0.5px;
         }
 
-        .btn-primary {
-            background-color: var(--gov-blue);
-            color: #fff;
-        }
+        .btn-primary { background-color: var(--gov-blue); color: #fff; }
         .btn-primary:hover { background-color: var(--gov-blue-dark); }
-
-        .btn-secondary {
-            background-color: white;
-            border-color: #ccc;
-            color: var(--text-primary);
-        }
+        .btn-secondary { background-color: white; border-color: #ccc; color: var(--text-primary); }
         .btn-secondary:hover { background-color: #f0f0f0; }
 
-        /* --- DASHBOARD RESULTADOS --- */
+        /* --- MAPA E VISUALIZAÇÃO --- */
         #results { display: none; }
 
-        /* 1. KPIs */
+        /* KPIs */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -175,16 +164,16 @@
         .stat-card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
-            border-radius: var(--radius-gov); /* Borda reta */
+            border-radius: var(--radius-gov);
             padding: 20px;
-            border-left: 4px solid var(--gov-blue); /* Identidade visual */
+            border-left: 4px solid var(--gov-blue);
         }
 
         .stat-val { font-size: 28px; font-weight: 700; color: var(--text-primary); line-height: 1.2; }
-        .stat-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-top: 5px; letter-spacing: 0.5px; }
+        .stat-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-top: 5px; }
         .stat-detail { font-size: 13px; font-weight: 500; margin-top: 4px; }
 
-        /* 2. Mapa Visual */
+        /* Container do Mapa */
         .map-wrapper {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
@@ -193,7 +182,6 @@
             margin-bottom: 30px;
         }
 
-        /* Legenda */
         .legend-row {
             display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;
             margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color);
@@ -201,51 +189,71 @@
         .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--text-secondary); }
         .legend-dot { width: 12px; height: 12px; border-radius: 2px; border: 1px solid rgba(0,0,0,0.1); }
 
-        /* Estantes */
+        /* --- ÁREA DAS ESTANTES (GRID PRINCIPAL) --- */
         .shelves-area {
-            display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;
+            display: grid;
+            /* Força 4 colunas */
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 25px;
+            justify-items: center; /* Centraliza os blocos na coluna */
         }
 
         .shelf {
             background: #f4f4f4;
             border: 1px solid #ddd;
             border-radius: var(--radius-gov);
-            padding: 8px;
+            padding: 10px; /* Padding levemente aumentado */
+            /* Largura automática baseada no conteúdo (grid interno) */
+            width: fit-content; 
         }
 
         .shelf-title {
-            text-align: center; font-size: 10px; font-weight: 700; color: var(--text-secondary);
-            margin-bottom: 6px; padding-bottom: 2px; border-bottom: 1px solid #ddd;
+            text-align: center; font-size: 11px; font-weight: 700; color: var(--text-secondary);
+            margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #ddd;
         }
 
         .shelf-grid {
             display: grid;
-            grid-template-columns: repeat(7, 1fr); /* 7 Colunas Fixo */
-            gap: 3px;
+            grid-template-columns: repeat(7, 1fr); /* 7x7 fixo */
+            gap: 4px; /* Espaço entre boxes aumentado para respiro */
         }
 
-        /* Box Individual */
+        /* --- BOX INDIVIDUAL (AUMENTADO) --- */
         .box-unit {
-            width: 28px; height: 28px;
+            width: 35px;  /* Aumentado de 28px */
+            height: 35px; /* Aumentado de 28px */
             background: white;
             border: 1px solid #ccc;
-            border-radius: 2px;
+            border-radius: 3px;
             cursor: pointer;
             display: flex; align-items: center; justify-content: center;
-            font-size: 9px; font-weight: 700; color: #666;
+            font-size: 11px; /* Fonte aumentada para legibilidade */
+            font-weight: 700; 
+            color: #666;
             transition: all 0.1s;
         }
         
-        /* Hover Funcional */
         .box-unit:hover {
-            transform: scale(1.2);
+            transform: scale(1.15);
             z-index: 10;
             border-color: var(--gov-blue-dark);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
             color: #000;
         }
 
-        /* 3. Lista de Status (Tabela Visual) */
+        /* Responsividade para não quebrar os blocos maiores */
+        @media (max-width: 1400px) {
+            .shelves-area { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 1050px) {
+            .shelves-area { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 700px) {
+            .shelves-area { grid-template-columns: 1fr; }
+            .box-unit { width: 30px; height: 30px; font-size: 10px; } /* Reduz um pouco no mobile */
+        }
+
+        /* --- STATUS E FOOTER --- */
         .section-header {
             font-size: 16px; font-weight: 700; color: var(--text-primary);
             margin-bottom: 15px; border-left: 4px solid var(--gov-blue); padding-left: 10px;
@@ -265,13 +273,12 @@
         .progress-bar { height: 4px; background: #eee; margin-top: 10px; overflow: hidden; }
         .progress-fill { height: 100%; }
 
-        /* Ações Finais */
         .actions-bar {
             margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color);
             display: flex; justify-content: flex-end; gap: 10px;
         }
 
-        /* --- UTILITÁRIOS --- */
+        /* Utilitários */
         .loading-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(255,255,255,0.95); z-index: 9999;
@@ -295,7 +302,6 @@
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Footer Institucional Compacto */
         .br-footer {
             background-color: var(--gov-blue-dark);
             color: white;
@@ -307,8 +313,6 @@
 
         @media(max-width: 768px) {
             .page-header { flex-direction: column; align-items: flex-start; gap: 10px; }
-            .shelves-area { gap: 10px; }
-            .box-unit { width: 20px; height: 20px; font-size: 7px; }
             .actions-bar { justify-content: center; flex-direction: column; }
         }
     </style>
@@ -349,7 +353,7 @@
                     <button class="btn btn-primary" id="btnSelectFile">
                         <i class="fas fa-folder-open"></i> Selecionar Arquivo
                     </button>
-                    <a href="index.html" class="btn btn-secondary" style="margin-left: 10px;">
+                     <a href="index.html" class="btn btn-secondary" style="margin-left: 10px;">
                         <i class="fas fa-arrow-left"></i> Voltar
                     </a>
                 </div>
@@ -412,11 +416,10 @@
     <div class="tooltip" id="tooltip"></div>
 
     <script>
-        // --- 1. CONFIGURAÇÃO E VARIÁVEIS GLOBAIS ---
-        let relatorioDados = null; // Armazena dados para impressão
+        // --- LÓGICA MANTIDA E OTIMIZADA ---
+        let relatorioDados = null;
         const totalBoxesEsperados = 7000;
         
-        // Elementos DOM
         const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('fileInput');
         const btnSelectFile = document.getElementById('btnSelectFile');
@@ -425,170 +428,91 @@
         const resultsDiv = document.getElementById('results');
         const tooltip = document.getElementById('tooltip');
 
-        // --- 2. EVENT LISTENERS (INTERAÇÃO) ---
-        
-        // Clique no botão seleciona o input
-        btnSelectFile.addEventListener('click', (e) => {
-            e.stopPropagation(); // Impede borbulhar para o dropZone
-            fileInput.click();
-        });
-
-        // Clique na área pontilhada também seleciona
+        btnSelectFile.addEventListener('click', (e) => { e.stopPropagation(); fileInput.click(); });
         dropZone.addEventListener('click', () => fileInput.click());
-
-        // Drag & Drop
         dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.style.borderColor = 'var(--gov-blue)';
-            dropZone.style.backgroundColor = '#f2f7fd';
+            e.preventDefault(); dropZone.style.borderColor = 'var(--gov-blue)'; dropZone.style.backgroundColor = '#f2f7fd';
         });
-
         dropZone.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            dropZone.style.borderColor = '#ccc';
-            dropZone.style.backgroundColor = 'var(--bg-card)';
+            e.preventDefault(); dropZone.style.borderColor = '#ccc'; dropZone.style.backgroundColor = 'var(--bg-card)';
         });
-
         dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.style.borderColor = '#ccc';
-            dropZone.style.backgroundColor = 'var(--bg-card)';
-            
-            if(e.dataTransfer.files.length) {
-                processarArquivo(e.dataTransfer.files[0]);
-            }
+            e.preventDefault(); dropZone.style.borderColor = '#ccc'; dropZone.style.backgroundColor = 'var(--bg-card)';
+            if(e.dataTransfer.files.length) processarArquivo(e.dataTransfer.files[0]);
         });
+        fileInput.addEventListener('change', (e) => { if(e.target.files.length) processarArquivo(e.target.files[0]); });
 
-        // Quando seleciona arquivo pelo input
-        fileInput.addEventListener('change', (e) => {
-            if(e.target.files.length) {
-                processarArquivo(e.target.files[0]);
-            }
-        });
-
-        // --- 3. PROCESSAMENTO DO ARQUIVO (LÓGICA PRINCIPAL) ---
         function processarArquivo(file) {
-            loading.style.display = 'flex'; // Mostra loading
-
+            loading.style.display = 'flex';
             const reader = new FileReader();
-            
             reader.onload = function(e) {
                 try {
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, {type: 'array'});
-                    
-                    // Pega a primeira aba
                     const sheetName = workbook.SheetNames[0];
                     const sheet = workbook.Sheets[sheetName];
-                    
-                    // Converte para JSON (Array de Arrays)
                     const json = XLSX.utils.sheet_to_json(sheet, {header: 1});
-
-                    // Assumindo que a linha 3 (índice 2) é o cabeçalho
                     const headers = json[2]; 
-                    const rows = json.slice(3); // Dados começam na linha 4
+                    const rows = json.slice(3);
 
-                    if(!headers || headers.length === 0) {
-                        throw new Error("Cabeçalho não encontrado na linha 3.");
-                    }
+                    if(!headers || headers.length === 0) throw new Error("Erro Cabeçalho");
                     
                     const dadosProcessados = analisarDados(headers, rows);
                     relatorioDados = dadosProcessados;
-                    
-                    // Renderiza na tela
                     renderizarInterface(dadosProcessados);
-
-                    // Transição de tela
-                    setTimeout(() => {
-                        loading.style.display = 'none';
-                        uploadSection.style.display = 'none';
-                        resultsDiv.style.display = 'block';
-                    }, 800);
-
+                    
+                    setTimeout(() => { loading.style.display = 'none'; uploadSection.style.display = 'none'; resultsDiv.style.display = 'block'; }, 800);
                 } catch (err) {
-                    console.error(err);
-                    alert("Erro ao ler o arquivo Excel. Verifique se o formato está correto (Linha 3 com cabeçalhos).");
-                    loading.style.display = 'none';
+                    console.error(err); alert("Erro ao ler arquivo. Verifique se é a planilha correta."); loading.style.display = 'none';
                 }
             };
-
             reader.readAsArrayBuffer(file);
         }
 
         function analisarDados(headers, rows) {
-            // Identifica colunas de status (ignora colunas de controle)
             const ignore = ['BOX', 'TOTAL', 'Total', 'Box', 'box'];
-            const statusCols = headers.map((h, i) => ({name: h, index: i}))
-                                      .filter(c => c.name && !ignore.includes(c.name));
-            
+            const statusCols = headers.map((h, i) => ({name: h, index: i})).filter(c => c.name && !ignore.includes(c.name));
             const boxes = new Array(totalBoxesEsperados + 1).fill(null);
-            let totalOcupados = 0;
-            let totalDocs = 0;
-            const statusTotals = {};
-            
-            // Inicializa contadores
+            let totalOcupados = 0; let totalDocs = 0; const statusTotals = {};
             statusCols.forEach(c => statusTotals[c.name] = 0);
 
-            // Percorre linhas
             rows.forEach(row => {
-                const boxNum = parseInt(row[0]); // Assume Box na coluna A (índice 0)
-                
+                const boxNum = parseInt(row[0]);
                 if(boxNum > 0 && boxNum <= totalBoxesEsperados) {
                     const boxData = { id: boxNum, total: 0, content: {} };
-                    
                     statusCols.forEach(col => {
                         const val = parseInt(row[col.index]) || 0;
                         if(val > 0) {
-                            boxData.content[col.name] = val;
-                            boxData.total += val;
-                            statusTotals[col.name] += val;
+                            boxData.content[col.name] = val; boxData.total += val; statusTotals[col.name] += val;
                         }
                     });
-
-                    if(boxData.total > 0) {
-                        boxes[boxNum] = boxData;
-                        totalOcupados++;
-                        totalDocs += boxData.total;
-                    }
+                    if(boxData.total > 0) { boxes[boxNum] = boxData; totalOcupados++; totalDocs += boxData.total; }
                 }
             });
-
             return { boxes, statusCols, statusTotals, totalOcupados, totalDocs };
         }
 
-        // --- 4. RENDERIZAÇÃO DA INTERFACE ---
         function renderizarInterface(dados) {
-            // A. Atualiza KPIs
             document.getElementById('valOcupados').innerText = dados.totalOcupados.toLocaleString();
             document.getElementById('pctOcupados').innerText = ((dados.totalOcupados / totalBoxesEsperados) * 100).toFixed(1) + '%';
-            
             document.getElementById('valVazios').innerText = (totalBoxesEsperados - dados.totalOcupados).toLocaleString();
             document.getElementById('pctVazios').innerText = (((totalBoxesEsperados - dados.totalOcupados) / totalBoxesEsperados) * 100).toFixed(1) + '%';
-            
             document.getElementById('valDocs').innerText = dados.totalDocs.toLocaleString();
 
-            // B. Gera Cores e Legenda
             const cores = gerarPaletaCores(dados.statusCols.length);
             const mapaCores = {};
-            
             let legendHTML = '';
             dados.statusCols.forEach((col, i) => {
                 mapaCores[col.name] = cores[i];
-                legendHTML += `
-                    <div class="legend-item">
-                        <div class="legend-dot" style="background:${cores[i]}"></div>
-                        ${col.name}
-                    </div>`;
+                legendHTML += `<div class="legend-item"><div class="legend-dot" style="background:${cores[i]}"></div>${col.name}</div>`;
             });
-            // Adiciona legenda de vazio
             legendHTML += `<div class="legend-item"><div class="legend-dot" style="background:white; border:1px solid #ccc"></div>VAZIO</div>`;
             document.getElementById('legendContainer').innerHTML = legendHTML;
 
-            // C. Gera Estantes e Boxes
             const containerShelves = document.getElementById('shelvesContainer');
-            containerShelves.innerHTML = ''; // Limpa
+            containerShelves.innerHTML = '';
             
-            const boxesPorEstante = 49; // 7x7
+            const boxesPorEstante = 49; 
             const qtdEstantes = Math.ceil(totalBoxesEsperados / boxesPorEstante);
             const fragment = document.createDocumentFragment();
 
@@ -596,7 +520,6 @@
                 const start = i * boxesPorEstante + 1;
                 const end = Math.min((i+1) * boxesPorEstante, totalBoxesEsperados);
                 
-                // Cria Estante
                 const shelfDiv = document.createElement('div');
                 shelfDiv.className = 'shelf';
                 shelfDiv.innerHTML = `<div class="shelf-title">${start} - ${end}</div>`;
@@ -604,226 +527,97 @@
                 const gridDiv = document.createElement('div');
                 gridDiv.className = 'shelf-grid';
 
-                // Cria Boxes
                 for(let b=start; b <= end; b++) {
                     const boxDiv = document.createElement('div');
                     boxDiv.className = 'box-unit';
-                    boxDiv.innerText = b; // Número do box
-
+                    boxDiv.innerText = b; 
                     const boxInfo = dados.boxes[b];
 
                     if(boxInfo) {
-                        // Box Ocupado
                         boxDiv.style.background = gerarBackgroundGradiente(boxInfo, mapaCores);
-                        boxDiv.style.color = '#000'; // Contraste
-                        
-                        // Eventos Mouse
+                        boxDiv.style.color = '#000'; 
                         boxDiv.onmouseenter = (e) => mostrarTooltip(e, boxInfo);
                     } else {
-                        // Box Vazio
-                        boxDiv.style.color = '#ccc'; // Texto claro
+                        boxDiv.style.color = '#ccc';
                         boxDiv.onmouseenter = (e) => mostrarTooltip(e, {id: b, total: 0});
                     }
-                    
                     boxDiv.onmouseleave = esconderTooltip;
                     gridDiv.appendChild(boxDiv);
                 }
-
                 shelfDiv.appendChild(gridDiv);
                 fragment.appendChild(shelfDiv);
             }
             containerShelves.appendChild(fragment);
 
-            // D. Cards de Status (Footer)
             const statusContainer = document.getElementById('statusGridContainer');
             statusContainer.innerHTML = '';
-            
-            // Ordena por maior quantidade
             const sortedStatus = Object.entries(dados.statusTotals).sort((a,b) => b[1] - a[1]);
 
             sortedStatus.forEach(([nome, qtd]) => {
                 if(qtd > 0) {
                     const pct = ((qtd / dados.totalDocs) * 100).toFixed(1);
                     const cor = mapaCores[nome];
-                    
                     statusContainer.innerHTML += `
                         <div class="status-item" style="border-left: 4px solid ${cor}">
-                            <div class="status-top">
-                                <span>${nome}</span>
-                                <span>${pct}%</span>
-                            </div>
+                            <div class="status-top"><span>${nome}</span><span>${pct}%</span></div>
                             <div class="status-num">${qtd.toLocaleString()}</div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width:${pct}%; background:${cor}"></div>
-                            </div>
-                        </div>
-                    `;
+                            <div class="progress-bar"><div class="progress-fill" style="width:${pct}%; background:${cor}"></div></div>
+                        </div>`;
                 }
             });
         }
 
-        // --- 5. FUNÇÕES AUXILIARES ---
-        function gerarPaletaCores(quantidade) {
-            // Paleta mais sóbria/institucional se possível, mas HSL garante distinção
-            const cores = [];
-            const passo = 360 / quantidade;
-            for(let i=0; i<quantidade; i++) {
-                // HSL: Matiz variável, Saturação 70%, Luminosidade 55%
-                cores.push(`hsl(${Math.floor(i*passo)}, 70%, 55%)`);
-            }
+        function gerarPaletaCores(qtd) {
+            const cores = []; const passo = 360 / qtd;
+            for(let i=0; i<qtd; i++) cores.push(`hsl(${Math.floor(i*passo)}, 70%, 55%)`);
             return cores;
         }
 
         function gerarBackgroundGradiente(box, mapaCores) {
             const entries = Object.entries(box.content);
             if(entries.length === 1) return mapaCores[entries[0][0]];
-
-            let stops = [];
-            let acumulado = 0;
-            
+            let stops = []; let acumulado = 0;
             entries.forEach(([tipo, qtd]) => {
-                const pct = (qtd / box.total) * 100;
-                const cor = mapaCores[tipo];
-                
-                stops.push(`${cor} ${acumulado}%`);
-                acumulado += pct;
-                stops.push(`${cor} ${acumulado}%`);
+                const pct = (qtd / box.total) * 100; const cor = mapaCores[tipo];
+                stops.push(`${cor} ${acumulado}%`); acumulado += pct; stops.push(`${cor} ${acumulado}%`);
             });
-
             return `conic-gradient(${stops.join(', ')})`;
         }
 
-        // --- 6. TOOLTIP ---
         function mostrarTooltip(e, data) {
             let html = `<div class="tooltip-header">Box ${data.id}</div>`;
-            
             if(data.total > 0) {
-                html += `<div class="tooltip-row"><span>Total:</span> <strong>${data.total}</strong></div>`;
-                html += `<hr style="border:0; border-top:1px solid #555; margin:5px 0;">`;
-                
+                html += `<div class="tooltip-row"><span>Total:</span> <strong>${data.total}</strong></div><hr style="border:0; border-top:1px solid #555; margin:5px 0;">`;
                 for(const [tipo, qtd] of Object.entries(data.content)) {
                     const pct = ((qtd/data.total)*100).toFixed(0);
-                    html += `<div class="tooltip-row">
-                                <span style="opacity:0.8">${tipo}:</span> 
-                                <span>${qtd} (${pct}%)</span>
-                             </div>`;
+                    html += `<div class="tooltip-row"><span style="opacity:0.8">${tipo}:</span> <span>${qtd} (${pct}%)</span></div>`;
                 }
-            } else {
-                html += `<div style="text-align:center; color:#999; font-style:italic">Vazio</div>`;
-            }
-
-            tooltip.innerHTML = html;
-            tooltip.style.display = 'block';
-            moverTooltip(e);
+            } else html += `<div style="text-align:center; color:#999; font-style:italic">Vazio</div>`;
+            tooltip.innerHTML = html; tooltip.style.display = 'block'; moverTooltip(e);
         }
 
         function moverTooltip(e) {
-            const w = tooltip.offsetWidth;
-            const h = tooltip.offsetHeight;
-            const margin = 15;
-            
-            let x = e.clientX + margin;
-            let y = e.clientY + margin;
-
-            if(x + w > window.innerWidth) x = e.clientX - w - margin;
-            if(y + h > window.innerHeight) y = e.clientY - h - margin;
-
-            tooltip.style.left = x + 'px';
-            tooltip.style.top = y + 'px';
+            const w = tooltip.offsetWidth; const h = tooltip.offsetHeight; const m = 15;
+            let x = e.clientX + m; let y = e.clientY + m;
+            if(x + w > window.innerWidth) x = e.clientX - w - m;
+            if(y + h > window.innerHeight) y = e.clientY - h - m;
+            tooltip.style.left = x + 'px'; tooltip.style.top = y + 'px';
         }
+        function esconderTooltip() { tooltip.style.display = 'none'; }
+        document.addEventListener('mousemove', (e) => { if(tooltip.style.display === 'block') moverTooltip(e); });
 
-        function esconderTooltip() {
-            tooltip.style.display = 'none';
-        }
-
-        document.addEventListener('mousemove', (e) => {
-            if(tooltip.style.display === 'block') moverTooltip(e);
-        });
-
-        // --- 7. RELATÓRIO DE IMPRESSÃO (Ajustado para cores azuis) ---
         function gerarRelatorioPDF() {
             if(!relatorioDados) return;
-
             const dados = relatorioDados;
             const sortedStatus = Object.entries(dados.statusTotals).sort((a,b) => b[1] - a[1]);
-            
             let linhasTabela = '';
             sortedStatus.forEach(([nome, qtd]) => {
-                if(qtd > 0) {
-                    const pct = ((qtd / dados.totalDocs) * 100).toFixed(1);
-                    linhasTabela += `
-                        <tr>
-                            <td>${nome}</td>
-                            <td class="text-right">${qtd.toLocaleString()}</td>
-                            <td class="text-right">${pct}%</td>
-                        </tr>
-                    `;
-                }
+                if(qtd > 0) linhasTabela += `<tr><td>${nome}</td><td class="text-right">${qtd.toLocaleString()}</td><td class="text-right">${((qtd / dados.totalDocs) * 100).toFixed(1)}%</td></tr>`;
             });
-
             const janela = window.open('', '', 'width=900,height=800');
-            janela.document.write(`
-                <html>
-                <head>
-                    <title>Relatório de Ocupação</title>
-                    <style>
-                        body { font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; color: #333; }
-                        h1 { text-align: center; border-bottom: 2px solid #1351b4; padding-bottom: 15px; margin-bottom: 30px; color: #1351b4; }
-                        .cards { display: flex; justify-content: space-between; margin-bottom: 40px; }
-                        .card { background: #f8f8f8; padding: 20px; border: 1px solid #ddd; border-radius: 4px; width: 30%; text-align: center; }
-                        .val { font-size: 24px; font-weight: bold; display: block; margin-bottom: 5px; color: #1351b4; }
-                        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
-                        th { background: #333; color: white; padding: 10px; text-align: left; }
-                        td { padding: 8px; border-bottom: 1px solid #ddd; }
-                        .text-right { text-align: right; }
-                        .footer { margin-top: 50px; text-align: center; font-size: 11px; color: #999; border-top: 1px solid #eee; padding-top: 10px; }
-                    </style>
-                </head>
-                <body>
-                    <h1>Relatório de Ocupação Física do Arquivo</h1>
-                    
-                    <div class="cards">
-                        <div class="card">
-                            <span class="val">${dados.totalOcupados.toLocaleString()}</span>
-                            <span>Boxes Ocupados</span>
-                        </div>
-                        <div class="card">
-                            <span class="val">${(totalBoxesEsperados - dados.totalOcupados).toLocaleString()}</span>
-                            <span>Boxes Livres</span>
-                        </div>
-                        <div class="card">
-                            <span class="val">${dados.totalDocs.toLocaleString()}</span>
-                            <span>Total Documentos</span>
-                        </div>
-                    </div>
-
-                    <h3>Detalhamento por Tipo Documental</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Tipo / Situação</th>
-                                <th class="text-right">Quantidade</th>
-                                <th class="text-right">% do Acervo</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${linhasTabela}
-                        </tbody>
-                    </table>
-
-                    <div class="footer">
-                        Documento gerado automaticamente pelo Sistema de Gestão Documental em ${new Date().toLocaleString()}.
-                    </div>
-                </body>
-                </html>
-            `);
-            
-            janela.document.close();
-            setTimeout(() => {
-                janela.print();
-            }, 500);
+            janela.document.write(`<html><head><title>Relatório de Ocupação</title><style>body { font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; color: #333; } h1 { text-align: center; border-bottom: 2px solid #1351b4; padding-bottom: 15px; margin-bottom: 30px; color: #1351b4; } .cards { display: flex; justify-content: space-between; margin-bottom: 40px; } .card { background: #f8f8f8; padding: 20px; border: 1px solid #ddd; border-radius: 4px; width: 30%; text-align: center; } .val { font-size: 24px; font-weight: bold; display: block; margin-bottom: 5px; color: #1351b4; } table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; } th { background: #333; color: white; padding: 10px; text-align: left; } td { padding: 8px; border-bottom: 1px solid #ddd; } .text-right { text-align: right; } .footer { margin-top: 50px; text-align: center; font-size: 11px; color: #999; border-top: 1px solid #eee; padding-top: 10px; }</style></head><body><h1>Relatório de Ocupação Física do Arquivo</h1><div class="cards"><div class="card"><span class="val">${dados.totalOcupados.toLocaleString()}</span><span>Boxes Ocupados</span></div><div class="card"><span class="val">${(totalBoxesEsperados - dados.totalOcupados).toLocaleString()}</span><span>Boxes Livres</span></div><div class="card"><span class="val">${dados.totalDocs.toLocaleString()}</span><span>Total Documentos</span></div></div><h3>Detalhamento por Tipo Documental</h3><table><thead><tr><th>Tipo / Situação</th><th class="text-right">Quantidade</th><th class="text-right">% do Acervo</th></tr></thead><tbody>${linhasTabela}</tbody></table><div class="footer">Documento gerado automaticamente pelo Sistema de Gestão Documental em ${new Date().toLocaleString()}.</div></body></html>`);
+            janela.document.close(); setTimeout(() => { janela.print(); }, 500);
         }
-
     </script>
 </body>
 </html>
