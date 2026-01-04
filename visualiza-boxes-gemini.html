@@ -27,7 +27,7 @@
             --bg-body: #f8f8f8;
             --bg-card: #ffffff;
             --radius-gov: 4px;
-            --container-width: 1450px; /* Aumentado para comportar 4 blocos maiores */
+            --container-width: 1450px;
         }
 
         /* --- RESET & BASE --- */
@@ -192,18 +192,16 @@
         /* --- ÁREA DAS ESTANTES (GRID PRINCIPAL) --- */
         .shelves-area {
             display: grid;
-            /* Força 4 colunas */
             grid-template-columns: repeat(4, 1fr); 
             gap: 25px;
-            justify-items: center; /* Centraliza os blocos na coluna */
+            justify-items: center;
         }
 
         .shelf {
             background: #f4f4f4;
             border: 1px solid #ddd;
             border-radius: var(--radius-gov);
-            padding: 10px; /* Padding levemente aumentado */
-            /* Largura automática baseada no conteúdo (grid interno) */
+            padding: 10px;
             width: fit-content; 
         }
 
@@ -215,19 +213,19 @@
         .shelf-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr); /* 7x7 fixo */
-            gap: 4px; /* Espaço entre boxes aumentado para respiro */
+            gap: 4px;
         }
 
         /* --- BOX INDIVIDUAL (AUMENTADO) --- */
         .box-unit {
-            width: 35px;  /* Aumentado de 28px */
-            height: 35px; /* Aumentado de 28px */
+            width: 35px;
+            height: 35px;
             background: white;
             border: 1px solid #ccc;
             border-radius: 3px;
             cursor: pointer;
             display: flex; align-items: center; justify-content: center;
-            font-size: 11px; /* Fonte aumentada para legibilidade */
+            font-size: 11px;
             font-weight: 700; 
             color: #666;
             transition: all 0.1s;
@@ -241,7 +239,6 @@
             color: #000;
         }
 
-        /* Responsividade para não quebrar os blocos maiores */
         @media (max-width: 1400px) {
             .shelves-area { grid-template-columns: repeat(3, 1fr); }
         }
@@ -250,7 +247,7 @@
         }
         @media (max-width: 700px) {
             .shelves-area { grid-template-columns: 1fr; }
-            .box-unit { width: 30px; height: 30px; font-size: 10px; } /* Reduz um pouco no mobile */
+            .box-unit { width: 30px; height: 30px; font-size: 10px; }
         }
 
         /* --- STATUS E FOOTER --- */
@@ -337,7 +334,7 @@
         <div class="page-header">
             <div class="page-title">
                 <h1>Visualizador de Boxes</h1>
-                <p>Mapeamento Físico e Ocupacional - Versão 2.0</p>
+                <p>Mapeamento Físico e Ocupacional - Versão 2.1 (Dinâmica)</p>
             </div>
             <div class="badge-beta">AMBIENTE DE HOMOLOGAÇÃO</div>
         </div>
@@ -363,21 +360,21 @@
                 
                 <div class="stats-grid">
                     <div class="stat-card" style="border-left-color: #777;">
-                        <div class="stat-val" id="valTotal">7.000</div>
-                        <div class="stat-label">Capacidade Total</div>
+                        <div class="stat-val" id="valTotal">-</div>
+                        <div class="stat-label">Capacidade Detectada</div>
                     </div>
                     <div class="stat-card" style="border-left-color: var(--success);">
-                        <div class="stat-val" id="valOcupados" style="color: var(--success);">0</div>
+                        <div class="stat-val" id="valOcupados" style="color: var(--success);">-</div>
                         <div class="stat-detail" id="pctOcupados">0%</div>
                         <div class="stat-label">Boxes Ocupados</div>
                     </div>
                     <div class="stat-card" style="border-left-color: #ccc;">
-                        <div class="stat-val" id="valVazios" style="color: #999;">0</div>
+                        <div class="stat-val" id="valVazios" style="color: #999;">-</div>
                         <div class="stat-detail" id="pctVazios">0%</div>
                         <div class="stat-label">Boxes Livres</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-val" id="valDocs" style="color: var(--gov-blue);">0</div>
+                        <div class="stat-val" id="valDocs" style="color: var(--gov-blue);">-</div>
                         <div class="stat-label">Total de Documentos</div>
                     </div>
                 </div>
@@ -416,9 +413,9 @@
     <div class="tooltip" id="tooltip"></div>
 
     <script>
-        // --- LÓGICA MANTIDA E OTIMIZADA ---
+        // --- VARIÁVEIS GLOBAIS ---
         let relatorioDados = null;
-        const totalBoxesEsperados = 7000;
+        let totalBoxesDetectados = 0; // Alterado para dinâmico
         
         const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('fileInput');
@@ -428,8 +425,10 @@
         const resultsDiv = document.getElementById('results');
         const tooltip = document.getElementById('tooltip');
 
+        // --- EVENT LISTENERS ---
         btnSelectFile.addEventListener('click', (e) => { e.stopPropagation(); fileInput.click(); });
         dropZone.addEventListener('click', () => fileInput.click());
+        
         dropZone.addEventListener('dragover', (e) => {
             e.preventDefault(); dropZone.style.borderColor = 'var(--gov-blue)'; dropZone.style.backgroundColor = '#f2f7fd';
         });
@@ -442,9 +441,11 @@
         });
         fileInput.addEventListener('change', (e) => { if(e.target.files.length) processarArquivo(e.target.files[0]); });
 
+        // --- PROCESSAMENTO ---
         function processarArquivo(file) {
             loading.style.display = 'flex';
             const reader = new FileReader();
+            
             reader.onload = function(e) {
                 try {
                     const data = new Uint8Array(e.target.result);
@@ -452,6 +453,7 @@
                     const sheetName = workbook.SheetNames[0];
                     const sheet = workbook.Sheets[sheetName];
                     const json = XLSX.utils.sheet_to_json(sheet, {header: 1});
+                    
                     const headers = json[2]; 
                     const rows = json.slice(3);
 
@@ -459,11 +461,18 @@
                     
                     const dadosProcessados = analisarDados(headers, rows);
                     relatorioDados = dadosProcessados;
+                    
                     renderizarInterface(dadosProcessados);
                     
-                    setTimeout(() => { loading.style.display = 'none'; uploadSection.style.display = 'none'; resultsDiv.style.display = 'block'; }, 800);
+                    setTimeout(() => { 
+                        loading.style.display = 'none'; 
+                        uploadSection.style.display = 'none'; 
+                        resultsDiv.style.display = 'block'; 
+                    }, 800);
                 } catch (err) {
-                    console.error(err); alert("Erro ao ler arquivo. Verifique se é a planilha correta."); loading.style.display = 'none';
+                    console.error(err); 
+                    alert("Erro ao ler arquivo. Verifique se é a planilha padrão."); 
+                    loading.style.display = 'none';
                 }
             };
             reader.readAsArrayBuffer(file);
@@ -472,33 +481,61 @@
         function analisarDados(headers, rows) {
             const ignore = ['BOX', 'TOTAL', 'Total', 'Box', 'box'];
             const statusCols = headers.map((h, i) => ({name: h, index: i})).filter(c => c.name && !ignore.includes(c.name));
-            const boxes = new Array(totalBoxesEsperados + 1).fill(null);
-            let totalOcupados = 0; let totalDocs = 0; const statusTotals = {};
+            
+            // 1. Detectar o maior número de box (Quantidade Real)
+            let maxBoxNum = 0;
+            rows.forEach(row => {
+                const num = parseInt(row[0]);
+                if(!isNaN(num) && num > maxBoxNum) maxBoxNum = num;
+            });
+
+            // Define o total global com base no arquivo
+            totalBoxesDetectados = maxBoxNum;
+            
+            // 2. Inicializar array com o tamanho correto
+            const boxes = new Array(totalBoxesDetectados + 1).fill(null);
+            let totalOcupados = 0; 
+            let totalDocs = 0; 
+            const statusTotals = {};
             statusCols.forEach(c => statusTotals[c.name] = 0);
 
+            // 3. Preencher dados
             rows.forEach(row => {
                 const boxNum = parseInt(row[0]);
-                if(boxNum > 0 && boxNum <= totalBoxesEsperados) {
+                if(boxNum > 0 && boxNum <= totalBoxesDetectados) {
                     const boxData = { id: boxNum, total: 0, content: {} };
                     statusCols.forEach(col => {
                         const val = parseInt(row[col.index]) || 0;
                         if(val > 0) {
-                            boxData.content[col.name] = val; boxData.total += val; statusTotals[col.name] += val;
+                            boxData.content[col.name] = val; 
+                            boxData.total += val; 
+                            statusTotals[col.name] += val;
                         }
                     });
-                    if(boxData.total > 0) { boxes[boxNum] = boxData; totalOcupados++; totalDocs += boxData.total; }
+                    if(boxData.total > 0) { 
+                        boxes[boxNum] = boxData; 
+                        totalOcupados++; 
+                        totalDocs += boxData.total; 
+                    }
                 }
             });
+            
             return { boxes, statusCols, statusTotals, totalOcupados, totalDocs };
         }
 
         function renderizarInterface(dados) {
+            // Atualiza KPI de Total usando o valor dinâmico
+            document.getElementById('valTotal').innerText = totalBoxesDetectados.toLocaleString();
+            
             document.getElementById('valOcupados').innerText = dados.totalOcupados.toLocaleString();
-            document.getElementById('pctOcupados').innerText = ((dados.totalOcupados / totalBoxesEsperados) * 100).toFixed(1) + '%';
-            document.getElementById('valVazios').innerText = (totalBoxesEsperados - dados.totalOcupados).toLocaleString();
-            document.getElementById('pctVazios').innerText = (((totalBoxesEsperados - dados.totalOcupados) / totalBoxesEsperados) * 100).toFixed(1) + '%';
+            document.getElementById('pctOcupados').innerText = ((dados.totalOcupados / totalBoxesDetectados) * 100).toFixed(1) + '%';
+            
+            document.getElementById('valVazios').innerText = (totalBoxesDetectados - dados.totalOcupados).toLocaleString();
+            document.getElementById('pctVazios').innerText = (((totalBoxesDetectados - dados.totalOcupados) / totalBoxesDetectados) * 100).toFixed(1) + '%';
+            
             document.getElementById('valDocs').innerText = dados.totalDocs.toLocaleString();
 
+            // Legenda e Cores
             const cores = gerarPaletaCores(dados.statusCols.length);
             const mapaCores = {};
             let legendHTML = '';
@@ -509,16 +546,17 @@
             legendHTML += `<div class="legend-item"><div class="legend-dot" style="background:white; border:1px solid #ccc"></div>VAZIO</div>`;
             document.getElementById('legendContainer').innerHTML = legendHTML;
 
+            // Renderização do Grid (Usando totalBoxesDetectados)
             const containerShelves = document.getElementById('shelvesContainer');
             containerShelves.innerHTML = '';
             
             const boxesPorEstante = 49; 
-            const qtdEstantes = Math.ceil(totalBoxesEsperados / boxesPorEstante);
+            const qtdEstantes = Math.ceil(totalBoxesDetectados / boxesPorEstante);
             const fragment = document.createDocumentFragment();
 
             for(let i=0; i < qtdEstantes; i++) {
                 const start = i * boxesPorEstante + 1;
-                const end = Math.min((i+1) * boxesPorEstante, totalBoxesEsperados);
+                const end = Math.min((i+1) * boxesPorEstante, totalBoxesDetectados);
                 
                 const shelfDiv = document.createElement('div');
                 shelfDiv.className = 'shelf';
@@ -549,6 +587,7 @@
             }
             containerShelves.appendChild(fragment);
 
+            // Cards de Status
             const statusContainer = document.getElementById('statusGridContainer');
             statusContainer.innerHTML = '';
             const sortedStatus = Object.entries(dados.statusTotals).sort((a,b) => b[1] - a[1]);
@@ -567,6 +606,7 @@
             });
         }
 
+        // --- AUXILIARES ---
         function gerarPaletaCores(qtd) {
             const cores = []; const passo = 360 / qtd;
             for(let i=0; i<qtd; i++) cores.push(`hsl(${Math.floor(i*passo)}, 70%, 55%)`);
@@ -606,6 +646,7 @@
         function esconderTooltip() { tooltip.style.display = 'none'; }
         document.addEventListener('mousemove', (e) => { if(tooltip.style.display === 'block') moverTooltip(e); });
 
+        // --- RELATÓRIO PDF ---
         function gerarRelatorioPDF() {
             if(!relatorioDados) return;
             const dados = relatorioDados;
@@ -615,7 +656,7 @@
                 if(qtd > 0) linhasTabela += `<tr><td>${nome}</td><td class="text-right">${qtd.toLocaleString()}</td><td class="text-right">${((qtd / dados.totalDocs) * 100).toFixed(1)}%</td></tr>`;
             });
             const janela = window.open('', '', 'width=900,height=800');
-            janela.document.write(`<html><head><title>Relatório de Ocupação</title><style>body { font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; color: #333; } h1 { text-align: center; border-bottom: 2px solid #1351b4; padding-bottom: 15px; margin-bottom: 30px; color: #1351b4; } .cards { display: flex; justify-content: space-between; margin-bottom: 40px; } .card { background: #f8f8f8; padding: 20px; border: 1px solid #ddd; border-radius: 4px; width: 30%; text-align: center; } .val { font-size: 24px; font-weight: bold; display: block; margin-bottom: 5px; color: #1351b4; } table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; } th { background: #333; color: white; padding: 10px; text-align: left; } td { padding: 8px; border-bottom: 1px solid #ddd; } .text-right { text-align: right; } .footer { margin-top: 50px; text-align: center; font-size: 11px; color: #999; border-top: 1px solid #eee; padding-top: 10px; }</style></head><body><h1>Relatório de Ocupação Física do Arquivo</h1><div class="cards"><div class="card"><span class="val">${dados.totalOcupados.toLocaleString()}</span><span>Boxes Ocupados</span></div><div class="card"><span class="val">${(totalBoxesEsperados - dados.totalOcupados).toLocaleString()}</span><span>Boxes Livres</span></div><div class="card"><span class="val">${dados.totalDocs.toLocaleString()}</span><span>Total Documentos</span></div></div><h3>Detalhamento por Tipo Documental</h3><table><thead><tr><th>Tipo / Situação</th><th class="text-right">Quantidade</th><th class="text-right">% do Acervo</th></tr></thead><tbody>${linhasTabela}</tbody></table><div class="footer">Documento gerado automaticamente pelo Sistema de Gestão Documental em ${new Date().toLocaleString()}.</div></body></html>`);
+            janela.document.write(`<html><head><title>Relatório de Ocupação</title><style>body { font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; color: #333; } h1 { text-align: center; border-bottom: 2px solid #1351b4; padding-bottom: 15px; margin-bottom: 30px; color: #1351b4; } .cards { display: flex; justify-content: space-between; margin-bottom: 40px; } .card { background: #f8f8f8; padding: 20px; border: 1px solid #ddd; border-radius: 4px; width: 30%; text-align: center; } .val { font-size: 24px; font-weight: bold; display: block; margin-bottom: 5px; color: #1351b4; } table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; } th { background: #333; color: white; padding: 10px; text-align: left; } td { padding: 8px; border-bottom: 1px solid #ddd; } .text-right { text-align: right; } .footer { margin-top: 50px; text-align: center; font-size: 11px; color: #999; border-top: 1px solid #eee; padding-top: 10px; }</style></head><body><h1>Relatório de Ocupação Física do Arquivo</h1><div class="cards"><div class="card"><span class="val">${dados.totalOcupados.toLocaleString()}</span><span>Boxes Ocupados</span></div><div class="card"><span class="val">${(totalBoxesDetectados - dados.totalOcupados).toLocaleString()}</span><span>Boxes Livres</span></div><div class="card"><span class="val">${dados.totalDocs.toLocaleString()}</span><span>Total Documentos</span></div></div><h3>Detalhamento por Tipo Documental</h3><table><thead><tr><th>Tipo / Situação</th><th class="text-right">Quantidade</th><th class="text-right">% do Acervo</th></tr></thead><tbody>${linhasTabela}</tbody></table><div class="footer">Documento gerado automaticamente pelo Sistema de Gestão Documental em ${new Date().toLocaleString()}.</div></body></html>`);
             janela.document.close(); setTimeout(() => { janela.print(); }, 500);
         }
     </script>
