@@ -5,28 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerador de Etiquetas | Sistema Interno</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@500&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@500&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
     <style>
         /* --- VARIÁVEIS DO SISTEMA --- */
         :root {
-            /* Cores Institucionais */
             --gov-blue: #1351b4;
             --gov-blue-dark: #0c326f;
-            --gov-blue-light: #f2f7fd;
-            
-            /* UI Elements */
             --bg-body: #f8f8f8;
             --bg-card: #ffffff;
             --border-color: #e5e5e5;
             --text-primary: #131313;
             --text-secondary: #555555;
             --radius-gov: 4px;
-            
-            /* Dimensões */
             --container-width: 1400px;
-            --label-size: 9cm; /* Tamanho físico da etiqueta */
         }
 
         /* --- RESET & BASE --- */
@@ -42,31 +35,23 @@
             min-height: 100vh;
         }
 
-        /* --- CABEÇALHO COMPACTO --- */
+        /* --- HEADER --- */
         .br-header {
             background-color: var(--gov-blue);
             color: white;
             padding: 8px 0; 
             border-bottom: 4px solid var(--gov-blue-dark);
         }
-
         .header-container {
             max-width: var(--container-width);
             margin: 0 auto;
             padding: 0 20px;
             display: flex;
             align-items: center;
-            height: 100%; 
         }
+        .header-brand { font-weight: 700; font-size: 16px; letter-spacing: 0.5px; text-transform: uppercase; }
 
-        .header-brand {
-            font-weight: 700;
-            font-size: 16px;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-
-        /* --- LAYOUT PRINCIPAL (SPLIT VIEW) --- */
+        /* --- LAYOUT PRINCIPAL --- */
         .main-container {
             max-width: var(--container-width);
             margin: 30px auto;
@@ -74,12 +59,12 @@
             flex: 1;
             width: 100%;
             display: grid;
-            grid-template-columns: 350px 1fr; /* Coluna de Controles Fixa + Área Flexível */
+            grid-template-columns: 380px 1fr;
             gap: 30px;
             align-items: start;
         }
 
-        /* --- PAINEL DE CONTROLES (ESQUERDA) --- */
+        /* --- PAINEL DE CONTROLES --- */
         .control-panel {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
@@ -87,209 +72,153 @@
             padding: 25px;
             position: sticky;
             top: 20px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
         }
 
         .panel-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--gov-blue);
-            color: var(--gov-blue);
+            font-size: 18px; font-weight: 700; margin-bottom: 20px; padding-bottom: 10px;
+            border-bottom: 2px solid var(--gov-blue); color: var(--gov-blue); display: flex; align-items: center; gap: 10px;
         }
 
-        /* Formulários */
-        .form-group { margin-bottom: 15px; }
+        .mode-switcher {
+            display: flex; gap: 10px; margin-bottom: 20px; background: #f0f0f0; pading: 5px; border-radius: var(--radius-gov);
+        }
+        .mode-btn {
+            flex: 1; border: none; padding: 8px; font-size: 12px; font-weight: 700; cursor: pointer;
+            border-radius: var(--radius-gov); transition: 0.2s; background: transparent; color: #666;
+        }
+        .mode-btn.active { background: var(--gov-blue); color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+
+        .form-group { margin-bottom: 15px; position: relative; }
+        .form-label { display: block; font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; }
         
-        .form-label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 5px;
-            text-transform: uppercase;
-        }
-
         .form-control {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: var(--radius-gov);
-            font-size: 14px;
-            font-family: inherit;
-            transition: border-color 0.2s;
-            background: #fff;
+            width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: var(--radius-gov);
+            font-size: 13px; font-family: inherit; transition: border-color 0.2s; background: #fff;
         }
+        .form-control:focus { border-color: var(--gov-blue); box-shadow: 0 0 0 2px rgba(19, 81, 180, 0.1); }
+        textarea.form-control { resize: vertical; min-height: 70px; }
 
-        .form-control:focus {
-            border-color: var(--gov-blue);
-            box-shadow: 0 0 0 2px rgba(19, 81, 180, 0.1);
+        .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        
+        /* Autocomplete */
+        .autocomplete-list {
+            position: absolute; top: 100%; left: 0; right: 0;
+            background: white; border: 1px solid #ccc; border-top: none;
+            max-height: 150px; overflow-y: auto; z-index: 100;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-radius: 0 0 4px 4px; display: none;
         }
-
-        textarea.form-control { resize: vertical; min-height: 80px; }
+        .autocomplete-item { padding: 8px; font-size: 12px; cursor: pointer; border-bottom: 1px solid #f0f0f0; }
+        .autocomplete-item:hover { background: #f2f7fd; color: var(--gov-blue); }
 
         /* Botões */
         .btn {
-            width: 100%;
-            padding: 12px;
-            border-radius: var(--radius-gov);
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-            border: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            text-transform: uppercase;
+            width: 100%; padding: 12px; border-radius: var(--radius-gov); font-size: 13px; font-weight: 600;
+            cursor: pointer; transition: 0.2s; border: none; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase;
         }
-
         .btn-primary { background-color: var(--gov-blue); color: white; margin-top: 10px; }
         .btn-primary:hover { background-color: var(--gov-blue-dark); }
-
         .btn-success { background-color: #168821; color: white; margin-top: 20px; }
         .btn-success:hover { background-color: #116619; }
-        
-        .btn-outline { 
-            background: transparent; 
-            border: 1px solid #ccc; 
-            color: var(--text-secondary); 
-            margin-top: 10px; 
-        }
+        .btn-outline { background: transparent; border: 1px solid #ccc; color: var(--text-secondary); margin-top: 10px; }
         .btn-outline:hover { background: #f0f0f0; color: var(--text-primary); }
 
-        /* --- ÁREA DE PREVIEW (DIREITA) --- */
+        /* --- PREVIEW --- */
         .preview-area {
-            background: #e9e9e9; /* Fundo mais escuro para destacar o papel branco */
-            border: 1px solid #ccc;
-            border-radius: var(--radius-gov);
-            padding: 40px;
-            min-height: 600px;
+            background: #e0e0e0; border: 1px solid #ccc; border-radius: var(--radius-gov);
+            padding: 40px; min-height: 600px; display: flex; justify-content: center;
         }
 
-        .preview-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
+        /* Folha A4 na tela */
+        .sheet-a4 {
+            width: 210mm; min-height: 297mm; background: white; padding: 10mm;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(3, 1fr);
+            gap: 5mm; /* Espaço entre etiquetas */
+            box-sizing: border-box;
         }
 
-        .preview-title { font-size: 16px; font-weight: 700; color: var(--text-secondary); }
-        .preview-count { font-size: 13px; background: #d1d1d1; padding: 2px 8px; border-radius: 10px; }
-
-        .labels-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px; /* Espaço na visualização de tela */
-            justify-content: center;
-        }
-
-        /* --- COMPONENTE ETIQUETA (CSS PURO) --- */
-        .etiqueta-card {
-            width: var(--label-size);
-            height: var(--label-size);
-            background: white;
-            border: 1px dashed #ccc; /* Borda tracejada para corte */
-            padding: 20px;
-            position: relative;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+        /* --- ETIQUETAS (CSS Específico para Impressão) --- */
+        .etiqueta-box {
+            border: 1px dashed #ddd; /* Tracejado na tela */
+            height: 100%; padding: 5px; position: relative;
+            background: white; overflow: hidden;
+            display: flex; flex-direction: column;
         }
 
         .btn-delete {
-            position: absolute;
-            top: 5px; right: 5px;
-            background: #ffebeb;
-            color: #cc0000;
-            border: none;
-            width: 24px; height: 24px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            display: flex; align-items: center; justify-content: center;
-            z-index: 10;
+            position: absolute; top: 2px; right: 2px; background: #ffebeb; color: #cc0000;
+            border: none; width: 20px; height: 20px; border-radius: 3px; cursor: pointer;
+            font-size: 10px; z-index: 10; display: flex; align-items: center; justify-content: center;
         }
         .btn-delete:hover { background: #ffcccc; }
 
-        /* Estilo Interno: Eliminação */
-        .layout-eliminacao {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            border: 2px solid var(--text-primary);
-            padding: 10px;
-        }
-
-        .elim-header {
-            display: flex; justify-content: space-between; align-items: flex-start;
-            margin-bottom: 10px; border-bottom: 1px solid #000; padding-bottom: 5px;
-        }
-        .elim-title { font-family: 'Playfair Display', serif; font-size: 16px; text-transform: uppercase; color: var(--gov-blue); }
-        .elim-icon { font-size: 24px; color: var(--text-primary); opacity: 0.8; }
-
-        .elim-body { display: flex; flex-direction: column; gap: 6px; flex: 1; }
-        .field-row { display: flex; align-items: baseline; gap: 5px; font-size: 12px; }
-        .field-label { font-weight: 700; text-transform: uppercase; min-width: 60px; }
-        .field-val { font-family: 'Roboto Mono', monospace; font-size: 13px; border-bottom: 1px dotted #999; flex: 1; }
+        /* Estilos Internos dos 4 Tipos */
         
-        .field-content { 
-            margin-top: 5px; border: 1px solid #eee; background: #fdfdfd; 
-            padding: 5px; font-size: 11px; height: 100%; overflow: hidden; 
+        /* 1 & 2: Padrão (Eliminação/Permanente) */
+        .layout-padrao {
+            border: 2px solid #000; height: 100%; padding: 8px; display: flex; flex-direction: column;
+            color: #000; font-family: Arial, sans-serif;
+        }
+        .eli-header {
+            text-align: center; font-weight: 900; text-transform: uppercase; font-size: 14px;
+            border-bottom: 2px solid #000; padding-bottom: 4px; margin-bottom: 6px; font-family: 'Rawline', sans-serif;
+        }
+        .eli-row { display: flex; gap: 5px; margin-bottom: 4px; align-items: baseline; }
+        .eli-label { font-weight: 700; font-size: 10px; white-space: nowrap; text-transform: uppercase; }
+        .eli-value {
+            border-bottom: 1px dotted #000; flex: 1; font-size: 11px; font-weight: 600;
+            padding-left: 5px; font-family: 'Roboto Mono', monospace; min-height: 14px;
+        }
+        .eli-desc {
+            border: 1px solid #000; flex: 1; padding: 5px; font-size: 10px; margin-top: 4px;
             line-height: 1.3;
         }
 
-        /* Estilo Interno: Numérica */
-        .layout-numerica {
-            display: flex; flex-direction: column; height: 100%;
-            align-items: center; justify-content: center;
-            border: 4px double var(--gov-blue);
-            text-align: center;
+        /* 3: Amostragem (Borda Dupla) */
+        .layout-amostragem {
+            border: 4px double #000; height: 100%; padding: 10px; display: flex; flex-direction: column;
+            color: #000;
         }
-        .num-big { font-size: 110px; font-weight: 700; line-height: 1; color: var(--text-primary); letter-spacing: -2px; }
-        .num-setor { font-size: 16px; font-weight: 600; margin-top: -10px; text-transform: uppercase; color: var(--text-secondary); }
-        .num-date { font-size: 12px; margin-top: 15px; color: #999; font-family: 'Roboto Mono', monospace; }
+        .amo-header {
+            text-align: center; font-weight: 900; text-transform: uppercase; font-size: 16px;
+            margin-bottom: 10px; border-bottom: 1px solid #000; padding-bottom: 5px; letter-spacing: 1px;
+        }
 
-        /* --- PRINT STYLES (CRÍTICO) --- */
+        /* 4: Numérica (Caixa) */
+        .layout-numerica {
+            border: 5px solid #000; height: 100%; display: flex; flex-direction: column; text-align: center;
+            color: #000;
+        }
+        .num-header { background: #000; color: #fff; padding: 5px; height: 50px; display: flex; align-items: center; justify-content: center; }
+        .num-header span { font-size: 32px; font-weight: 800; line-height: 1; }
+        .num-body { flex: 1; display: flex; align-items: center; justify-content: center; padding: 5px; }
+        .num-setor { font-size: 24px; font-weight: 800; text-transform: uppercase; line-height: 1.1; word-break: break-word; }
+        .num-footer { border-top: 4px solid #000; padding: 5px; font-size: 16px; font-weight: 700; background: #f0f0f0; }
+
+        /* --- IMPRESSÃO (CRÍTICO) --- */
         @media print {
             body { background: white; }
-            .br-header, .control-panel, .br-footer, .preview-header, .btn-delete { display: none !important; }
+            .br-header, .control-panel, .br-footer, .btn-delete { display: none !important; }
             .main-container { display: block; width: 100%; margin: 0; padding: 0; max-width: none; }
-            .preview-area { background: white; border: none; padding: 0; min-height: 0; }
-            
-            .labels-grid {
-                display: grid;
-                grid-template-columns: repeat(2, 1fr); /* 2 etiquetas por linha na folha A4 */
-                gap: 0;
+            .preview-area { background: white; border: none; padding: 0; display: block; }
+            .sheet-a4 {
+                width: 210mm; height: 296mm; margin: 0; padding: 10mm; box-shadow: none;
+                /* Garante grid exato na impressão */
+                display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(3, 1fr);
+                gap: 5mm; page-break-after: always;
             }
-
-            .etiqueta-card {
-                border: 1px solid #000; /* Borda preta sólida para impressão */
-                box-shadow: none;
-                break-inside: avoid; /* Não quebrar etiqueta no meio da página */
-                margin: 2mm; /* Pequena margem para corte */
-            }
-            
-            /* Ajusta a cor para preto puro na impressão */
-            .layout-numerica, .elim-title { color: black !important; border-color: black !important; }
+            .etiqueta-box { border: none !important; } /* Tira o tracejado */
+            /* Garante cores de fundo e bordas na impressão */
+            .layout-numerica .num-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .layout-numerica .num-footer { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
 
-        /* --- FOOTER --- */
-        .br-footer {
-            background-color: var(--gov-blue-dark);
-            color: white;
-            padding: 15px 0;
-            font-size: 12px;
-            margin-top: auto;
-            text-align: center;
-        }
-
-        /* Responsividade */
         @media (max-width: 900px) {
             .main-container { grid-template-columns: 1fr; }
-            .control-panel { position: relative; top: 0; }
+            .control-panel { position: relative; top: 0; max-height: none; }
+            .sheet-a4 { transform: scale(0.6); transform-origin: top left; margin-bottom: -40%; }
         }
     </style>
 </head>
@@ -304,51 +233,102 @@
     <main class="main-container">
 
         <aside class="control-panel">
-            <h2 class="panel-title">Configurar Etiqueta</h2>
+            <h2 class="panel-title"><i class="fas fa-tags"></i> Gerador de Etiquetas</h2>
             
-            <div class="form-group">
-                <label class="form-label">Modelo</label>
-                <select id="tipoEtiqueta" class="form-control" onchange="toggleCampos()">
-                    <option value="eliminacao">Padrão Eliminação</option>
-                    <option value="numerica">Numérica / Caixa</option>
-                </select>
+            <div class="mode-switcher">
+                <button class="mode-btn active" id="btnModeDoc" onclick="setModo('documental')">DOCUMENTAL</button>
+                <button class="mode-btn" id="btnModeNum" onclick="setModo('numerica')">NUMÉRICA</button>
             </div>
 
-            <div id="camposEliminacao">
+            <div id="formDocumental">
                 <div class="form-group">
-                    <label class="form-label">Unidade Administrativa</label>
-                    <input type="text" id="inputUnidade" class="form-control" placeholder="Ex: RH / Financeiro">
+                    <label class="form-label">Tipo de Etiqueta</label>
+                    <select id="docTipo" class="form-control" onchange="toggleCamposDoc()">
+                        <option value="eliminacao">ELIMINAÇÃO (Padrão)</option>
+                        <option value="permanente">GUARDA PERMANENTE</option>
+                        <option value="amostragem">AMOSTRAGEM</option>
+                    </select>
                 </div>
+
                 <div class="form-group">
-                    <label class="form-label">Processo / Caixa</label>
-                    <input type="text" id="inputProcesso" class="form-control" placeholder="Ex: 2023.001.458">
+                    <label class="form-label">Setor / Unidade</label>
+                    <input type="text" id="docSetor" class="form-control" placeholder="Digite para buscar..." oninput="buscarSetor(this, 'listSetorDoc')" autocomplete="off">
+                    <div id="listSetorDoc" class="autocomplete-list"></div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Data Limite</label>
-                    <input type="text" id="inputData" class="form-control" placeholder="DD/MM/AAAA">
+
+                <div id="fieldsComum">
+                    <div class="row-2">
+                        <div class="form-group">
+                            <label class="form-label">Nº Documento</label>
+                            <input type="text" id="docNum" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Ano (30/12/..)</label>
+                            <input type="number" id="docAno" class="form-control" placeholder="Ex: 2024">
+                        </div>
+                    </div>
+                    <div class="row-2">
+                        <div class="form-group">
+                            <label class="form-label">Classificação</label>
+                            <input type="text" id="docClass" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Qtd (cm)</label>
+                            <input type="number" id="docQtd" class="form-control">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" id="groupAnoElim">
+                        <label class="form-label" style="color: #d32f2f;">Ano Eliminação (31/12/..)</label>
+                        <input type="number" id="docElim" class="form-control" style="border-color: #d32f2f; color: #d32f2f; font-weight: 700;">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Descrição</label>
+                        <textarea id="docDesc" class="form-control" placeholder="Resumo do conteúdo..."></textarea>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Descrição do Conteúdo</label>
-                    <textarea id="inputDesc" class="form-control" placeholder="Resumo dos documentos..."></textarea>
+
+                <div id="fieldsAmostragem" style="display: none;">
+                    <div class="form-group">
+                        <label class="form-label">Processo / Caixa</label>
+                        <input type="text" id="amoProc" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Data de Referência</label>
+                        <input type="text" id="amoData" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Descrição da Amostra</label>
+                        <textarea id="amoDesc" class="form-control"></textarea>
+                    </div>
                 </div>
             </div>
 
-            <div id="camposNumerica" style="display: none;">
+            <div id="formNumerica" style="display: none;">
                 <div class="form-group">
                     <label class="form-label">Número da Caixa</label>
-                    <input type="number" id="inputNumero" class="form-control" placeholder="000">
+                    <input type="number" id="numCaixa" class="form-control" style="font-size: 24px; text-align: center; font-weight: 700;" placeholder="00">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Setor / Sigla</label>
-                    <input type="text" id="inputSetor" class="form-control" placeholder="Ex: ADM">
+                    <label class="form-label">Nome do Setor</label>
+                    <input type="text" id="numSetor" class="form-control" placeholder="Busca de Setor..." oninput="buscarSetor(this, 'listSetorNum')" autocomplete="off">
+                    <div id="listSetorNum" class="autocomplete-list"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Ano de Referência</label>
+                    <input type="text" id="numAno" class="form-control" placeholder="2025">
                 </div>
             </div>
 
-            <button class="btn btn-primary" onclick="adicionarEtiqueta()">
-                <i class="fas fa-plus-circle"></i> Adicionar à Lista
+            <button class="btn btn-primary" onclick="adicionar()">
+                <i class="fas fa-plus-circle"></i> Adicionar à Folha
+            </button>
+            <button class="btn btn-outline" onclick="preencherVazios()">
+                <i class="fas fa-magic"></i> Preencher Vazios
             </button>
             
-             <a href="index.html" class="btn btn-outline" style="text-decoration: none;">
+            <a href="index.html" class="btn btn-outline" style="text-decoration: none;">
                 <i class="fas fa-arrow-left"></i> Voltar
             </a>
 
@@ -357,24 +337,14 @@
             <button class="btn btn-success" onclick="window.print()">
                 <i class="fas fa-print"></i> Imprimir Folha
             </button>
-            <button class="btn btn-outline" style="border-color: #ffcccc; color: #cc0000; margin-top: 10px;" onclick="limparTudo()">
-                <i class="fas fa-trash"></i> Limpar Lista
+            <button class="btn btn-outline" style="border-color: #ffcccc; color: #cc0000;" onclick="limparTudo()">
+                <i class="fas fa-trash"></i> Limpar Tudo
             </button>
         </aside>
 
         <section class="preview-area">
-            <div class="preview-header">
-                <div>
-                    <span class="preview-title">Visualização de Impressão (Folha A4)</span>
+            <div id="folhaA4" class="sheet-a4">
                 </div>
-                <div class="preview-count" id="contador">0 etiquetas</div>
-            </div>
-            
-            <div id="areaEtiquetas" class="labels-grid">
-                <div style="width: 100%; text-align: center; color: #999; margin-top: 50px;" id="msgVazio">
-                    Nenhuma etiqueta adicionada.<br>Preencha o formulário ao lado.
-                </div>
-            </div>
         </section>
 
     </main>
@@ -386,126 +356,238 @@
     </footer>
 
     <script>
-        // --- LÓGICA DO SISTEMA ---
-        
-        let listaEtiquetas = [];
-        
-        // Alterna campos do formulário
-        function toggleCampos() {
-            const tipo = document.getElementById('tipoEtiqueta').value;
-            if (tipo === 'eliminacao') {
-                document.getElementById('camposEliminacao').style.display = 'block';
-                document.getElementById('camposNumerica').style.display = 'none';
+        // --- BASE DE DADOS (ABREVIADA) ---
+        // Adicione aqui a lista completa de setores conforme o arquivo original
+        const BASE_SETORES = [
+            {n:"SE - DAF - COORDENADORIA DE INFORMÁTICA"},
+            {n:"CORPO DE BOMBEIROS"},
+            {n:"CRECHE JARDIM CASTANHEIRAS"},
+            {n:"EMEF PROF ANA BERLING DE MACEDO"},
+            {n:"EMEF DOM PEDRO ALCÂNTARA - CAIC"},
+            {n:"SECRETARIA DE SAÚDE - ADMINISTRATIVO"},
+            {n:"SECRETARIA DE FINANÇAS - CONTABILIDADE"},
+            {n:"GABINETE DO PREFEITO"},
+            {n:"RECURSOS HUMANOS - GERAL"},
+            {n:"JURÍDICO - PROCESSOS"}
+        ];
+
+        let etiquetas = [];
+        const MAX_ETIQUETAS = 6; // 2 colunas x 3 linhas
+
+        // --- CONTROLE DE UI ---
+        function setModo(modo) {
+            document.getElementById('btnModeDoc').className = modo === 'documental' ? 'mode-btn active' : 'mode-btn';
+            document.getElementById('btnModeNum').className = modo === 'numerica' ? 'mode-btn active' : 'mode-btn';
+            
+            document.getElementById('formDocumental').style.display = modo === 'documental' ? 'block' : 'none';
+            document.getElementById('formNumerica').style.display = modo === 'numerica' ? 'block' : 'none';
+        }
+
+        function toggleCamposDoc() {
+            const tipo = document.getElementById('docTipo').value;
+            
+            // Controle campos Amostragem
+            if (tipo === 'amostragem') {
+                document.getElementById('fieldsComum').style.display = 'none';
+                document.getElementById('fieldsAmostragem').style.display = 'block';
             } else {
-                document.getElementById('camposEliminacao').style.display = 'none';
-                document.getElementById('camposNumerica').style.display = 'block';
+                document.getElementById('fieldsComum').style.display = 'block';
+                document.getElementById('fieldsAmostragem').style.display = 'none';
+            }
+
+            // Controle campo Ano Eliminação (Só para Eliminação)
+            if (tipo === 'eliminacao') {
+                document.getElementById('groupAnoElim').style.display = 'block';
+            } else {
+                document.getElementById('groupAnoElim').style.display = 'none';
             }
         }
 
-        // Adicionar Etiqueta ao Array
-        function adicionarEtiqueta() {
-            const tipo = document.getElementById('tipoEtiqueta').value;
-            const obj = { id: Date.now(), tipo: tipo };
-
-            if (tipo === 'eliminacao') {
-                obj.unidade = document.getElementById('inputUnidade').value || "N/A";
-                obj.processo = document.getElementById('inputProcesso').value || "S/N";
-                obj.data = document.getElementById('inputData').value || "Indefinido";
-                obj.desc = document.getElementById('inputDesc').value || "";
-            } else {
-                obj.numero = document.getElementById('inputNumero').value || "000";
-                obj.setor = document.getElementById('inputSetor').value || "GERAL";
-                obj.data = new Date().toLocaleDateString('pt-BR');
-            }
-
-            listaEtiquetas.push(obj);
-            renderizar();
+        // --- AUTOCOMPLETE ---
+        function buscarSetor(input, listId) {
+            const val = input.value.toUpperCase();
+            const list = document.getElementById(listId);
+            list.innerHTML = '';
             
-            // Não limpa o formulário automaticamente para facilitar inserção em massa,
-            // exceto o campo numérico que incrementa
-            if(tipo === 'numerica') {
-                const numAtual = parseInt(document.getElementById('inputNumero').value);
-                if(!isNaN(numAtual)) document.getElementById('inputNumero').value = numAtual + 1;
+            if (!val) { list.style.display = 'none'; return; }
+
+            const matches = BASE_SETORES.filter(s => s.n.includes(val)).slice(0, 10);
+            
+            if (matches.length > 0) {
+                list.style.display = 'block';
+                matches.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'autocomplete-item';
+                    div.innerText = item.n;
+                    div.onclick = () => {
+                        input.value = item.n;
+                        list.style.display = 'none';
+                    };
+                    list.appendChild(div);
+                });
+            } else {
+                list.style.display = 'none';
             }
         }
 
-        // Renderizar HTML das etiquetas (Usando as novas classes CSS)
-        function renderizar() {
-            const container = document.getElementById('areaEtiquetas');
-            const msgVazio = document.getElementById('msgVazio');
-            const contador = document.getElementById('contador');
-
-            container.innerHTML = '';
-            
-            if (listaEtiquetas.length === 0) {
-                container.appendChild(msgVazio);
-                contador.innerText = "0 etiquetas";
+        // --- LÓGICA DE ETIQUETAS ---
+        function adicionar() {
+            if (etiquetas.length >= MAX_ETIQUETAS) {
+                alert("A folha está cheia (Máximo 6 etiquetas). Imprima ou limpe para continuar.");
                 return;
             }
 
-            listaEtiquetas.forEach(et => {
-                const div = document.createElement('div');
-                div.className = 'etiqueta-card';
-                
-                // Botão de Excluir (Só aparece na tela)
-                const btnDel = `<button class="btn-delete" onclick="removerEtiqueta(${et.id})" title="Remover"><i class="fas fa-times"></i></button>`;
+            const modo = document.getElementById('formNumerica').style.display === 'block' ? 'numerica' : 'documental';
+            let data = {};
 
-                if (et.tipo === 'eliminacao') {
-                    div.innerHTML = `
-                        ${btnDel}
-                        <div class="layout-eliminacao">
-                            <div class="elim-header">
-                                <div class="elim-title">Eliminação<br>Documental</div>
-                                <i class="fas fa-recycle elim-icon"></i>
-                            </div>
-                            <div class="elim-body">
-                                <div class="field-row">
-                                    <span class="field-label">Unidade:</span>
-                                    <span class="field-val">${et.unidade}</span>
-                                </div>
-                                <div class="field-row">
-                                    <span class="field-label">Proc/Cx:</span>
-                                    <span class="field-val">${et.processo}</span>
-                                </div>
-                                <div class="field-row">
-                                    <span class="field-label">Data:</span>
-                                    <span class="field-val">${et.data}</span>
-                                </div>
-                                <div class="field-content">
-                                    <strong>CONTEÚDO:</strong><br>${et.desc}
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    div.innerHTML = `
-                        ${btnDel}
-                        <div class="layout-numerica">
-                            <div class="num-big">${et.numero}</div>
-                            <div class="num-setor">${et.setor}</div>
-                            <div class="num-date">Ref: ${et.data}</div>
-                        </div>
-                    `;
-                }
-                container.appendChild(div);
-            });
-            
-            contador.innerText = `${listaEtiquetas.length} etiquetas`;
+            if (modo === 'numerica') {
+                data = {
+                    tipo: 'numerica',
+                    numero: document.getElementById('numCaixa').value || "00",
+                    setor: document.getElementById('numSetor').value || "GERAL",
+                    ano: document.getElementById('numAno').value || new Date().getFullYear()
+                };
+                // Auto-incremento
+                document.getElementById('numCaixa').value = parseInt(data.numero) + 1;
+            } else {
+                const subTipo = document.getElementById('docTipo').value;
+                data = {
+                    tipo: subTipo,
+                    setor: document.getElementById('docSetor').value || "",
+                    // Comuns
+                    numDoc: document.getElementById('docNum').value || "",
+                    anoDoc: document.getElementById('docAno').value || "",
+                    classif: document.getElementById('docClass').value || "",
+                    qtd: document.getElementById('docQtd').value || "",
+                    desc: document.getElementById('docDesc').value || "",
+                    elim: document.getElementById('docElim').value || "",
+                    // Amostragem
+                    amoProc: document.getElementById('amoProc').value || "",
+                    amoData: document.getElementById('amoData').value || "",
+                    amoDesc: document.getElementById('amoDesc').value || ""
+                };
+            }
+
+            etiquetas.push(data);
+            renderizar();
         }
 
-        function removerEtiqueta(id) {
-            listaEtiquetas = listaEtiquetas.filter(et => et.id !== id);
+        function preencherVazios() {
+            if (etiquetas.length === 0) { alert("Adicione pelo menos uma etiqueta modelo."); return; }
+            if (etiquetas.length >= MAX_ETIQUETAS) { alert("A folha já está cheia."); return; }
+            
+            const modelo = etiquetas[etiquetas.length - 1]; // Pega a última como modelo
+            
+            while (etiquetas.length < MAX_ETIQUETAS) {
+                // Clona o objeto (deep copy simples)
+                let novo = JSON.parse(JSON.stringify(modelo));
+                
+                // Se for numérica, incrementa
+                if (novo.tipo === 'numerica') {
+                    novo.numero = parseInt(novo.numero) + 1;
+                }
+                etiquetas.push(novo);
+            }
+            renderizar();
+        }
+
+        function remover(idx) {
+            etiquetas.splice(idx, 1);
             renderizar();
         }
 
         function limparTudo() {
-            if(confirm('Deseja realmente limpar todas as etiquetas?')) {
-                listaEtiquetas = [];
+            if(confirm("Limpar toda a folha?")) {
+                etiquetas = [];
                 renderizar();
             }
         }
+
+        function renderizar() {
+            const container = document.getElementById('folhaA4');
+            container.innerHTML = '';
+
+            etiquetas.forEach((et, idx) => {
+                const box = document.createElement('div');
+                box.className = 'etiqueta-box';
+                
+                const btnDel = `<button class="btn-delete" onclick="remover(${idx})"><i class="fas fa-times"></i></button>`;
+
+                let htmlContent = '';
+
+                // 1. ELIMINAÇÃO
+                if (et.tipo === 'eliminacao') {
+                    htmlContent = `
+                        <div class="layout-padrao">
+                            <div class="eli-header">ELIMINAÇÃO DOCUMENTAL</div>
+                            <div class="eli-row"><span class="eli-label">SETOR:</span><span class="eli-value">${et.setor}</span></div>
+                            <div class="eli-row">
+                                <span class="eli-label">Nº DOC:</span><span class="eli-value" style="width:50%">${et.numDoc}</span>
+                                <span class="eli-label">ANO:</span><span class="eli-value">${et.anoDoc}</span>
+                            </div>
+                            <div class="eli-row">
+                                <span class="eli-label">CLASSE:</span><span class="eli-value" style="width:60%">${et.classif}</span>
+                                <span class="eli-label">QTD:</span><span class="eli-value">${et.qtd}</span>
+                            </div>
+                            <div class="eli-desc"><strong>DESCRIÇÃO:</strong><br>${et.desc}</div>
+                            <div class="eli-row" style="margin-top:5px; border-top:1px dotted #000; padding-top:2px;">
+                                <span class="eli-label">ELIMINAÇÃO EM:</span><span class="eli-value" style="font-weight:800;">31/12/${et.elim}</span>
+                            </div>
+                        </div>
+                    `;
+                } 
+                // 2. GUARDA PERMANENTE
+                else if (et.tipo === 'permanente') {
+                    htmlContent = `
+                        <div class="layout-padrao">
+                            <div class="eli-header">GUARDA PERMANENTE</div>
+                            <div class="eli-row"><span class="eli-label">SETOR:</span><span class="eli-value">${et.setor}</span></div>
+                            <div class="eli-row">
+                                <span class="eli-label">Nº DOC:</span><span class="eli-value" style="width:50%">${et.numDoc}</span>
+                                <span class="eli-label">ANO:</span><span class="eli-value">${et.anoDoc}</span>
+                            </div>
+                            <div class="eli-row"><span class="eli-label">CLASSE:</span><span class="eli-value">${et.classif}</span></div>
+                            <div class="eli-desc"><strong>CONTEÚDO:</strong><br>${et.desc}</div>
+                            <div style="text-align:center; font-size:10px; font-weight:bold; margin-top:5px;">NÃO ELIMINAR ESTE DOCUMENTO</div>
+                        </div>
+                    `;
+                }
+                // 3. AMOSTRAGEM
+                else if (et.tipo === 'amostragem') {
+                    htmlContent = `
+                        <div class="layout-amostragem">
+                            <div class="amo-header">AMOSTRAGEM</div>
+                            <div class="eli-row"><span class="eli-label">UNIDADE:</span><span class="eli-value">${et.setor}</span></div>
+                            <div class="eli-row"><span class="eli-label">PROC/CX:</span><span class="eli-value">${et.amoProc}</span></div>
+                            <div class="eli-row"><span class="eli-label">DATA:</span><span class="eli-value">${et.amoData}</span></div>
+                            <div class="eli-desc"><strong>DESCRIÇÃO DA AMOSTRA:</strong><br>${et.amoDesc}</div>
+                        </div>
+                    `;
+                }
+                // 4. NUMÉRICA
+                else if (et.tipo === 'numerica') {
+                    htmlContent = `
+                        <div class="layout-numerica">
+                            <div class="num-header"><span>${et.numero}</span></div>
+                            <div class="num-body"><div class="num-setor">${et.setor}</div></div>
+                            <div class="num-footer">${et.ano}</div>
+                        </div>
+                    `;
+                }
+
+                box.innerHTML = btnDel + htmlContent;
+                container.appendChild(box);
+            });
+        }
         
-        // Inicializa estado
+        // Fechar autocomplete ao clicar fora
+        document.addEventListener('click', function(e) {
+            if (!e.target.matches('input')) {
+                document.querySelectorAll('.autocomplete-list').forEach(el => el.style.display = 'none');
+            }
+        });
+
+        // Inicializa
         renderizar();
     </script>
 </body>
