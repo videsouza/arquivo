@@ -418,7 +418,10 @@
                 let html = '';
 
                 if(et.tipo === 'eliminacao') {
-                    // LAYOUT OFICIAL ELIMINAÇÃO (Grid Rígido)
+                    // LÓGICA DE HANDWRITING (Espaços para escrever à mão)
+                    const qtdDisplay = et.qtd ? et.qtd : '__________';
+                    const elimDisplay = et.elim ? et.elim : '_______';
+
                     html = `
                         <div class="layout-oficial">
                             <div class="tag-header">ELIMINAÇÃO DOCUMENTAL</div>
@@ -474,11 +477,11 @@
                             <div class="tag-footer-split">
                                 <div class="footer-left">
                                     <span class="tag-label" style="font-size:10px;">QTD:</span>
-                                    <span class="tag-val">${et.qtd} cm</span>
+                                    <span class="tag-val">${qtdDisplay} cm</span>
                                 </div>
                                 <div class="footer-right">
                                     <span class="tag-label" style="font-size:10px;">ELIMINAÇÃO:</span>
-                                    <span class="tag-val">31/12/${et.elim}</span>
+                                    <span class="tag-val">31/12/${elimDisplay}</span>
                                 </div>
                             </div>
                         </div>
