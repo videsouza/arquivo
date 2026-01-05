@@ -82,7 +82,7 @@
         }
 
         .mode-switcher {
-            display: flex; gap: 10px; margin-bottom: 20px; background: #f0f0f0; pading: 5px; border-radius: var(--radius-gov);
+            display: flex; gap: 10px; margin-bottom: 20px; background: #f0f0f0; padding: 5px; border-radius: var(--radius-gov);
         }
         .mode-btn {
             flex: 1; border: none; padding: 8px; font-size: 12px; font-weight: 700; cursor: pointer;
@@ -90,15 +90,15 @@
         }
         .mode-btn.active { background: var(--gov-blue); color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 
-        .form-group { margin-bottom: 15px; position: relative; }
-        .form-label { display: block; font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; }
+        .form-group { margin-bottom: 12px; position: relative; }
+        .form-label { display: block; font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase; }
         
         .form-control {
-            width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: var(--radius-gov);
+            width: 100%; padding: 8px 10px; border: 1px solid #ccc; border-radius: var(--radius-gov);
             font-size: 13px; font-family: inherit; transition: border-color 0.2s; background: #fff;
         }
         .form-control:focus { border-color: var(--gov-blue); box-shadow: 0 0 0 2px rgba(19, 81, 180, 0.1); }
-        textarea.form-control { resize: vertical; min-height: 70px; }
+        textarea.form-control { resize: vertical; min-height: 60px; }
 
         .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         
@@ -130,16 +130,14 @@
             padding: 40px; min-height: 600px; display: flex; justify-content: center;
         }
 
-        /* Folha A4 na tela */
         .sheet-a4 {
             width: 210mm; min-height: 297mm; background: white; padding: 10mm;
             box-shadow: 0 0 20px rgba(0,0,0,0.1);
             display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(3, 1fr);
-            gap: 5mm; /* Espaço entre etiquetas */
-            box-sizing: border-box;
+            gap: 5mm; box-sizing: border-box;
         }
 
-        /* --- ETIQUETAS (CSS Específico para Impressão) --- */
+        /* --- ETIQUETAS --- */
         .etiqueta-box {
             border: 1px dashed #ddd; /* Tracejado na tela */
             height: 100%; padding: 5px; position: relative;
@@ -154,42 +152,31 @@
         }
         .btn-delete:hover { background: #ffcccc; }
 
-        /* Estilos Internos dos 4 Tipos */
+        /* === LAYOUTS ESPECÍFICOS === */
         
-        /* 1 & 2: Padrão (Eliminação/Permanente) */
-        .layout-padrao {
+        /* 1. ELIMINAÇÃO (Refatorado conforme pedido) */
+        .layout-eliminacao {
             border: 2px solid #000; height: 100%; padding: 8px; display: flex; flex-direction: column;
-            color: #000; font-family: Arial, sans-serif;
+            color: #000; font-family: Arial, sans-serif; font-size: 11px;
         }
-        .eli-header {
-            text-align: center; font-weight: 900; text-transform: uppercase; font-size: 14px;
-            border-bottom: 2px solid #000; padding-bottom: 4px; margin-bottom: 6px; font-family: 'Rawline', sans-serif;
+        .eli-line { display: flex; gap: 5px; align-items: flex-end; margin-bottom: 5px; border-bottom: 1px dotted #ccc; padding-bottom: 2px; }
+        .eli-line.no-border { border-bottom: none; padding-bottom: 0; }
+        
+        .eli-lbl { font-weight: 700; text-transform: uppercase; white-space: nowrap; font-size: 10px; }
+        .eli-val { font-weight: 600; flex: 1; font-family: 'Roboto Mono', monospace; padding-left: 5px; }
+        .eli-val.fixed { font-family: Arial, sans-serif; color: #000; font-weight: 700; }
+        
+        .eli-desc-box { 
+            border: 1px solid #000; flex: 1; padding: 5px; margin: 5px 0; 
+            font-size: 11px; line-height: 1.2; position: relative;
         }
-        .eli-row { display: flex; gap: 5px; margin-bottom: 4px; align-items: baseline; }
-        .eli-label { font-weight: 700; font-size: 10px; white-space: nowrap; text-transform: uppercase; }
-        .eli-value {
-            border-bottom: 1px dotted #000; flex: 1; font-size: 11px; font-weight: 600;
-            padding-left: 5px; font-family: 'Roboto Mono', monospace; min-height: 14px;
-        }
-        .eli-desc {
-            border: 1px solid #000; flex: 1; padding: 5px; font-size: 10px; margin-top: 4px;
-            line-height: 1.3;
-        }
-
-        /* 3: Amostragem (Borda Dupla) */
-        .layout-amostragem {
-            border: 4px double #000; height: 100%; padding: 10px; display: flex; flex-direction: column;
-            color: #000;
-        }
-        .amo-header {
-            text-align: center; font-weight: 900; text-transform: uppercase; font-size: 16px;
-            margin-bottom: 10px; border-bottom: 1px solid #000; padding-bottom: 5px; letter-spacing: 1px;
+        .eli-footer {
+            text-align: right; border-top: 2px solid #000; padding-top: 5px; font-weight: 700; font-size: 12px;
         }
 
-        /* 4: Numérica (Caixa) */
+        /* 2. NUMÉRICA (Caixa) */
         .layout-numerica {
-            border: 5px solid #000; height: 100%; display: flex; flex-direction: column; text-align: center;
-            color: #000;
+            border: 5px solid #000; height: 100%; display: flex; flex-direction: column; text-align: center; color: #000;
         }
         .num-header { background: #000; color: #fff; padding: 5px; height: 50px; display: flex; align-items: center; justify-content: center; }
         .num-header span { font-size: 32px; font-weight: 800; line-height: 1; }
@@ -197,7 +184,10 @@
         .num-setor { font-size: 24px; font-weight: 800; text-transform: uppercase; line-height: 1.1; word-break: break-word; }
         .num-footer { border-top: 4px solid #000; padding: 5px; font-size: 16px; font-weight: 700; background: #f0f0f0; }
 
-        /* --- IMPRESSÃO (CRÍTICO) --- */
+        /* 3. PADRÃO/OUTROS (Fallback simples) */
+        .layout-padrao { border: 1px solid #000; padding: 10px; height: 100%; display: flex; flex-direction: column; }
+
+        /* --- IMPRESSÃO --- */
         @media print {
             body { background: white; }
             .br-header, .control-panel, .br-footer, .btn-delete { display: none !important; }
@@ -205,12 +195,11 @@
             .preview-area { background: white; border: none; padding: 0; display: block; }
             .sheet-a4 {
                 width: 210mm; height: 296mm; margin: 0; padding: 10mm; box-shadow: none;
-                /* Garante grid exato na impressão */
                 display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(3, 1fr);
                 gap: 5mm; page-break-after: always;
             }
-            .etiqueta-box { border: none !important; } /* Tira o tracejado */
-            /* Garante cores de fundo e bordas na impressão */
+            .etiqueta-box { border: none !important; }
+            /* Forçar impressão de background/cores */
             .layout-numerica .num-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .layout-numerica .num-footer { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
@@ -250,37 +239,44 @@
                     </select>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Setor / Unidade</label>
-                    <input type="text" id="docSetor" class="form-control" placeholder="Digite para buscar..." oninput="buscarSetor(this, 'listSetorDoc')" autocomplete="off">
-                    <div id="listSetorDoc" class="autocomplete-list"></div>
-                </div>
-
                 <div id="fieldsComum">
+                    <div class="form-group">
+                        <label class="form-label">Portador / Setor (Nome + Nº)</label>
+                        <input type="text" id="docPortador" class="form-control" placeholder="Busca: Digite o nome ou nº..." oninput="buscarSetor(this, 'listSetorDoc')" autocomplete="off">
+                        <div id="listSetorDoc" class="autocomplete-list"></div>
+                    </div>
+
                     <div class="row-2">
                         <div class="form-group">
-                            <label class="form-label">Nº Documento</label>
+                            <label class="form-label">Nº Doc.</label>
                             <input type="text" id="docNum" class="form-control">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Ano (30/12/..)</label>
-                            <input type="number" id="docAno" class="form-control" placeholder="Ex: 2024">
+                            <label class="form-label">Ano do Doc.</label>
+                            <input type="text" id="docAno" class="form-control" placeholder="AAAA">
                         </div>
                     </div>
+                    
                     <div class="row-2">
                         <div class="form-group">
-                            <label class="form-label">Classificação</label>
-                            <input type="text" id="docClass" class="form-control">
+                            <label class="form-label">Código</label>
+                            <input type="text" id="docCodigo" class="form-control">
                         </div>
+                        <div class="form-group">
+                            <label class="form-label">Tipo</label>
+                            <input type="text" id="docTipoText" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="row-2">
                         <div class="form-group">
                             <label class="form-label">Qtd (cm)</label>
                             <input type="number" id="docQtd" class="form-control">
                         </div>
-                    </div>
-                    
-                    <div class="form-group" id="groupAnoElim">
-                        <label class="form-label" style="color: #d32f2f;">Ano Eliminação (31/12/..)</label>
-                        <input type="number" id="docElim" class="form-control" style="border-color: #d32f2f; color: #d32f2f; font-weight: 700;">
+                        <div class="form-group" id="groupAnoElim">
+                            <label class="form-label" style="color: #d32f2f;">Ano Eliminação</label>
+                            <input type="text" id="docElim" class="form-control" placeholder="AAAA" style="border-color: #d32f2f; color: #d32f2f; font-weight: 700;">
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -290,18 +286,9 @@
                 </div>
 
                 <div id="fieldsAmostragem" style="display: none;">
-                    <div class="form-group">
-                        <label class="form-label">Processo / Caixa</label>
-                        <input type="text" id="amoProc" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Data de Referência</label>
-                        <input type="text" id="amoData" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Descrição da Amostra</label>
-                        <textarea id="amoDesc" class="form-control"></textarea>
-                    </div>
+                    <div class="form-group"><label class="form-label">Unidade</label><input type="text" id="amoUnid" class="form-control"></div>
+                    <div class="form-group"><label class="form-label">Processo</label><input type="text" id="amoProc" class="form-control"></div>
+                    <div class="form-group"><label class="form-label">Descrição</label><textarea id="amoDesc" class="form-control"></textarea></div>
                 </div>
             </div>
 
@@ -312,12 +299,12 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Nome do Setor</label>
-                    <input type="text" id="numSetor" class="form-control" placeholder="Busca de Setor..." oninput="buscarSetor(this, 'listSetorNum')" autocomplete="off">
+                    <input type="text" id="numSetor" class="form-control" oninput="buscarSetor(this, 'listSetorNum')" autocomplete="off">
                     <div id="listSetorNum" class="autocomplete-list"></div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Ano de Referência</label>
-                    <input type="text" id="numAno" class="form-control" placeholder="2025">
+                    <label class="form-label">Ano Referência</label>
+                    <input type="text" id="numAno" class="form-control">
                 </div>
             </div>
 
@@ -356,654 +343,24 @@
     </footer>
 
     <script>
-        // --- BASE DE DADOS (ABREVIADA) ---
-        // Adicione aqui a lista completa de setores conforme o arquivo original
+        // --- BASE DE DADOS (Simulação de Nº + Nome) ---
         const BASE_SETORES = [
-            {c:1,n:"SE - DAF - COORDENADORIA DE INFORMÁTICA (ASSESSORIA DE INFORMÁTIC"},
-                {c:2,n:"CORPO DE BOMBEIROS"},
-                {c:3,n:"CRECHE JARDIM CASTANHEIRAS"},
-                {c:4,n:"CRECHE JARDIM FLAMBOYANT"},
-                {c:5,n:"CRECHE JARDIM TELESPARK"},
-                {c:6,n:"EMEF PROF ANA BERLING DE MACEDO"},
-                {c:7,n:"EMEF PROF ANTÔNIO PALMA SOBRINHO"},
-                {c:8,n:"EMEF DOM PEDRO ALCÂNTARA - CAIC"},
-                {c:9,n:"EMEF PROF HOMERA DA SILVA BRAGA"},
-                {c:10,n:"EMEF PROF IGNEZ SAGULA FOSSÁ"},
-                {c:11,n:"EMEF PROF ILGA PUSPLATAIS"},
-                {c:12,n:"EMEF PROF MARIA APARECIDA SANTOS RONCONI"},
-                {c:13,n:"EMEF PROF MERCEDES RACHID EDWARDS"},
-                {c:14,n:"EMEF PROF POSSIDÔNIO JOSÉ DE FREITAS"},
-                {c:15,n:"EMEF PROF ÁLVARO GONÇALVES"},
-                {c:16,n:"EMEF PROF ÁUREA CANTINHO RODRIGUES"},
-                {c:17,n:"EMEF PROF DOSULINA CHENQUE CHAVES DE ANDRADE"},
-                {c:18,n:"EMEF PROF ELIZABETE DE PAULA HONORATO"},
-                {c:19,n:"EMEF PROF ELZA REGINA FERREIRA BEVILACQUA"},
-                {c:20,n:"EMEF PROF FLÁVIO BERLING MACEDO"},
-                {c:21,n:"EMEF PROF GERALDO DE ALMEIDA"},
-                {c:22,n:"EMEF PROF HÉLIO AUGUSTO DE SOUZA"},
-                {c:23,n:"EMEF PROF ILDETE MENDONÇA BARBOSA"},
-                {c:24,n:"EMEF PROF JACYRA VIEIRA BARACHO"},
-                {c:25,n:"EMEF PROF LEONOR PEREIRA NUNES GALVÃO"},
-                {c:26,n:"EMEF PROF LUCIA PEREIRA RODRIGUES"},
-                {c:27,n:"EMEF PROF LUIZ LEITE"},
-                {c:28,n:"EMEF PROF LUZIA LEVINA APARECIDA BORGES"},
-                {c:29,n:"EMEF PROF MARIA AMÉLIA WAKAMATSU"},
-                {c:30,n:"EMEF PROF MARIA DE MELO"},
-                {c:31,n:"EMEF PROF MARIA NAZARETH DE MOURA VERONESE"},
-                {c:32,n:"EMEF PROF MARIA OFÉLIA VENEZIANI PEDROSA"},
-                {c:33,n:"EMEF PROF MARIANA TEIXEIRA CORNÉLIO"},
-                {c:34,n:"EMEF PROF MERCEDES CARNEVALLI KLEIN"},
-                {c:35,n:"EMEF PROF MOACYR BENEDICTO DE SOUZA"},
-                {c:36,n:"EMEF PROF NORMA DE CONTI SIMÃO"},
-                {c:37,n:"EMEF PROF OTACÍLIA MADUREIRA DE MOURA"},
-                {c:38,n:"EMEF PROF PALMYRA SANTANNA"},
-                {c:39,n:"EMEF PROF ROSA TOMITA / ANTIGO JARDIM SÃO JOSÉ II"},
-                {c:40,n:"EMEF PROF RUTH NUNES DA TRINDADE"},
-                {c:41,n:"EMEF PROF SEBASTIANA COBRA"},
-                {c:42,n:"EMEF PROF SILVANA MARIA RIBEIRO DE ALMEIDA"},
-                {c:43,n:"EMEF PROF SONIA MARIA PEREIRA SILVA"},
-                {c:44,n:"EMEF PROF THEREZINHA DO MENINO JESUS SOARES NASCIMENTO"},
-                {c:45,n:"EMEF PROF VERA BABO DE OLIVEIRA"},
-                {c:46,n:"EMEF PROF VERA LÚCIA CARNEVALLI BARRETO"},
-                {c:47,n:"EMEF PROF WALDEMAR RAMOS"},
-                {c:48,n:"EMEI PROF ÂNGELA DE CASTRO FERNANDES LOPES"},
-                {c:49,n:"EMEI ARTUR APARECIDO DA ROSA"},
-                {c:50,n:"EMEI CASSIANO RICARDO"},
-                {c:51,n:"EMEI PROF ELZA FERREIRA RAHAL (EMEI VILA MARIA)"},
-                {c:52,n:"EMEI FEBRÔNIO PEREIRA GOMES"},
-                {c:53,n:"EMEI JARDIM CEREJEIRAS"},
-                {c:54,n:"EMEI JARDIM MORUMBI (DENOMINADA EMEI MARIA CLARA FERNANDES)"},
-                {c:55,n:"EMEI JOSÉ MADUREIRA LEBRÃO (MARIANA II)"},
-                {c:56,n:"EMEI JOSÉ PURCINI (EMEI JARDIM SANTA INÊS II)"},
-                {c:57,n:"EMEI PROF LUIZ SUNDFELD"},
-                {c:58,n:"EMEI MELVIN JONES (INATIVO)"},
-                {c:59,n:"EMEI PADRE JOÃO MARCONDES GUIMARÃES"},
-                {c:60,n:"EMEI PADRE JOSÉ RUBENS FRANCO BONAFÉ"},
-                {c:61,n:"EMEI PROF ANA LÚCIA DE CASTRO MICHELETTO"},
-                {c:62,n:"EMEI PROF ARLINDO CAETANO FILHO"},
-                {c:63,n:"EMEI PROF CREMILDA ALVES DE OLIVEIRA AZEVEDO"},
-                {c:64,n:"EMEI PROF DOMINGOS DE MACEDO CUSTÓDIO"},
-                {c:65,n:"EMEI PROF ÉDERA IRENE PEREIRA OL CARDOSO (NEI JD. PARAÍSO DO SOL)"},
-                {c:66,n:"EMEI PROF IDELENA MENEZES TREFÍLIO DE CARVALHO"},
-                {c:67,n:"EMEI PROF IRACEMA OLIVEIRA DE MELLO"},
-                {c:68,n:"EMEI PROF JANE PALUMBO (D PEDRO)"},
-                {c:69,n:"NEI PROF JOSÉ ANTERO CURSINO DOS SANTOS"},
-                {c:70,n:"EMEI PROF JOSE SODERO BITENCOURT (BQ IPES)"},
-                {c:71,n:"EMEI PROF LADIEL BENEDITO DE CARVALHO"},
-                {c:72,n:"EMEI PROF LOURDES DE OLIVEIRA MENDES (JD. PARARANGABA)"},
-                {c:73,n:"EMEI PROF MARIA ALICE PASQUARELLI"},
-                {c:74,n:"EMEI PROF MARIA DA GLÓRIA MARIANO SANTOS"},
-                {c:75,n:"EMEI PROF MARIA EZEQUIEL SANTANA"},
-                {c:76,n:"EMEI PROF MARIA JOSÉ GUIDO BROGLIATO FREIRE"},
-                {c:77,n:"NEI PROF MARIANITA OLIVEIRA PEREIRA SANTOS"},
-                {c:78,n:"EMEI PROF MARILDA APARECIDA MONTEMÓR"},
-                {c:79,n:"EMEI PROF MÁRIO CAMPANER"},
-                {c:80,n:"EMEI PROF NORMA LÚCIA RODRIGUES DE ALMEIDA"},
-                {c:81,n:"EMEI PROF OLGA FRANCO CUSTÓDIO"},
-                {c:82,n:"EMEI PROF SANDRA REGINA ALMEIDA PAULO"},
-                {c:83,n:"EMEI PROF ZELI DE TOLEDO DIAS"},
-                {c:84,n:"EMEI PROF ZENAIDE VILALVA DE ARAÚJO"},
-                {c:85,n:"EMEI PROF ZILDA COSTA DE OLIVEIRA"},
-                {c:86,n:"EMEI TORATARO TAKITANI"},
-                {c:87,n:"FNDE - FUNDO NACIONAL DE DESENVOLVIMENTO DA EDUCAÇÃO"},
-                {c:88,n:"IMI PROF ARMILINDA LOCATELLI DE MACEDO"},
-                {c:89,n:"IMI BENEDITO CARVALHO DOS SANTOS"},
-                {c:90,n:"IMI DOM PEDRO DE ALCÂNTARA"},
-                {c:91,n:"NEI FÁTIMA APARECIDA BERTHOUD"},
-                {c:92,n:"IMI FLAVIO LENZI"},
-                {c:93,n:"IMI JESUS DE NAZARÉ"},
-                {c:94,n:"IMI PROF JOANA MATTAR DE OLIVEIRA"},
-                {c:95,n:"IMI JOÃO LOPES SIMÕES"},
-                {c:96,n:"IMI MARILDA FERREIRA DE BRITO BARROS PEREIRA"},
-                {c:97,n:"IMI MAROCA VENEZIANI"},
-                {c:98,n:"IMI MARIA APARECIDA DA SILVA SOUZA - ANTIGA IMI POUSADA DO VALE"},
-                {c:99,n:"IMI PROF ANJELA MARIA DE SOUZA ALVES"},
-                {c:100,n:"CIEE - CENTRO DE INTEGRAÇÃO DE EMPRESA ESCOLA"},
-                {c:101,n:"MONDEO COMÉRCIO -IMPORTAÇÃO E EXPORTAÇÃO LTDA"},
-                {c:102,n:"NEI ALADIR M R GOMES (NEI VIDOCA)"},
-                {c:103,n:"EE ESTEVAM FERRI"},
-                {c:104,n:"NEI ALTOS DE SANTANA"},
-                {c:105,n:"DELEGACIA SECCIONAL E INVESTIGAÇÃO GERAIS DE SÃO JOSÉ DOS CAMPOS"},
-                {c:106,n:"NEI CAMPOS DE SÃO JOSÉ"},
-                {c:107,n:"VEREADOR MACEDO BASTOS"},
-                {c:108,n:"NEI CASA DA AMIZADE (INATIVO -  ANEXO MELVIN JONES)"},
-                {c:109,n:"NEI CASA SANTA INÊS"},
-                {c:110,n:"NEI CHÁCARAS REUNIDAS"},
-                {c:111,n:"NEI CLARINHA(INATIVO)"},
-                {c:112,n:"NEI CONJUNTO INTEGRAÇÃO"},
-                {c:113,n:"NEI COSTINHA"},
-                {c:114,n:"NEI CRECHE DOM EPAMINONDAS"},
-                {c:115,n:"NEI CRECHE ÉDEN LAR DAS CRIANÇAS"},
-                {c:116,n:"NEI DOROTI DA SILVA DA CUNHA"},
-                {c:117,n:"NEI EUGÊNIO DE MELO"},
-                {c:118,n:"NEI FREITINHAS"},
-                {c:119,n:"NEI JARDIM ANHEMBI"},
-                {c:120,n:"NEI JARDIM CEREJEIRAS"},
-                {c:121,n:"NEI JARDIM COLONIAL"},
-                {c:122,n:"NEI JARDIM LIMOEIRO"},
-                {c:123,n:"NEI JARDIM NOVA ESPERANÇA (INATIVO)"},
-                {c:124,n:"NEI JARDIM SANTA FÉ"},
-                {c:125,n:"NEI JARDIM SÃO LEOPOLDO"},
-                {c:126,n:"NEI JARDIM SÃO VICENTE"},
-                {c:127,n:"NEI JOSÉ PAULINO BICUDO"},
-                {c:128,n:"NEI POUSADA DO VALE"},
-                {c:129,n:"NEI PROF ANA ISABEL BARBOSA"},
-                {c:130,n:"EMEI PROF CLEANIR SANTOS MALDONADO CAMPOY"},
-                {c:131,n:"NEI PROF ELZA MARIA DIAS MENDONÇA (FOI NEI MONTE CASTELO-522)"},
-                {c:132,n:"NEI RIO COMPRIDO"},
-                {c:133,n:"NEI SÃO FRANCISCO XAVIER"},
-                {c:134,n:"NEI TORRÃO DE OURO"},
-                {c:135,n:"NEI VICENTE SIMIÃO LUZ"},
-                {c:136,n:"NEI VILA CÉSAR (EMEI SILVIA HELENA)"},
-                {c:137,n:"NEI VILA PAIVA I / EMEI"},
-                {c:138,n:"POSTO DE BOMBEIROS"},
-                {c:139,n:"BANCOS"},
-                {c:140,n:"NEI VILA SÃO BENEDITO"},
-                {c:141,n:"NEI VILA SÃO BENTO"},
-                {c:142,n:"NEI VILA SÃO GERALDO"},
-                {c:143,n:"(NÃO UTILIZAR) NEI VILA SÃO PEDRO"},
-                {c:144,n:"NEI VILA VENEZIANI"},
-                {c:145,n:"SE - ADJ - PLANEJAMENTO EDUCACIONAL"},
-                {c:146,n:"SE - ADJ - SUPERVISÃO ESCOLAR"},
-                {c:147,n:"SE - ADJ - VIDA ESCOLAR"},
-                {c:148,n:"SE - ASSESSORIA DE IMPRENSA"},
-                {c:149,n:"SE - CEDEMP - CENTRO DE EDUCAÇÃO EMPREENDEDORA - CEE"},
-                {c:150,n:"SE - CONSULTORIA JURÍDICA"},
-                {c:151,n:"SE - DEB - DAE - COORDENADORIA PROGRAMAS E EVENTOS"},
-                {c:152,n:"SE - DAF - ALMOXARIFADO"},
-                {c:153,n:"SE - DAF - ARMAZEM"},
-                {c:154,n:"SE - DEB - BIBLIOTECA PÚBLICA CASSIANO RICARDO"},
-                {c:155,n:"SE - DAF - CONTROLE ORÇAMENTÁRIO"},
-                {c:156,n:"SE - DAF - COORDENADORIA MERENDA ESCOLAR"},
-                {c:157,n:"SE - DAF - COORDENADORIA PLANEJAMENTO E OBRAS"},
-                {c:158,n:"SE - DAF - COORDENADORIA SERVIÇOS INTERNOS (SUPERVISÃO DE SERVIÇO"},
-                {c:159,n:"SE - DAF - CSI - ARQUIVO GERAL"},
-                {c:160,n:"SE - DAF - CUSTOS"},
-                {c:161,n:"SE - DAF - DAP - PROFESSOR EVENTUAL"},
-                {c:162,n:"SE - DAF - DESENVOLVIMENTO"},
-                {c:163,n:"SE - DAF - DIVISÃO ADMINISTRAÇÃO - INATIVO"},
-                {c:164,n:"SE - DAF - DIVISAO ADMINISTRAÇÃO DE PESSOAL (COORD. ADMINISTRATIV"},
-                {c:165,n:"SE - DAF - DIVISÃO APOIO DIDÁTICO PEDAGÓGICO"},
-                {c:166,n:"SE - DAF - DIVISÃO APOIO LOGÍSTICO MANUTENÇÃO (DALM, DM)"},
-                {c:167,n:"SE - DAF - DIVISAO APOIO LOGÍSTICO, OBRAS E MANUTENÇÃO"},
-                {c:168,n:"SE - DAF - DIVISAO CONTROLADORIA, ORÇAMENTO E CUSTOS"},
-                {c:169,n:"(USE CÓD. 156) SE - DAF - DIVISAO MERENDA ESCOLAR"},
-                {c:170,n:"SE - DAF - DIVISAO SUPRIMENTOS (FOLLOW UP)"},
-                {c:171,n:"SE - DAF - DS - SUPERVISÃO COMPRAS"},
-                {c:172,n:"SE - DAF - EDUCAÇÃO NUTRICIONAL"},
-                {c:173,n:"SE - DAF - MANUTENÇAO INFRA-ESTRUTURA"},
-                {c:174,n:"SE - DAF - MANUTENÇÃO PREDIAL"},
-                {c:175,n:"(USE CÓD. 156) SE - DAF - MERENDA"},
-                {c:176,n:"(USE CÓD. 156) SE - DAF - MERENDA - ALMOXARIFADO/DISTRIBUIÇÃO"},
-                {c:177,n:"(USE CÓD. 156) SE - DAF - MERENDA ESCOLAR CRECHE"},
-                {c:178,n:"(USE CÓD. 156) SE - DAF - MERENDA ESCOLAR EMEF, EMEI E NEI"},
-                {c:179,n:"SE - DAF - PATRIMÔNIO"},
-                {c:180,n:"SE - DAF - PLANING E ADMINISTRAÇÃO"},
-                {c:181,n:"SE - DAF - PROGRAMAS"},
-                {c:182,n:"ESCOLAS DE EDUCAÇÃO INFANTIL PARTICULARES"},
-                {c:183,n:"SE - DAF - SUPERVISAO ADMINISTRAÇÃO"},
-                {c:184,n:"SE - DAF - SUPERVISAO DE PESSOAL (DRH)"},
-                {c:185,n:"SE - DAF - SUPERVISAO DE TRANSPORTE"},
-                {c:186,n:"SE - DAF - SUPERVISAO GRÁFICA"},
-                {c:187,n:"SE - DAF - TECNOLOGIA E SEGURANÇA, PREVENÇÃO E COMBATE A INCÊNDIO"},
-                {c:188,n:"SE - DEB - ARQUIVO GERAL"},
-                {c:189,n:"SE - DEB - ASSESSORIA TÉCNICO PEDAGÓGICA (ASTP)"},
-                {c:190,n:"SE - DEB - ATP - COORDENADORIA EDUCAÇÃO ESPECIAL"},
-                {c:191,n:"SE - DEB - ATP - COORDENADORIA PROGRAMAS EMPREENDEDORISMO"},
-                {c:192,n:"SE - DEB - ATP - COORDENADORIA PROJETOS ESPECIAIS"},
-                {c:193,n:"SE - DEB - ATP - COORDENADORIA PUBLICAÇÕES TÉCNICAS"},
-                {c:194,n:"SE - DEB - BIBLIOTECA HÉLIO PINTO FERREIRA"},
-                {c:195,n:"SE - DEB - BIBLIOTECA JANSEN FILHO"},
-                {c:196,n:"SE - DEB - BIBLIOTECA JARDIM DAS FLORES"},
-                {c:197,n:"SE - DEB - BIBLIOTECA QUERO LER"},
-                {c:198,n:"SE - DEB - DAE - COORDENADORIA AUDIOVISUAL"},
-                {c:199,n:"SE - DEB - DAE - COORDENADORIA FORMAÇÃO EDUCACIONAL"},
-                {c:200,n:"EDITORA"},
-                {c:201,n:"SE - DEB - DEF - COORDENADORIA ORIENTAÇÃO EDUCACIONAL"},
-                {c:202,n:"SE - DEB - DEF - COORDENADORIA PEDAGÓGICA ANOS FINAIS"},
-                {c:203,n:"SE - DEB - DEF - COORDENADORIA PEDAGÓGICA ANOS INICIAIS"},
-                {c:204,n:"SE - DEB - DEF - COORDENADORIA PEDAGÓGICA EJA"},
-                {c:205,n:"SE - DEB - DEF - COORDENADORIA TÉCNICA ENSINO FUNDAMENTAL"},
-                {c:206,n:"SE - DEB - DEI - COORDENADORIA PEDAGÓGICA EDUCAÇÃO INFANTIL"},
-                {c:207,n:"SE - DEB - DEI - COORDENADORIA TÉCNICA EDUCAÇÃO INFANTIL"},
-                {c:208,n:"SE - DEB - DEI - MATERNO INFANTIL"},
-                {c:209,n:"SE - DEB - DIVISAO APOIO EDUCACIONAL"},
-                {c:210,n:"SE - DEB - DIVISAO DE EDUCAÇÃO INFANTIL (DEI)"},
-                {c:211,n:"SE - DEB - DIVISAO DE ENSINO FUNDAMENTAL (DEF)"},
-                {c:212,n:"SE - DEB - DIVISAO EDUCAÇÃO INFANTIL - FUNDEB"},
-                {c:213,n:"SE - DEB - DIVISAO ENSINO PROFISSIONALIZANTE"},
-                {c:214,n:"SE - DEB - DIVISAO MATERNO INFANTIL - FUNDEB"},
-                {c:215,n:"SE - DEB - EJA CICLO I - FUNDEB"},
-                {c:216,n:"SE - DEB - ENSINO FUNDAMENTAL - FUNDEB"},
-                {c:217,n:"(NÃO UTILIZAR) SE - DEI - BIBLIOTECA CASSIANO RICARDO"},
-                {c:218,n:"SE - DEI - COORDENADORIA EDUCAÇÃO ESPECIAL"},
-                {c:219,n:"SE - DEI - COORDENADORIA INFORMÁTICA  E GESTÃO EDUCACIONAL"},
-                {c:220,n:"SE - DEI - COORDENADORIA PEDAGÓGICA EDUCAÇÃO INFANTIL"},
-                {c:221,n:"SE - DEI - DIVISÃO EDUCAÇÃO EMPREENDEDORA"},
-                {c:222,n:"SE - DEI - DIVISAO ORIENT TEC EDUC BASIC"},
-                {c:223,n:"SE - DAF - DEPARTAMENTO ADMINISTRATIVO FINANCEIRO (DAG-APOIO GEST"},
-                {c:224,n:"SE - DEPARTAMENTO DE EDUCAÇÃO BÁSICA (DEB; 2024 DENF)"},
-                {c:226,n:"SE - EEI PEQUENÓPOLIS (CTA)"},
-                {c:227,n:"SECRETARIA DA JUVENTUDE"},
-                {c:228,n:"SE - EXTERNO - APAE"},
-                {c:229,n:"SE - EXTERNO - BEM TE VI"},
-                {c:230,n:"SE - EXTERNO - CASA DE BRINQUEDOS"},
-                {c:231,n:"SE - EXTERNO - CENTRO EDUCACIONAL FONTE VIDA"},
-                {c:232,n:"SE - EXTERNO - CEPHAS"},
-                {c:233,n:"SE - EXTERNO - FUNDHAS"},
-                {c:234,n:"SE - EXTERNO - FUNDO SOCIAL SOLIDARIEDADE"},
-                {c:235,n:"SE - EXTERNO - PRÓ VISÃO"},
-                {c:236,n:"SE - EXTERNO - PROJETO ADOLE SER"},
-                {c:237,n:"SE - EXTERNO - PROJETO AGENTE JOVEM"},
-                {c:238,n:"SE - EXTERNO - PROJETO AQUARELA"},
-                {c:239,n:"SE - EXTERNO - PROJETO OLHO MÁGICO"},
-                {c:240,n:"SE - EXTERNO - SORRI"},
-                {c:241,n:"SE - GC - CONVÊNIOS CECOI"},
-                {c:242,n:"SE - GC - SUPERVISÃO DE CONTRATO"},
-                {c:243,n:"SE - GC - TRANSPORTE ESCOLAR"},
-                {c:244,n:"SE - GCM"},
-                {c:245,n:"SE - GESTÃO DE CONTRATOS (GC)"},
-                {c:246,n:"SE - OUTROS SETORES FORA SME"},
-                {c:247,n:"SE - PROJETO DECOLAR LESTE"},
-                {c:248,n:"SE - PROJETO DECOLAR NORTE"},
-                {c:249,n:"SE - PROJETO DECOLAR SUL"},
-                {c:250,n:"SE - SECRETARIA ADJUNTA"},
-                {c:251,n:"SE - SECRETARIA GERAL (GABINETE)"},
-                {c:253,n:"EE MAJOR MIGUEL NAKED"},
-                {c:254,n:"NEI JARDIM MORUMBI"},
-                {c:255,n:"SECRETARIA DE ESPORTES E LAZER"},
-                {c:256,n:"SECRETARIA DE EVENTOS OFICIAIS E TURISMO"},
-                {c:257,n:"SECRETARIA DE SAÚDE"},
-                {c:273,n:"EMEI GALO BRANCO"},
-                {c:274,n:"SECRETARIA DE DESENVOLVIMENTO SOCIAL - SDS"},
-                {c:275,n:"SECRETARIA DE OBRAS"},
-                {c:293,n:"EE CÔNEGO JOSÉ FORTUNATO DA SILVA RAMOS"},
-                {c:313,n:"REPUBLICA FEDERATIVA DO BRASIL"},
-                {c:354,n:"CECOI - ACE - ASSOCIAÇÃO CRISTÃ EDUCACIONAL MEU SEGUNDO LAR"},
-                {c:356,n:"CECOI - AAMU - ASSOCIAÇÃO DE APOIO E ASSISTÊNCIA A MULHER"},
-                {c:357,n:"CECOI - ABAP - ASSOCIAÇÃO BENEFICIENTE ANDRÉ PUSPLATAIS"},
-                {c:358,n:"CECOI - ACEL - A.C. ESTÂNCIA DE LUZ LAR ESCOLAR MÃE MARIQUINHA"},
-                {c:359,n:"CECOI - AME - ASSISTÊNCIA MATERNAL ESPÍRITA"},
-                {c:360,n:"CECOI - AGMAC - ASSOCIAÇÃO GRUPO DE MÃES DE APOIO A CRECHE"},
-                {c:361,n:"CECOI - CASEPAFE - C.  A. SOCIAL EVANGÉLICA PALAVRA DA FÉ"},
-                {c:362,n:"CECOI - OBRA SOCIAL PIO XII MARIA IZABEL/ IPMMI - CASA SANTA INÊS"},
-                {c:363,n:"CECOI - CEPEM - CENTRO PROMOCIONAL DE EUGÊNIO DE MELO"},
-                {c:364,n:"CECOI - OBRA SOCIAL CÉLIO LEMOS"},
-                {c:365,n:"CECOI - CRECHE PATRONATO NOSSA SENHORA DE APARECIDA"},
-                {c:367,n:"CECOI - FEDERAÇÃO ESPÍRITA DO ESTADO DE SÃO PAULO CRECHE MEIMEI"},
-                {c:368,n:"CECOI - UNIVAP CRECHE DO CAMPO DOS ALEMÃES"},
-                {c:369,n:"CECOI - UNIVAP JARDIM TELESPARK"},
-                {c:370,n:"CECOI - IRMÃS CARMELITAS/OBRA MADRE Mª TERESA D JESUS EUCARÍSTICO"},
-                {c:371,n:"CECOI - OBRAS ASSISTÊNCIAIS IRMÃ CLARA"},
-                {c:376,n:"VEREADOR JOÃO DAS MERCES/ TAMPÃO"},
-                {c:377,n:"CECOI - OBRA SOCIAL E ASSISTENCIAL NOSSA SENHORA AUXILIADORA"},
-                {c:378,n:"CECOI - A. DE AMPARO A CRIANÇA E ADOLESCENTE PEQUENA ESTRELA"},
-                {c:379,n:"CECOI - OBRA SOCIAL E ASSISTENCIAL CORAÇÃO DE MARIA"},
-                {c:380,n:"CECOI - ASSOCIAÇÃO EDUCACIONAL INFANTIL SANTA RITA REGIÃO NORTE"},
-                {c:381,n:"CECOI - SEARA ESPÍRITA BEZERRA DE MENEZES CRECHE ANÁLIA FRANCO"},
-                {c:382,n:"CECOI - SOCIEDADE BENEFICIENTE SÃO MATEUS"},
-                {c:383,n:"CECOI - FUNDHAS - EMEF DOM PEDRO DE ALCÂNTARA"},
-                {c:384,n:"CECOI - FUNDHAS - EMEF ÁLVARO GONÇALVES"},
-                {c:385,n:"CECOI - LÍRIOS DO CAMPO CRECHE CONVÊNIADA JARDIM SÃO JOSÉ"},
-                {c:386,n:"CECOI - LÍRIOS DO CAMPO TORRÃO DE OURO E MONTE CASTELO"},
-                {c:387,n:"CECOI - LÍRIOS DO CAMPO JARDIM SOUTO E JARDIM SÃO JUDAS"},
-                {c:388,n:"CECOI - ÉDEN LAR"},
-                {c:447,n:"MINISTÉRIO PÚBLICO DO TRABALHO"},
-                {c:448,n:"ITA - INSTITUTO TÉCNICO AEROESPACIAL"},
-                {c:465,n:"MINISTÉRIO DA EDUCAÇÃO DE SÃO PAULO"},
-                {c:485,n:"MINISTÉRIO DA FAZENDA"},
-                {c:486,n:"FAMME"},
-                {c:488,n:"EE CAMPO DOS ALEMÃES"},
-                {c:490,n:"VEREADOR ITAMAR COPPIO"},
-                {c:507,n:"FADENP"},
-                {c:510,n:"SECRETARIA DE TRANSPORTES"},
-                {c:511,n:"SE - COORDENADORIA DE ORÇAMENTO E COMPRAS"},
-                {c:512,n:"CORREIOS"},
-                {c:513,n:"SECRETARIA DE SERVIÇOS GERAIS"},
-                {c:517,n:"SECRETARIA DA FAZENDA"},
-                {c:518,n:"SENAC"},
-                {c:519,n:"NEI PROF ADÃO PLÁCIDO DE OLIVEIRA"},
-                {c:520,n:"NEI JARDIM CASTANHEIRAS"},
-                {c:521,n:"NEI ÉDEN LAR DAS CRIANÇAS"},
-                {c:522,n:"NEI MONTE CASTELO (DENOMINADA NEI ELZA MARIA DIAS MENDONÇA-131)"},
-                {c:524,n:"EMEI SÃO JUDAS TADEU"},
-                {c:525,n:"NEI BOSQUE DOS EUCALÍPITOS I"},
-                {c:526,n:"CONESP - COMPANHIA DE CONSTRUÇÕES DO ESTADO DE SÃO PAULO"},
-                {c:527,n:"EE ARLETE ELOIZA FERREIRA TEIXEIRA"},
-                {c:528,n:"EE JOÃO FERREIRA DOS SANTOS"},
-                {c:530,n:"EE ALCEU MAYNARD ARAÚJO"},
-                {c:547,n:"IGREJA / PARÓQUIA / CAPELA"},
-                {c:548,n:"VEREADOR SANTOS NEVES"},
-                {c:549,n:"VEREADOR JOÃO BEZERRA"},
-                {c:550,n:"TIRO DE GUERRA"},
-                {c:551,n:"NEI DO BUQUIRINHA"},
-                {c:552,n:"VEREADOR HÉLIO NISHIMOTO"},
-                {c:553,n:"POLIEDRO - SISTEMA DE ENSINO POLIEDRO"},
-                {c:554,n:"SINDICATOS"},
-                {c:555,n:"VEREADOR WALTER HAYASHI"},
-                {c:556,n:"PROMOTOR DE JUSTIÇA"},
-                {c:557,n:"TECELAGEM PARAÍBA"},
-                {c:558,n:"SOCIEDADE DE SÃO VICENTE DE PAULA"},
-                {c:559,n:"VEREADOR FLORIVALDO ROCHA"},
-                {c:560,n:"DIRETORIA DE ENSINO DE SÃO JOSÉ DOS CAMPOS"},
-                {c:561,n:"VEREADOR VALDIR ALVARENGA"},
-                {c:562,n:"VEREADOR OSMAR FERREIRA"},
-                {c:563,n:"VEREADOR DILERMANDO - DIÉ"},
-                {c:564,n:"SECRETARIA DE ESTADO DOS NEGÓCIOS DA SEGURANÇA PÚBLICA"},
-                {c:565,n:"INSTITUTO DE PREVIDÊNCIA DO SERVIDOR MUNICIPAL"},
-                {c:566,n:"VEREADOR ALEXANDRE DA FARMÁCIA"},
-                {c:568,n:"FARMÁCIA COMUNITÁRIA"},
-                {c:570,n:"EE DORIVAL MONTEIRO DE OLIVEIRA"},
-                {c:571,n:"EE DOMINGOS DE MACEDO CUSTÓDIO"},
-                {c:572,n:"EE WILMA RAGAZZI BOCCARDO"},
-                {c:573,n:"EE PEDRO MASCARENHAS"},
-                {c:574,n:"CARTÓRIO ELEITORAL"},
-                {c:575,n:"EE JOSÉ FREDERICO MARQUES"},
-                {c:576,n:"CECOI - CIA DE TEATRO ESTRANHOS MAMULENGOS"},
-                {c:578,n:"EMEF RIO COMPRIDO"},
-                {c:579,n:"VEREADOR MAURO KANO"},
-                {c:580,n:"EE JUVENAL MACHADO DE ARAÚJO"},
-                {c:581,n:"SOCIEDADE AMIGOS DO BAIRRO - SAB"},
-                {c:582,n:"EE ANA CÂNDIDA DE BARROS MOLINA"},
-                {c:583,n:"EE PEDRO MAZZA"},
-                {c:584,n:"DELEGACIA REGIONAL DE ESPORTES E RECREAÇÃO"},
-                {c:585,n:"EE EUNICE CORDEIRO DOS SANTOS RODRIGUES"},
-                {c:586,n:"VEREADOR SERGINHO DO FÓRUM"},
-                {c:588,n:"MUNÍCIPE"},
-                {c:590,n:"FUNDHAS - FUNDAÇÃO HÉLIO AUGUSTO DE SOUZA"},
-                {c:591,n:"OBRA SOCIAL E ASSISTENCIAL MAGNIFICAT"},
-                {c:592,n:"DIOCESE"},
-                {c:593,n:"ASSOCIAÇÃO - SETOR EXTERNO"},
-                {c:594,n:"ADMINISTRADOR DISTRITAL / SUB PREFEITURA"},
-                {c:601,n:"SECRETARIA DE GOVERNO"},
-                {c:602,n:"EE YOSHIYA TAKAOKA"},
-                {c:603,n:"SECRETARIA DE ADMINISTRAÇÃO"},
-                {c:604,n:"SE - ASSESSORIA TÉCNICA / PROBISS / BOLSA FAMÍLIA"},
-                {c:605,n:"SESI - SERVIÇO SOCIAL DA INDÚSTRIA"},
-                {c:606,n:"LAR NOSSA SENHORA DA SALETTE"},
-                {c:607,n:"EE JOSÉ FORTUNATO DA SILVA RAMOS"},
-                {c:608,n:"EE MARIA APARECIDA VERÍSSIMO MADUREIRA"},
-                {c:609,n:"EE PROF XENOFONTE STRABÃO DE CASTRO"},
-                {c:610,n:"ASSEMBLÉIA LEGISLATIVO DE SÃO PAULO E BRASÍLIA"},
-                {c:611,n:"EE JÚLIA BERNARDES RODRIGUES"},
-                {c:612,n:"JOHNSON E JOHNSON"},
-                {c:613,n:"BANDEIRANTES ENERGIA S.A"},
-                {c:621,n:"EE JENI DAVI BACHA"},
-                {c:622,n:"PROCURADOR DO MUNICÍPIO / PROCURADORIA JURÍDICA"},
-                {c:624,n:"SECRETARIA DE DESENVOLVIMENTO ECONÔMICO"},
-                {c:625,n:"RECEITA FEDERAL"},
-                {c:626,n:"SECRETARIA DE ASSUNTOS JURÍDICOS"},
-                {c:627,n:"SECRETARIA DE SERVIÇOS MUNICIPAIS"},
-                {c:631,n:"SECRETARIA DE MEIO AMBIENTE"},
-                {c:633,n:"EE MARIA DOLORES VERÍSSIMO MADUREIRA"},
-                {c:636,n:"EE IRACEMA RIBEIRO DE FREITAS"},
-                {c:638,n:"EE MALBA THEREZA FERRAZ CAMPANER"},
-                {c:640,n:"DIVISÃO DE TRÁFEGO"},
-                {c:664,n:"(NÃO UTILIZAR) BIBLIOTECA PÚBLICA CASSIANO RICARDO"},
-                {c:667,n:"EE ADÉLIA CHUCRI NEME"},
-                {c:684,n:"GABINETE DO PREFEITO"},
-                {c:705,n:"PROCURADORIA DO PATRIMÔNIO IMOBILIÁRIO"},
-                {c:708,n:"CONSELHO TUTELAR"},
-                {c:710,n:"VEREADOR CRISTIANO FERREIRA"},
-                {c:729,n:"PROCURADOR DO ESTADO"},
-                {c:730,n:"FUNDAP"},
-                {c:731,n:"CMDCA - CONSELHO MUNICIPAL DOS DIREITOS DAS CRIANÇAS/ADOLESCENTE"},
-                {c:750,n:"URBAM"},
-                {c:751,n:"VARA DA INFÂNCIA E JUVENTUDE DA COMARCA DE SÃO JOSÉ DOS CAMPOS"},
-                {c:752,n:"C T A - CENTRO TÉNICO AEROESPACIAL"},
-                {c:753,n:"COLÉGIO ANGLO - CASSIANO RICARDO"},
-                {c:755,n:"SOCIEDADE BENEFICENTE DEIXE DE FUMAR EM 5 DIAS"},
-                {c:756,n:"UNESCO"},
-                {c:757,n:"MINISTÉRIO DA EDUCAÇÃO - GOVERNO ESTADUAL/FEDERAL - MEC"},
-                {c:763,n:"SACOBRAM"},
-                {c:768,n:"EE BENEDITO MATARAZZO"},
-                {c:769,n:"EE MARIA LUIZA DE GUIMARÃES MEDEIROS"},
-                {c:771,n:"EMEF PROF MARIA AUGUSTA MOREIRA DA COSTA"},
-                {c:773,n:"EE FELÍCIO SAVASTANO"},
-                {c:774,n:"EE DINORÁ PEREIRA RAMOS BRITO"},
-                {c:775,n:"EE MOABE CURY"},
-                {c:776,n:"EE OLYMPIO CATÃO"},
-                {c:779,n:"ASSOCIAÇÃO EDUCACIONAL"},
-                {c:781,n:"EE UBIRAJARA BERNA DE CHIARA"},
-                {c:782,n:"COLÉGIO INSTITUTO SÃO JOSÉ"},
-                {c:785,n:"MINISTÉRIO PÚBLICO DO ESTADO DE SÃO PAULO"},
-                {c:786,n:"EE CAMPOS DE SÃO JOSÉ"},
-                {c:787,n:"EE DIRCE ELIAS"},
-                {c:788,n:"EE JOÃO MOROTTI FILHO"},
-                {c:789,n:"EE GERALDINA COELHO MONTEIRO"},
-                {c:791,n:"LIONS CLUBE DE SÃO JOSÉ DOS CAMPOS"},
-                {c:792,n:"TELEFÔNICA/TELESP"},
-                {c:794,n:"EMEF PROFª MARTHA ABIB CASTANHO"},
-                {c:795,n:"EE RUTH COUTINHO SOBREIRO"},
-                {c:797,n:"EE JOAQUIM ANDRADE MEIRELLES"},
-                {c:798,n:"EE ANTONIO JOSÉ DE SIQUEIRA"},
-                {c:800,n:"UNDIME-SP - UNIÃO NACIONAL DOS DIRIGENTES MUNICIPAIS DE EDUCAÇÃO"},
-                {c:801,n:"CONSULTORIA EM POLÍTICAS PÚBLICAS - CPP"},
-                {c:803,n:"EE MARIA APARECIDA SANTOS RONCONI"},
-                {c:806,n:"EMPRESA DE ÔNIBUS"},
-                {c:807,n:"EE NAJLA JAMILE SANTOS MACHADO DE ARAÚJO"},
-                {c:808,n:"FÁBRICAS/INDÚSTRIAS"},
-                {c:826,n:"EE GALO BRANCO"},
-                {c:827,n:"EE FRANCISCO PEREIRA SA SILVA"},
-                {c:828,n:"EE JOÃO CURSINO"},
-                {c:833,n:"SERVIDORES MUNICIPAIS"},
-                {c:835,n:"SOCIEDADE CIVIL NANTENEDORA DO LAR NOSSA SENHORA DA SALETTE"},
-                {c:856,n:"ASSOCIAÇÃO DE PROF. E SERVIDORES PÚBLICOS DE SP - APROESP/APEOESP"},
-                {c:857,n:"TRIBUNAL REGIONAL ELEITORAL SJC"},
-                {c:859,n:"COLÉGIO TABLEAU"},
-                {c:862,n:"FACULDADES / UNIVERSIDADES"},
-                {c:895,n:"COLÉGIO INTEGRADO OBJETIVO"},
-                {c:915,n:"VEREADORA DULCE RITA"},
-                {c:936,n:"COLÉGIO IGUATEMY"},
-                {c:937,n:"ASSEM- ASSOCIAÇÃO DOS SERVIDORES MUNICIPAIS"},
-                {c:942,n:"CRECHE CANTINHO DOS ANJOS"},
-                {c:949,n:"PROJETOS PROMOCIONAIS -  ARGUS"},
-                {c:950,n:"SABESP"},
-                {c:954,n:"PHILIPS"},
-                {c:957,n:"FUNDAÇÃO CULTURAL CASSIANO RICARDO"},
-                {c:964,n:"INSTITUTO DE PSICOLOGIA- PRÉ ESCOLA TERAPÊUTICA LUGAR DE VIDA"},
-                {c:968,n:"VOTORANTIM CELULOSE E PAPEL - VCP"},
-                {c:976,n:"CONSELHO ESTADUAL DE EDUCAÇÃO"},
-                {c:978,n:"TRIBUNAL DE JUSTIÇA"},
-                {c:980,n:"SECRETARIA DE JUVENTUDE"},
-                {c:982,n:"ESCOLA TÉCNICA - ETEP"},
-                {c:992,n:"GRUPO GERAÇÃO SAÚDE"},
-                {c:993,n:"CEPHAS - CENTRO DE EDUCAÇÃO PROFISSIONAL HÉLIO AUGUSTO DE SOUZA"},
-                {c:994,n:"INSTITUTO DE PESQUISAS ESPACIAIS - INPE"},
-                {c:1081,n:"VEREADOR LINO BISPO"},
-                {c:1083,n:"VEREADOR MIRANDA UEB"},
-                {c:1084,n:"IMI PROF DIMÉIA MARIA FERREIRA DINIZ ENDO"},
-                {c:1095,n:"NEI BAIRRO DOS FREITAS"},
-                {c:1096,n:"NEI ALTO DA PONTE"},
-                {c:1097,n:"INSPESEL - INSPETOR DE SEGURANÇA ELETRÔNICA"},
-                {c:1098,n:"IMI CAMPO DOS ALEMÃES"},
-                {c:1100,n:"NEI JARDIM DAS FLORES"},
-                {c:1101,n:"IMI PROF MARIA DE LOURDES CONSTANTINO"},
-                {c:1102,n:"SE - DEB - COORDENADORA PEDAGÓGICA DO CECOI"},
-                {c:1123,n:"VEREADOR CARLINHOS ALMEIDA"},
-                {c:1125,n:"EMEI DA VILA SÃO PEDRO (EMEI SONIA MARA RAMOS)"},
-                {c:1162,n:"VEREADOR JUVENIL SILVÉRIO"},
-                {c:1183,n:"EMEI PROF JOSÉ ANTERO C. DOS SANTOS"},
-                {c:1202,n:"EMEF PROF OLGA FRANCO CUSTÓDIO"},
-                {c:1203,n:"NEI JARDIM PARAÍSO DO SOL"},
-                {c:1223,n:"SECRETARIA DE DEFESA DO CIDADÃO - SEDC"},
-                {c:1243,n:"SECRETARIA DO GOVERNO DO ESTADO DE SÃO PAULO"},
-                {c:1264,n:"SUPREMO TRIBUNAL FEDERAL"},
-                {c:1266,n:"CUT - CENTRAL ÚNICA DOS TRABALHADORES"},
-                {c:1267,n:"PREFEITURA MUNICIPAL"},
-                {c:1283,n:"CÂMARA MUNICIPAL"},
-                {c:1286,n:"FUNDO SOCIAL DE SOLIDARIEDADE"},
-                {c:1306,n:"SAJ- PROCURADORIA TRABALHISTA"},
-                {c:1323,n:"JUIZ DE DIREITO"},
-                {c:1344,n:"SECRETARIA MUNICIPAL DE EDUCAÇÃO"},
-                {c:1351,n:"JUSTIÇA ELEITORAL DO ESTADO DE SÃO PAULO"},
-                {c:1356,n:"EE DR.RUI RODRIGUES DÓRIA"},
-                {c:1359,n:"SESC-SP SERVIÇO SOCIAL DO COMÉRCIO"},
-                {c:1371,n:"ASSOCIAÇÃO COMERCIAL E INDUSTRIAL - ACI"},
-                {c:1372,n:"PROGRAMA AQUARELA"},
-                {c:1376,n:"PREVIDÊNCIA SOCIAL"},
-                {c:1378,n:"CENTRO ESTADUAL DE EDUCAÇÃO TECNOLÓGICA PAULA SOUZA/CEETEPS/FATEC"},
-                {c:1392,n:"SEBRAE - SP"},
-                {c:1394,n:"EMBRAER"},
-                {c:1433,n:"VEREADOR JORLEY AMARAL"},
-                {c:1453,n:"VEREADOR CRISTOVÃO CONÇALVES"},
-                {c:1455,n:"VEREADOR ALOISIO PETITI"},
-                {c:1456,n:"SECRETARIA DE HABITAÇÃO"},
-                {c:1476,n:"VEREADOR GIBA RIBEIRO - PT"},
-                {c:1496,n:"VEREADOR ROBERTO BARBOSA"},
-                {c:1516,n:"EE MAJOR AVIADOR JOSÉ MARIOTTO FERREIRA"},
-                {c:1576,n:"TRIBUNAL INTERDIOCESANO DE APARECIDA"},
-                {c:1597,n:"CINEMARK"},
-                {c:1618,n:"ERICSSON DO BRASIL - COMÉRCIO E INDÚSTRIA S. A."},
-                {c:1676,n:"ESCOLAS ESTADUAIS"},
-                {c:1677,n:"EE HENRIQUETA COSTA PORTO"},
-                {c:1678,n:"EE JOSÉ ANTONIO COUTINHO CONDINO"},
-                {c:1680,n:"EE JARDIM CASTANHEIRAS"},
-                {c:1681,n:"EE MARILDA FERREIRA BRITO  BARROS PEREIRA"},
-                {c:1682,n:"EE JORGE BARBOSA"},
-                {c:1683,n:"EE FAZENDA MONTES CLAROS"},
-                {c:1684,n:"EE BAIRRO DO BENGALAR"},
-                {c:1685,n:"EE BAIRRO SANTA LUZIA"},
-                {c:1686,n:"EE BAIRRO BOM SUCESSO"},
-                {c:1687,n:"EE BAIRRO RIO DAS COBRAS"},
-                {c:1716,n:"JORNAL"},
-                {c:1736,n:"EE SUELY ANTUNES DE MELLO"},
-                {c:1738,n:"EE EUCLIDES BUENO MIRAGAIA"},
-                {c:1776,n:"SUPERVISÃO DE ATENDIMENTO 156"},
-                {c:1817,n:"INSTITUTO  EMBRAER DE EDUCAÇÃO E PESQUISA"},
-                {c:1838,n:"CECOI - A. DE ASSISTÊNCIA À CRIANÇA SER FELIZ"},
-                {c:1858,n:"CECOI - INSTITUTO MAMULENGO SOCIAL"},
-                {c:1882,n:"OBRA SOCIAL E ASSISTENCIAL SANTA INES"},
-                {c:1900,n:"FUNDAÇÃO LEGIÃO BRASILEIRA DE ASSISTÊNCIA - LBA"},
-                {c:1901,n:"PRÓ-VISÃO CENTRO DE PREVENÇÃO E REABILITAÇÃO DE DEF. DA VISÃO"},
-                {c:1902,n:"JUSTIÇA FEDERAL"},
-                {c:1944,n:"SECRETARIA DE PLANEJAMENTO URBANO"},
-                {c:1968,n:"PROJETO OLHO MÁGICO"},
-                {c:1988,n:"SENAI - SERVIÇO NACIONAL DE APRENDIZAGEM INDUSTRIAL"},
-                {c:2007,n:"ESCOLAS MUNICIPAIS"},
-                {c:2051,n:"REDE VANGUARDA"},
-                {c:2071,n:"TRIBUNAL DE CONTAS DO ESTADO DE SÃO PAULO"},
-                {c:2108,n:"CECOI - ASSOCIAÇÃO BENEFICENTE ANDRÉ PUSPLATAIS"},
-                {c:2109,n:"CECOI - INSTITUTO DE AÇÃO SOCIAL AMIGOS DA CIDADE"},
-                {c:2110,n:"CECOI - ASSOCIAÇÃO ÁGAPE PARA EDUCAÇÃO ESPECIAL"},
-                {c:2111,n:"CECOI - OBRA SOCIAL E ASSISTENCIAL MARIA TERESA DE SÃO JOSÉ"},
-                {c:2112,n:"EMEF PROF POSSIDÔNIO SALLES"},
-                {c:2114,n:"EMEF EMMANUEL ANTÔNIO DOS SANTOS"},
-                {c:2115,n:"EMEF PROF HÉLIO WALTER BEVILACQUA"},
-                {c:2116,n:"DEPARTAMENTO DE EDUCAÇÃO INTEGRADA"},
-                {c:2118,n:"ROTARY CLUB DE SÃO JOSÉ DOS CAMPOS"},
-                {c:2120,n:"LAB. DE ED. DIGITAL E INTERATIVA PROF. EDUARDO AUGUSTO FERNANDES"},
-                {c:2122,n:"IMI PROF ELIANA DE OLIVEIRA SANTOS CRUZ"},
-                {c:2124,n:"IMI HELENA FERREIRA"},
-                {c:2125,n:"IMI HELENA VAZ DE LIMA SOLIVA."},
-                {c:2126,n:"CRECHE PROF CIDINHA CANDELARIA OTTOBONI"},
-                {c:2130,n:"NEI OSWALDO CÓPPIO"},
-                {c:2131,n:"EMEI PROF LOURDES DE OLIVEIRA MENDES"},
-                {c:2132,n:"EMEI PROF LÚCIA MARIA DO AMARAL"},
-                {c:2134,n:"EMEI PROF VALÉRIA APARECIDA DE ALMEIDA VANCONCELOS"},
-                {c:2136,n:"NEI PROF ILZA NASCIMENTO PINTUS"},
-                {c:2138,n:"CEDIN - CENTRO DE EDUCAÇÃO INFANTIL"},
-                {c:2140,n:"CEDEMP - CENTRO DE EDUCAÇÃO EMPREENDEDORA - CÓDIGO EM DESUSO"},
-                {c:2142,n:"CECOI - AVAPE - A. PARA VALORIZAÇÃO DE PESSOAS COM DEFICIÊNCIA"},
-                {c:2143,n:"CECOI - INSTITUTO CHÃO VERDE"},
-                {c:2144,n:"FUNDHAS - ROSA TOMITA"},
-                {c:2145,n:"FUNDHAS - MOACYR BENEDICTO DE SOUZA"},
-                {c:2146,n:"SE - ASSESSORIA TÉCNICA DE PLANEJAMENTO"},
-                {c:2148,n:"EE ILZA IRMA MOELLER COPPIO"},
-                {c:2149,n:"EE FRANCISCO JOÃO LEME"},
-                {c:2150,n:"EE SANTANA DO PARAÍBA"},
-                {c:2152,n:"EE VILMAR LOURENÇO SANTANA"},
-                {c:2154,n:"EE PROFª MARIA GOMIDE SANTOS DE SOUZA"},
-                {c:2155,n:"EE NELSON FERREIRA DA SILVA"},
-                {c:2156,n:"EE ÉDERA IRENE P. DE O. CARDOSO"},
-                {c:2158,n:"EE DR RUI RODRIGUES DÓRIA"},
-                {c:2162,n:"EE ZILDA ALTIMIRA SOCI"},
-                {c:2163,n:"ANA HERONDINA SOARES SCHYCHOF"},
-                {c:2164,n:"EE ENGENHEIRO EDGAR MELLO MATOS DE CASTRO"},
-                {c:2168,n:"COORDENADORIA DE FORMAÇÃO EDUCACIONAL E ATENÇÃO ÀS DROGAS"},
-                {c:2170,n:"COORDENADORIA DE DIVERSIDADE ESCOLAR"},
-                {c:2172,n:"KODAK"},
-                {c:2178,n:"SETOR EXTINTO - CONSELHO MUNICIPAL DE SEGURANÇA (CMS)"},
-                {c:2181,n:"CONSELHO MUNICIPAL DE SEGURANÇA"},
-                {c:2184,n:"SE - DEB - DEF - COORD. PEDAG. - SERV. ORIENTAÇÃO EDUCACIONAL"},
-                {c:2186,n:"FUNDAÇÃO"},
-                {c:2188,n:"SECRETARIA MUNICIPAL DE PROMOÇÃO DA CIDADANIA"},
-                {c:2191,n:"SE - DEB - DEI - ESCOLAS MUNICIPAIS DE EDUCAÇÃO INFANTIL"},
-                {c:2192,n:"SECRETARIA DE REGULAÇÃO FUNDIÁRIA"},
-                {c:2196,n:"SUBPREFEITURA DE SÃO FRANCISCO XAVIER"},
-                {c:2198,n:"CONSELHO MUNICIPAL DOS DIREITOS DA CRIANÇA E DO ADOLESCENTE"},
-                {c:2200,n:"CONSELHO MUNICIPAL DE ATENÇÃO ÀS DROGAS"},
-                {c:2201,n:"CONSELHO MUNICIPAL DE ASSISTÊNCIA SOCIAL"},
-                {c:2202,n:"SECRETARIA DE PROMOÇÃO DA CIDADANIA"},
-                {c:2203,n:"CONSELHO MUNICIPAL DO IDOSO"},
-                {c:2204,n:"COORDENADORIA ESPECIAL DE POLÍTICAS PÚBLICAS PARA MULHERES"},
-                {c:2206,n:"PROGRAMA DECOLAR"},
-                {c:2212,n:"CONDEPHAAT"},
-                {c:2214,n:"INEC - INSTITUTO NACIONAL DE EDUCAÇÃO CETRO"},
-                {c:2216,n:"FÓRUM"},
-                {c:2222,n:"SECRETARIA DE RELAÇÕES DO TRABALHO"},
-                {c:2226,n:"ESCOLAS PARTICULARES"},
-                {c:2229,n:"SE - ADJ - ASSESSORIA AAE'S / FUNDEB"},
-                {c:2231,n:"SOCIEDADE BENEFICENTE SÃO MATEUS"},
-                {c:2234,n:"CRUZADA PAROQUIAL DE ASSISTÊNCIA"},
-                {c:2236,n:"INSTITUTO"},
-                {c:2237,n:"FEDERAÇÃO ESPÍRITA DO ESTADO DE SÃO PAULO"},
-                {c:2238,n:"OBRA SOCIAL ANÁLIA FRANCO"},
-                {c:2240,n:"EE PROFª ANA HERONDINA SOARES SCHYCHOF"},
-                {c:2242,n:"CASA LAURA VICUÑA"},
-                {c:2244,n:"EE ZILDA ALTIMIRA SOCI"},
-                {c:2246,n:"EE  ZILAH FERREIRA VIAGI PASSARELLI DE CAMPOS"},
-                {c:2248,n:"CENTRO EDUCACIONAL FONTE DA VIDA"},
-                {c:2251,n:"EMPRESA"},
-                {c:2264,n:"NEI PROF MARIA APARECIDA SAVASTANO SANCHEZ"},
-                {c:2268,n:"IMI FERNANDO TÃO DE AZEVEDO"},
-                {c:2270,n:"EMEF PROF MERCEDES MARIA PEROTTI"},
-                {c:2272,n:"DELEGACIA DA INFÂNCIA E JUVENTUDE"},
-                {c:2274,n:"DEFENSORIA PÚBLICA DO ESTADO DE SÃO PAULO"},
-                {c:2276,n:"CEFE - CENTRO DE FORMAÇÃO DO PROFESSOR - PROFª LENY BEVILACQUA"},
-                {c:2278,n:"DIVERSOS"},
-                {c:2280,n:"CAE - CONSELHO DE ALIMENTAÇÃO ESCOLAR"},
-                {c:2282,n:"SE - DEPARTAMENTO DE APOIO DE GESTÃO"},
-                {c:2284,n:"EMEI PROF SILVIA HELENA DE SOUZA"},
-                {c:2286,n:"EMEF DO TRABALHADOR"},
-                {c:2288,n:"SEC - DEPARTAMENTO DE GESTÃO DE PROJETOS ESPECIAIS (DGPE)"},
-                {c:2289,n:"SEC - DEPARTAMENTO DE ESPORTES EDUCACIONAIS (DEE)"},
-                {c:2290,n:"SEC - MUSEU INTERATIVO DE CIÊNCIAS (MIC)"},
-                {c:2292,n:"EMEI PROF DENISE PRATES FERNANDES ROCHA"},
-                {c:2293,n:"NEI BAIRRO DOS FREITAS"},
-                {c:2296,n:"EMEFI PROF MARIA ANTONIETA FERREIRA PAYAR"},
-                {c:2297,n:"EMEFI LUIZA MARIA CAVALCANTI GURATTI"},
-                {c:2298,n:"EMEFI EMMANUEL ANTONIO DOS SANTOS"},
-                {c:2299,n:"EMEFI PROF ALDA DE SOUZA ARAUJO"},
-                {c:2300,n:"EMEFI THEREZINHA DO MENINO JESUS SOARES DO NASCIMENTO"},
-                {c:2301,n:"EMEI PROF MARIA LEONOR DE CAMPOS MOTA MIRANDA"},
-                {c:2302,n:"EMEFI PROF AMINTAS ROCHA BRITO"},
-                {c:2303,n:"EMEFI MAURICIO ANISSE CURY"},
-                {c:2304,n:"EMEFI PROF EDEWALDO FREITAS GAIA SANT'ANNA"},
-                {c:2305,n:"UNIVERSIDADE ABERTA DO BRASIL (UAB)"},
-                {c:2306,n:"LABORATORIO DE EDUCAÇÃO DIGITAL E INTERATIVA (LEDI) EXTINTO 2017"},
-                {c:2307,n:"ESCOLA DE FORMAÇÃO DO EDUCADOR (EFE)"},
-                {c:2308,n:"CENTRO DE EDUCAÇÃO DE JOVENS E ADULTOS (CEJA)"},
-                {c:2309,n:"CENTRO DE FORMAÇÃO DO EDUCADOR (CEFE)"},
-                {c:2310,n:"CENTRO DE INOVAÇÃO E TECNOLOGIAS EDUCACIONAIS (CITE)"},
-                {c:2311,n:"EMEFI TEREZINHA ARAUJO - EMEF SANTA HERMINIA"},
-                {c:2312,n:"EMEI MARIA APRECIDA CANDELARIA BERNARDES OTTOBONI"},
-                {c:2313,n:"ESPAÇO DO SERVIDOR SEC - BIBLIOTECA DO PROFESSOR/ESPAÇO CULTURAL"},
-                {c:2314,n:"SERVIÇO SOCIAL/ASSISTENTES SOCIAIS DA SEC"},
-                {c:2316,n:"EMEI PROF SONIA MARA RAMOS"},
-                {c:2318,n:"NEI INTEGRAÇÃO"},
-                {c:2319,n:"NEI JARDIM AMERICANO"},
-                {c:2320,n:"NEI VILA SANTA CRUZ I E II"},
-                {c:2322,n:"ESCOLA DO TRABALHADOR (POSTERIORMENTE EMEF FLÁVIO BERLING)"},
-                {c:2325,n:"EMEI PROF MARIA CLARA FERNANDES CORREIA FRANÇA (FOI EMEI JD MORUM"},
-                {c:2327,n:"EMEI DIRCE SALONI PIRES (2022 - 2025) ANTIGA PADRE BONAFÉ"},
-                {c:9999,n:"SETOR NÃO DEFINIDO"}
+            {n:"1502 - GABINETE DO PREFEITO"},
+            {n:"1344 - SEC. MUNICIPAL DE EDUCAÇÃO"},
+            {n:"1620 - RECURSOS HUMANOS"},
+            {n:"1805 - FINANÇAS / CONTABILIDADE"},
+            {n:"1910 - CORPO DE BOMBEIROS"},
+            {n:"2100 - SAÚDE / ADMINISTRATIVO"},
+            {n:"2250 - JURÍDICO"},
+            {n:"3010 - OBRAS E SERVIÇOS"},
+            {n:"4100 - CULTURA E TURISMO"},
+            {n:"5005 - EMEF DOM PEDRO I"}
         ];
 
         let etiquetas = [];
-        const MAX_ETIQUETAS = 6; // 2 colunas x 3 linhas
+        const MAX_ETIQUETAS = 6; 
 
-        // --- CONTROLE DE UI ---
+        // --- CONTROLE UI ---
         function setModo(modo) {
             document.getElementById('btnModeDoc').className = modo === 'documental' ? 'mode-btn active' : 'mode-btn';
             document.getElementById('btnModeNum').className = modo === 'numerica' ? 'mode-btn active' : 'mode-btn';
@@ -1014,21 +371,16 @@
 
         function toggleCamposDoc() {
             const tipo = document.getElementById('docTipo').value;
-            
-            // Controle campos Amostragem
             if (tipo === 'amostragem') {
                 document.getElementById('fieldsComum').style.display = 'none';
                 document.getElementById('fieldsAmostragem').style.display = 'block';
             } else {
                 document.getElementById('fieldsComum').style.display = 'block';
                 document.getElementById('fieldsAmostragem').style.display = 'none';
-            }
-
-            // Controle campo Ano Eliminação (Só para Eliminação)
-            if (tipo === 'eliminacao') {
-                document.getElementById('groupAnoElim').style.display = 'block';
-            } else {
-                document.getElementById('groupAnoElim').style.display = 'none';
+                
+                // Toggle Ano Eliminação
+                const divElim = document.getElementById('groupAnoElim');
+                divElim.style.visibility = tipo === 'eliminacao' ? 'visible' : 'hidden';
             }
         }
 
@@ -1040,7 +392,7 @@
             
             if (!val) { list.style.display = 'none'; return; }
 
-            const matches = BASE_SETORES.filter(s => s.n.includes(val)).slice(0, 10);
+            const matches = BASE_SETORES.filter(s => s.n.includes(val));
             
             if (matches.length > 0) {
                 list.style.display = 'block';
@@ -1059,12 +411,13 @@
             }
         }
 
-        // --- LÓGICA DE ETIQUETAS ---
+        document.addEventListener('click', (e) => {
+            if (!e.target.matches('input')) document.querySelectorAll('.autocomplete-list').forEach(el => el.style.display = 'none');
+        });
+
+        // --- AÇÕES ---
         function adicionar() {
-            if (etiquetas.length >= MAX_ETIQUETAS) {
-                alert("A folha está cheia (Máximo 6 etiquetas). Imprima ou limpe para continuar.");
-                return;
-            }
+            if (etiquetas.length >= MAX_ETIQUETAS) { alert("Folha cheia!"); return; }
 
             const modo = document.getElementById('formNumerica').style.display === 'block' ? 'numerica' : 'documental';
             let data = {};
@@ -1076,25 +429,29 @@
                     setor: document.getElementById('numSetor').value || "GERAL",
                     ano: document.getElementById('numAno').value || new Date().getFullYear()
                 };
-                // Auto-incremento
                 document.getElementById('numCaixa').value = parseInt(data.numero) + 1;
             } else {
                 const subTipo = document.getElementById('docTipo').value;
-                data = {
-                    tipo: subTipo,
-                    setor: document.getElementById('docSetor').value || "",
-                    // Comuns
-                    numDoc: document.getElementById('docNum').value || "",
-                    anoDoc: document.getElementById('docAno').value || "",
-                    classif: document.getElementById('docClass').value || "",
-                    qtd: document.getElementById('docQtd').value || "",
-                    desc: document.getElementById('docDesc').value || "",
-                    elim: document.getElementById('docElim').value || "",
-                    // Amostragem
-                    amoProc: document.getElementById('amoProc').value || "",
-                    amoData: document.getElementById('amoData').value || "",
-                    amoDesc: document.getElementById('amoDesc').value || ""
-                };
+                if (subTipo === 'amostragem') {
+                    data = {
+                        tipo: 'amostragem',
+                        setor: document.getElementById('amoUnid').value,
+                        proc: document.getElementById('amoProc').value,
+                        desc: document.getElementById('amoDesc').value
+                    };
+                } else {
+                    data = {
+                        tipo: subTipo,
+                        portador: document.getElementById('docPortador').value || "",
+                        numDoc: document.getElementById('docNum').value || "",
+                        anoDoc: document.getElementById('docAno').value || "",
+                        codigo: document.getElementById('docCodigo').value || "",
+                        tipoTexto: document.getElementById('docTipoText').value || "",
+                        qtd: document.getElementById('docQtd').value || "",
+                        desc: document.getElementById('docDesc').value || "",
+                        elim: document.getElementById('docElim').value || ""
+                    };
+                }
             }
 
             etiquetas.push(data);
@@ -1102,19 +459,11 @@
         }
 
         function preencherVazios() {
-            if (etiquetas.length === 0) { alert("Adicione pelo menos uma etiqueta modelo."); return; }
-            if (etiquetas.length >= MAX_ETIQUETAS) { alert("A folha já está cheia."); return; }
-            
-            const modelo = etiquetas[etiquetas.length - 1]; // Pega a última como modelo
-            
+            if (etiquetas.length === 0 || etiquetas.length >= MAX_ETIQUETAS) return;
+            const modelo = etiquetas[etiquetas.length - 1];
             while (etiquetas.length < MAX_ETIQUETAS) {
-                // Clona o objeto (deep copy simples)
                 let novo = JSON.parse(JSON.stringify(modelo));
-                
-                // Se for numérica, incrementa
-                if (novo.tipo === 'numerica') {
-                    novo.numero = parseInt(novo.numero) + 1;
-                }
+                if (novo.tipo === 'numerica') novo.numero = parseInt(novo.numero) + 1;
                 etiquetas.push(novo);
             }
             renderizar();
@@ -1125,13 +474,9 @@
             renderizar();
         }
 
-        function limparTudo() {
-            if(confirm("Limpar toda a folha?")) {
-                etiquetas = [];
-                renderizar();
-            }
-        }
+        function limparTudo() { etiquetas = []; renderizar(); }
 
+        // --- RENDERIZAÇÃO ---
         function renderizar() {
             const container = document.getElementById('folhaA4');
             container.innerHTML = '';
@@ -1139,63 +484,64 @@
             etiquetas.forEach((et, idx) => {
                 const box = document.createElement('div');
                 box.className = 'etiqueta-box';
-                
                 const btnDel = `<button class="btn-delete" onclick="remover(${idx})"><i class="fas fa-times"></i></button>`;
+                
+                let html = '';
 
-                let htmlContent = '';
-
-                // 1. ELIMINAÇÃO
                 if (et.tipo === 'eliminacao') {
-                    htmlContent = `
-                        <div class="layout-padrao">
-                            <div class="eli-header">ELIMINAÇÃO DOCUMENTAL</div>
-                            <div class="eli-row"><span class="eli-label">SETOR:</span><span class="eli-value">${et.setor}</span></div>
-                            <div class="eli-row">
-                                <span class="eli-label">Nº DOC:</span><span class="eli-value" style="width:50%">${et.numDoc}</span>
-                                <span class="eli-label">ANO:</span><span class="eli-value">${et.anoDoc}</span>
+                    // Layout Exato Solicitado
+                    html = `
+                        <div class="layout-eliminacao">
+                            <div class="eli-line">
+                                <span class="eli-lbl">Nº DOC.:</span> <span class="eli-val">${et.numDoc}</span>
+                                <span class="eli-lbl" style="margin-left:10px">DATA:</span> <span class="eli-val">30/12/${et.anoDoc}</span>
                             </div>
-                            <div class="eli-row">
-                                <span class="eli-label">CLASSE:</span><span class="eli-value" style="width:60%">${et.classif}</span>
-                                <span class="eli-label">QTD:</span><span class="eli-value">${et.qtd}</span>
+                            <div class="eli-line">
+                                <span class="eli-lbl">PORTADOR:</span> <span class="eli-val">${et.portador}</span>
                             </div>
-                            <div class="eli-desc"><strong>DESCRIÇÃO:</strong><br>${et.desc}</div>
-                            <div class="eli-row" style="margin-top:5px; border-top:1px dotted #000; padding-top:2px;">
-                                <span class="eli-label">ELIMINAÇÃO EM:</span><span class="eli-value" style="font-weight:800;">31/12/${et.elim}</span>
+                            <div class="eli-line">
+                                <span class="eli-lbl">DESTINATÁRIO:</span> <span class="eli-val fixed">1344 – SEC. MUNICIPAL DE EDUCAÇÃO</span>
+                            </div>
+                            <div class="eli-line">
+                                <span class="eli-lbl">CÓDIGO:</span> <span class="eli-val">${et.codigo}</span>
+                                <span class="eli-lbl" style="margin-left:10px">SIT. DOC.:</span> <span class="eli-val fixed">AGUARDANDO PLANILHA</span>
+                            </div>
+                            <div class="eli-line">
+                                <span class="eli-lbl">TIPO:</span> <span class="eli-val">${et.tipoTexto}</span>
+                                <span class="eli-lbl" style="margin-left:10px">QUANTIDADE:</span> <span class="eli-val">${et.qtd} cm</span>
+                            </div>
+                            <div class="eli-desc-box">
+                                <span class="eli-lbl">DESCRIÇÃO:</span><br>
+                                ${et.desc}
+                            </div>
+                            <div class="eli-footer">
+                                ELIMINAÇÃO: 31/12/${et.elim}
                             </div>
                         </div>
                     `;
-                } 
-                // 2. GUARDA PERMANENTE
-                else if (et.tipo === 'permanente') {
-                    htmlContent = `
-                        <div class="layout-padrao">
-                            <div class="eli-header">GUARDA PERMANENTE</div>
-                            <div class="eli-row"><span class="eli-label">SETOR:</span><span class="eli-value">${et.setor}</span></div>
-                            <div class="eli-row">
-                                <span class="eli-label">Nº DOC:</span><span class="eli-value" style="width:50%">${et.numDoc}</span>
-                                <span class="eli-label">ANO:</span><span class="eli-value">${et.anoDoc}</span>
-                            </div>
-                            <div class="eli-row"><span class="eli-label">CLASSE:</span><span class="eli-value">${et.classif}</span></div>
-                            <div class="eli-desc"><strong>CONTEÚDO:</strong><br>${et.desc}</div>
-                            <div style="text-align:center; font-size:10px; font-weight:bold; margin-top:5px;">NÃO ELIMINAR ESTE DOCUMENTO</div>
+                } else if (et.tipo === 'permanente') {
+                    // Layout Adaptado para Permanente
+                    html = `
+                        <div class="layout-eliminacao" style="border: 4px double #000">
+                             <div style="text-align:center; font-weight:900; border-bottom:1px solid #000; margin-bottom:5px;">GUARDA PERMANENTE</div>
+                             <div class="eli-line"><span class="eli-lbl">PORTADOR:</span> <span class="eli-val">${et.portador}</span></div>
+                             <div class="eli-line"><span class="eli-lbl">Nº DOC:</span> <span class="eli-val">${et.numDoc}/${et.anoDoc}</span></div>
+                             <div class="eli-line"><span class="eli-lbl">CÓDIGO:</span> <span class="eli-val">${et.codigo}</span></div>
+                             <div class="eli-desc-box" style="flex:1"><span class="eli-lbl">CONTEÚDO:</span><br>${et.desc}</div>
+                             <div style="text-align:center; font-size:10px; font-weight:700; margin-top:5px;">DOCUMENTO DE VALOR HISTÓRICO</div>
                         </div>
                     `;
-                }
-                // 3. AMOSTRAGEM
-                else if (et.tipo === 'amostragem') {
-                    htmlContent = `
-                        <div class="layout-amostragem">
-                            <div class="amo-header">AMOSTRAGEM</div>
-                            <div class="eli-row"><span class="eli-label">UNIDADE:</span><span class="eli-value">${et.setor}</span></div>
-                            <div class="eli-row"><span class="eli-label">PROC/CX:</span><span class="eli-value">${et.amoProc}</span></div>
-                            <div class="eli-row"><span class="eli-label">DATA:</span><span class="eli-value">${et.amoData}</span></div>
-                            <div class="eli-desc"><strong>DESCRIÇÃO DA AMOSTRA:</strong><br>${et.amoDesc}</div>
+                } else if (et.tipo === 'amostragem') {
+                     html = `
+                        <div class="layout-eliminacao" style="border: 2px dashed #000">
+                             <div style="text-align:center; font-weight:900; margin-bottom:5px;">AMOSTRAGEM</div>
+                             <div class="eli-line"><span class="eli-lbl">UNIDADE:</span> <span class="eli-val">${et.setor}</span></div>
+                             <div class="eli-line"><span class="eli-lbl">PROCESSO:</span> <span class="eli-val">${et.proc}</span></div>
+                             <div class="eli-desc-box"><span class="eli-lbl">DESCRIÇÃO:</span><br>${et.desc}</div>
                         </div>
                     `;
-                }
-                // 4. NUMÉRICA
-                else if (et.tipo === 'numerica') {
-                    htmlContent = `
+                } else if (et.tipo === 'numerica') {
+                    html = `
                         <div class="layout-numerica">
                             <div class="num-header"><span>${et.numero}</span></div>
                             <div class="num-body"><div class="num-setor">${et.setor}</div></div>
@@ -1204,20 +550,13 @@
                     `;
                 }
 
-                box.innerHTML = btnDel + htmlContent;
+                box.innerHTML = btnDel + html;
                 container.appendChild(box);
             });
         }
         
-        // Fechar autocomplete ao clicar fora
-        document.addEventListener('click', function(e) {
-            if (!e.target.matches('input')) {
-                document.querySelectorAll('.autocomplete-list').forEach(el => el.style.display = 'none');
-            }
-        });
-
-        // Inicializa
-        renderizar();
+        // Init
+        toggleCamposDoc();
     </script>
 </body>
 </html>
