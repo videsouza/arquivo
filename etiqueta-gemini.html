@@ -145,12 +145,12 @@
             overflow: hidden; text-align: justify;
         }
 
-        /* --- FOOTER (RODAPÉ) AJUSTADO --- */
+        /* --- FOOTER (RODAPÉ) --- */
         .tag-footer-split {
             border-top: 2px solid #000;
             background: #f0f0f0;
             display: flex;
-            height: 35px; /* Altura reduzida para dar espaço à descrição */
+            height: 35px; /* Altura ideal */
             min-height: 35px;
             align-items: flex-end; /* Texto "cola" no fundo */
         }
@@ -184,27 +184,24 @@
         .num-setor { font-size: 22px; font-weight: 800; text-transform: uppercase; line-height: 1.2; }
         .num-footer { background: #eee; border-top: 3px solid #000; padding: 5px; font-weight: 700; font-size: 14px; }
 
-        /* --- IMPRESSÃO (CORRIGIDO) --- */
+        /* --- IMPRESSÃO (CONFIGURAÇÃO PARA OCUPAR TODA A FOLHA) --- */
         @media print {
             @page { 
                 size: A4 portrait; /* Força A4 */
                 margin: 0; /* Zera margens da impressora */
             }
             
-            /* Força o corpo a ter o tamanho EXATO da folha A4 */
             html, body { 
                 width: 210mm !important; 
                 height: 297mm !important; 
                 margin: 0 !important; 
                 padding: 0 !important; 
                 background: white; 
-                display: block !important; /* Desabilita flex do layout de tela */
+                display: block !important; 
             }
             
-            /* Esconde tudo que não é etiqueta */
             .br-header, .control-panel, .br-footer, .btn-delete, .mode-switcher, .preview-title { display: none !important; }
             
-            /* Prepara o container principal */
             .main-container, .preview-area { 
                 display: block !important; 
                 margin: 0 !important; padding: 0 !important; 
@@ -214,7 +211,6 @@
                 background: white !important;
             }
 
-            /* Configura a Folha de Etiquetas */
             .sheet-a4 {
                 width: 100% !important; 
                 height: 100% !important; 
@@ -227,17 +223,15 @@
                 gap: 5mm; 
                 page-break-after: always; 
                 box-sizing: border-box;
-                transform: none !important; /* IMPORTANTE: Garante que não haja zoom out */
+                transform: none !important;
             }
 
             .etiqueta-box { border: none !important; }
             .tag-header, .tag-footer-split, .num-header, .num-footer { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             
-            /* Altura fixa na impressão */
             .tag-footer-split { height: 35px !important; }
         }
 
-        /* Responsividade APENAS PARA TELA (Para não afetar impressão) */
         @media screen and (max-width: 900px) {
             .main-container { grid-template-columns: 1fr; }
             .sheet-a4 { transform: scale(0.6); transform-origin: top left; margin-bottom: -40%; }
@@ -265,7 +259,7 @@
             <div id="formDocumental">
                 <div class="form-group">
                     <label class="form-label">Modelo</label>
-                    <select id="docTipo" class="form-control">
+                    <select id="docTipo" class="form-control" onchange="toggleCamposDoc()">
                         <option value="eliminacao">ELIMINAÇÃO (Padrão)</option>
                         <option value="permanente">GUARDA PERMANENTE</option>
                     </select>
@@ -383,6 +377,18 @@
             document.getElementById('formNumerica').style.display = m === 'numerica' ? 'block' : 'none';
         }
 
+        // Função para Esconder/Mostrar campo de eliminação
+        function toggleCamposDoc() {
+            const tipo = document.getElementById('docTipo').value;
+            const groupElim = document.getElementById('groupAnoElim');
+            
+            if(tipo === 'permanente') {
+                groupElim.style.visibility = 'hidden';
+            } else {
+                groupElim.style.visibility = 'visible';
+            }
+        }
+
         function buscarSetor(inp, listId) {
             const val = inp.value.toUpperCase();
             const list = document.getElementById(listId);
@@ -470,9 +476,11 @@
                 const delBtn = `<button class="btn-delete" onclick="remover(${idx})"><i class="fas fa-times"></i></button>`;
 
                 let html = '';
+                
+                // Lógica de visualização para QTD (para ambas)
+                const qtdDisplay = et.qtd ? et.qtd : '________ '; 
 
                 if(et.tipo === 'eliminacao') {
-                    const qtdDisplay = et.qtd ? et.qtd : '________ '; 
                     const elimDisplay = et.elim ? et.elim : '_______';
 
                     html = `
@@ -540,18 +548,66 @@
                         </div>
                     `;
                 } else if(et.tipo === 'permanente') {
+                    // MESMA ESTRUTURA, SÓ MUDA O TEXTO DO RODAPÉ E TÍTULO
                     html = `
-                         <div class="layout-oficial" style="border:4px double #000;">
+                         <div class="layout-oficial">
                             <div class="tag-header">GUARDA PERMANENTE</div>
-                            <div class="tag-row"><div class="tag-col" style="width:100%"><span class="tag-label">SETOR:</span><span class="tag-val">${et.portador}</span></div></div>
+                            
                             <div class="tag-row">
-                                <div class="tag-col" style="width:60%"><span class="tag-label">Nº DOC:</span><span class="tag-val">${et.numDoc}</span></div>
-                                <div class="tag-col" style="width:40%"><span class="tag-label">ANO:</span><span class="tag-val">${et.ano}</span></div>
+                                <div class="tag-col" style="width:65%;">
+                                    <span class="tag-label">Nº DOC:</span>
+                                    <span class="tag-val">${et.numDoc}</span>
+                                </div>
+                                <div class="tag-col" style="width:35%;">
+                                    <span class="tag-label">DATA:</span>
+                                    <span class="tag-val">30/12/${et.ano}</span>
+                                </div>
                             </div>
-                            <div class="tag-desc"><span class="tag-label">CONTEÚDO:</span><br>${et.desc}</div>
-                             <div class="tag-footer-split">
-                                <div class="footer-left" style="border:none; width:100%; justify-content:center; background:#000; color:#fff; align-items:center;">
-                                    HISTÓRICO - NÃO ELIMINAR
+
+                            <div class="tag-row">
+                                <div class="tag-col" style="width:100%;">
+                                    <span class="tag-label">PORTADOR:</span>
+                                    <span class="tag-val">${et.portador}</span>
+                                </div>
+                            </div>
+
+                            <div class="tag-row">
+                                <div class="tag-col" style="width:100%;">
+                                    <span class="tag-label">DESTINATÁRIO:</span>
+                                    <span class="tag-val fixed">1344 – SEC. MUNICIPAL DE EDUCAÇÃO</span>
+                                </div>
+                            </div>
+
+                            <div class="tag-row">
+                                <div class="tag-col" style="width:50%;">
+                                    <span class="tag-label">CÓDIGO:</span>
+                                    <span class="tag-val">${et.cod}</span>
+                                </div>
+                                <div class="tag-col" style="width:50%;">
+                                    <span class="tag-label">SIT. DOC.:</span>
+                                    <span class="tag-val fixed">AGUARDANDO PLANILHA</span>
+                                </div>
+                            </div>
+
+                            <div class="tag-row">
+                                <div class="tag-col" style="width:100%; padding: 12px 6px;">
+                                    <span class="tag-label">TIPO:</span>
+                                    <span class="tag-val">${et.tipoTexto}</span>
+                                </div>
+                            </div>
+
+                            <div class="tag-desc">
+                                <span class="tag-label" style="display:block; margin-bottom:4px;">DESCRIÇÃO:</span>
+                                ${et.desc}
+                            </div>
+                            
+                            <div class="tag-footer-split">
+                                <div class="footer-left">
+                                    <span class="tag-label" style="font-size:10px;">QTD:</span>
+                                    <span class="tag-val">${qtdDisplay} cm</span>
+                                </div>
+                                <div class="footer-right">
+                                    <span class="tag-val" style="font-weight:900; text-transform:uppercase;">NÃO ELIMINAR</span>
                                 </div>
                             </div>
                         </div>
@@ -571,7 +627,8 @@
             });
         }
         
-        document.getElementById('docTipo').dispatchEvent(new Event('change'));
+        // Inicializa
+        toggleCamposDoc();
     </script>
 </body>
 </html>
