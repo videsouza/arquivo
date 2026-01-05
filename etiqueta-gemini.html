@@ -5,131 +5,87 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerador de Etiquetas | Sistema Interno</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@500&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
     <style>
-        /* --- VARIÁVEIS DO SISTEMA --- */
+        /* --- CONFIGURAÇÕES GERAIS --- */
         :root {
             --gov-blue: #1351b4;
             --gov-blue-dark: #0c326f;
             --bg-body: #f8f8f8;
-            --bg-card: #ffffff;
             --border-color: #e5e5e5;
             --text-primary: #131313;
-            --text-secondary: #555555;
-            --radius-gov: 4px;
-            --container-width: 1400px;
         }
 
-        /* --- RESET & BASE --- */
         * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
         
         body {
-            font-family: 'Rawline', 'Roboto', 'Segoe UI', Arial, sans-serif;
+            font-family: 'Roboto', Arial, sans-serif;
             background-color: var(--bg-body);
             color: var(--text-primary);
-            line-height: 1.5;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
         }
 
-        /* --- HEADER --- */
-        .br-header {
-            background-color: var(--gov-blue);
-            color: white;
-            padding: 8px 0; 
-            border-bottom: 4px solid var(--gov-blue-dark);
-        }
-        .header-container {
-            max-width: var(--container-width);
-            margin: 0 auto;
-            padding: 0 20px;
-            display: flex;
-            align-items: center;
-        }
-        .header-brand { font-weight: 700; font-size: 16px; letter-spacing: 0.5px; text-transform: uppercase; }
+        /* --- HEADER & FOOTER --- */
+        .br-header { background: var(--gov-blue); color: white; padding: 8px 0; border-bottom: 4px solid var(--gov-blue-dark); }
+        .header-container { max-width: 1400px; margin: 0 auto; padding: 0 20px; font-weight: 700; font-size: 16px; text-transform: uppercase; }
+        .br-footer { background: var(--gov-blue-dark); color: white; padding: 15px 0; font-size: 12px; margin-top: auto; text-align: center; }
 
         /* --- LAYOUT PRINCIPAL --- */
         .main-container {
-            max-width: var(--container-width);
-            margin: 30px auto;
-            padding: 0 20px;
-            flex: 1;
-            width: 100%;
-            display: grid;
-            grid-template-columns: 380px 1fr;
-            gap: 30px;
-            align-items: start;
+            max-width: 1400px; margin: 30px auto; padding: 0 20px; width: 100%;
+            display: grid; grid-template-columns: 380px 1fr; gap: 30px; align-items: start;
         }
 
-        /* --- PAINEL DE CONTROLES --- */
+        /* --- PAINEL DE CONTROLE --- */
         .control-panel {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-gov);
-            padding: 25px;
-            position: sticky;
-            top: 20px;
-            max-height: calc(100vh - 40px);
-            overflow-y: auto;
+            background: white; border: 1px solid var(--border-color); border-radius: 4px; padding: 25px;
+            position: sticky; top: 20px; max-height: calc(100vh - 40px); overflow-y: auto;
         }
 
-        .panel-title {
-            font-size: 18px; font-weight: 700; margin-bottom: 20px; padding-bottom: 10px;
-            border-bottom: 2px solid var(--gov-blue); color: var(--gov-blue); display: flex; align-items: center; gap: 10px;
-        }
+        .panel-title { font-size: 18px; font-weight: 700; color: var(--gov-blue); margin-bottom: 20px; border-bottom: 2px solid var(--gov-blue); padding-bottom: 10px; }
 
-        .mode-switcher {
-            display: flex; gap: 10px; margin-bottom: 20px; background: #f0f0f0; padding: 5px; border-radius: var(--radius-gov);
-        }
-        .mode-btn {
-            flex: 1; border: none; padding: 8px; font-size: 12px; font-weight: 700; cursor: pointer;
-            border-radius: var(--radius-gov); transition: 0.2s; background: transparent; color: #666;
-        }
-        .mode-btn.active { background: var(--gov-blue); color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-
+        /* Inputs */
         .form-group { margin-bottom: 12px; position: relative; }
-        .form-label { display: block; font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase; }
-        
+        .form-label { display: block; font-size: 11px; font-weight: 700; color: #555; margin-bottom: 4px; text-transform: uppercase; }
         .form-control {
-            width: 100%; padding: 8px 10px; border: 1px solid #ccc; border-radius: var(--radius-gov);
-            font-size: 13px; font-family: inherit; transition: border-color 0.2s; background: #fff;
+            width: 100%; padding: 8px 10px; border: 1px solid #ccc; border-radius: 4px;
+            font-size: 13px; font-family: inherit; transition: border-color 0.2s;
         }
-        .form-control:focus { border-color: var(--gov-blue); box-shadow: 0 0 0 2px rgba(19, 81, 180, 0.1); }
-        textarea.form-control { resize: vertical; min-height: 60px; }
-
+        .form-control:focus { border-color: var(--gov-blue); }
         .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        
+
         /* Autocomplete */
         .autocomplete-list {
-            position: absolute; top: 100%; left: 0; right: 0;
-            background: white; border: 1px solid #ccc; border-top: none;
-            max-height: 150px; overflow-y: auto; z-index: 100;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-radius: 0 0 4px 4px; display: none;
+            position: absolute; top: 100%; left: 0; right: 0; background: white;
+            border: 1px solid #ccc; max-height: 150px; overflow-y: auto; z-index: 100; display: none;
         }
         .autocomplete-item { padding: 8px; font-size: 12px; cursor: pointer; border-bottom: 1px solid #f0f0f0; }
         .autocomplete-item:hover { background: #f2f7fd; color: var(--gov-blue); }
 
         /* Botões */
         .btn {
-            width: 100%; padding: 12px; border-radius: var(--radius-gov); font-size: 13px; font-weight: 600;
-            cursor: pointer; transition: 0.2s; border: none; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase;
+            width: 100%; padding: 12px; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer;
+            border: none; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; margin-top: 10px;
         }
-        .btn-primary { background-color: var(--gov-blue); color: white; margin-top: 10px; }
-        .btn-primary:hover { background-color: var(--gov-blue-dark); }
-        .btn-success { background-color: #168821; color: white; margin-top: 20px; }
-        .btn-success:hover { background-color: #116619; }
-        .btn-outline { background: transparent; border: 1px solid #ccc; color: var(--text-secondary); margin-top: 10px; }
-        .btn-outline:hover { background: #f0f0f0; color: var(--text-primary); }
+        .btn-primary { background: var(--gov-blue); color: white; }
+        .btn-primary:hover { background: var(--gov-blue-dark); }
+        .btn-outline { background: transparent; border: 1px solid #ccc; color: #555; }
+        .btn-success { background: #168821; color: white; margin-top: 20px; }
 
-        /* --- PREVIEW --- */
+        /* --- MODE SWITCHER --- */
+        .mode-switcher { display: flex; gap: 10px; margin-bottom: 20px; background: #f0f0f0; padding: 5px; border-radius: 4px; }
+        .mode-btn { flex: 1; border: none; padding: 8px; font-size: 12px; font-weight: 700; cursor: pointer; background: transparent; border-radius: 4px; }
+        .mode-btn.active { background: var(--gov-blue); color: white; }
+
+        /* --- PREVIEW ÁREA --- */
         .preview-area {
-            background: #e0e0e0; border: 1px solid #ccc; border-radius: var(--radius-gov);
-            padding: 40px; min-height: 600px; display: flex; justify-content: center;
+            background: #e0e0e0; border: 1px solid #ccc; border-radius: 4px; padding: 40px;
+            display: flex; justify-content: center; min-height: 600px;
         }
-
         .sheet-a4 {
             width: 210mm; min-height: 297mm; background: white; padding: 10mm;
             box-shadow: 0 0 20px rgba(0,0,0,0.1);
@@ -137,76 +93,87 @@
             gap: 5mm; box-sizing: border-box;
         }
 
-        /* --- ETIQUETAS --- */
+        /* --- ESTILOS DAS ETIQUETAS --- */
         .etiqueta-box {
             border: 1px dashed #ddd; /* Tracejado na tela */
-            height: 100%; padding: 5px; position: relative;
-            background: white; overflow: hidden;
-            display: flex; flex-direction: column;
+            height: 100%; padding: 0; position: relative; background: white;
+            display: flex; flex-direction: column; overflow: hidden;
         }
-
         .btn-delete {
-            position: absolute; top: 2px; right: 2px; background: #ffebeb; color: #cc0000;
-            border: none; width: 20px; height: 20px; border-radius: 3px; cursor: pointer;
-            font-size: 10px; z-index: 10; display: flex; align-items: center; justify-content: center;
+            position: absolute; top: -10px; right: -10px; background: #cc0000; color: white;
+            border: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer;
+            font-size: 12px; z-index: 20; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
-        .btn-delete:hover { background: #ffcccc; }
 
-        /* === LAYOUTS ESPECÍFICOS === */
-        
-        /* 1. ELIMINAÇÃO (Refatorado conforme pedido) */
+        /* === LAYOUT DE ELIMINAÇÃO (FORMULÁRIO COM GRIDS) === */
         .layout-eliminacao {
-            border: 2px solid #000; height: 100%; padding: 8px; display: flex; flex-direction: column;
-            color: #000; font-family: Arial, sans-serif; font-size: 11px;
+            width: 100%; height: 100%;
+            border: 2px solid #000;
+            display: grid;
+            grid-template-rows: auto auto auto auto auto 1fr auto; /* Linhas definidas */
+            font-family: Arial, sans-serif;
+            color: #000;
         }
-        .eli-line { display: flex; gap: 5px; align-items: flex-end; margin-bottom: 5px; border-bottom: 1px dotted #ccc; padding-bottom: 2px; }
-        .eli-line.no-border { border-bottom: none; padding-bottom: 0; }
-        
-        .eli-lbl { font-weight: 700; text-transform: uppercase; white-space: nowrap; font-size: 10px; }
-        .eli-val { font-weight: 600; flex: 1; font-family: 'Roboto Mono', monospace; padding-left: 5px; }
-        .eli-val.fixed { font-family: Arial, sans-serif; color: #000; font-weight: 700; }
-        
-        .eli-desc-box { 
-            border: 1px solid #000; flex: 1; padding: 5px; margin: 5px 0; 
-            font-size: 11px; line-height: 1.2; position: relative;
+
+        .eli-row {
+            display: flex;
+            border-bottom: 1px solid #000;
+            min-height: 28px;
         }
+
+        .eli-cell {
+            padding: 4px 6px;
+            display: flex;
+            align-items: baseline;
+            gap: 5px;
+            border-right: 1px solid #000;
+        }
+        .eli-cell:last-child { border-right: none; }
+
+        .eli-lbl { font-weight: 700; font-size: 10px; white-space: nowrap; text-transform: uppercase; }
+        .eli-val { font-weight: 600; font-size: 11px; font-family: 'Roboto Mono', monospace; flex: 1; }
+        .eli-val.fixed { font-family: Arial, sans-serif; font-size: 10px; font-weight: 700; }
+
+        .eli-desc { padding: 6px; font-size: 11px; line-height: 1.3; overflow: hidden; }
+        
         .eli-footer {
-            text-align: right; border-top: 2px solid #000; padding-top: 5px; font-weight: 700; font-size: 12px;
+            border-top: 1px solid #000;
+            padding: 6px;
+            font-weight: 800;
+            font-size: 12px;
+            text-align: right;
+            background: #f9f9f9;
         }
 
-        /* 2. NUMÉRICA (Caixa) */
-        .layout-numerica {
-            border: 5px solid #000; height: 100%; display: flex; flex-direction: column; text-align: center; color: #000;
-        }
+        /* Layout Numérico */
+        .layout-numerica { border: 5px solid #000; height: 100%; display: flex; flex-direction: column; text-align: center; color: #000; }
         .num-header { background: #000; color: #fff; padding: 5px; height: 50px; display: flex; align-items: center; justify-content: center; }
-        .num-header span { font-size: 32px; font-weight: 800; line-height: 1; }
-        .num-body { flex: 1; display: flex; align-items: center; justify-content: center; padding: 5px; }
-        .num-setor { font-size: 24px; font-weight: 800; text-transform: uppercase; line-height: 1.1; word-break: break-word; }
-        .num-footer { border-top: 4px solid #000; padding: 5px; font-size: 16px; font-weight: 700; background: #f0f0f0; }
-
-        /* 3. PADRÃO/OUTROS (Fallback simples) */
-        .layout-padrao { border: 1px solid #000; padding: 10px; height: 100%; display: flex; flex-direction: column; }
+        .num-header span { font-size: 32px; font-weight: 800; }
+        .num-body { flex: 1; display: flex; align-items: center; justify-content: center; }
+        .num-setor { font-size: 24px; font-weight: 800; text-transform: uppercase; }
+        .num-footer { border-top: 4px solid #000; padding: 5px; font-weight: 700; background: #f0f0f0; }
 
         /* --- IMPRESSÃO --- */
         @media print {
             body { background: white; }
-            .br-header, .control-panel, .br-footer, .btn-delete { display: none !important; }
-            .main-container { display: block; width: 100%; margin: 0; padding: 0; max-width: none; }
-            .preview-area { background: white; border: none; padding: 0; display: block; }
+            .br-header, .control-panel, .br-footer, .btn-delete, .mode-switcher { display: none !important; }
+            .main-container { display: block; margin: 0; padding: 0; max-width: none; }
+            .preview-area { border: none; padding: 0; background: white; }
             .sheet-a4 {
-                width: 210mm; height: 296mm; margin: 0; padding: 10mm; box-shadow: none;
+                width: 210mm; height: 296mm; padding: 10mm; margin: 0; box-shadow: none;
                 display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(3, 1fr);
                 gap: 5mm; page-break-after: always;
             }
             .etiqueta-box { border: none !important; }
-            /* Forçar impressão de background/cores */
-            .layout-numerica .num-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .layout-numerica .num-footer { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            
+            /* Garante impressão de cores e bordas */
+            .layout-eliminacao, .layout-numerica { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .eli-footer, .num-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
-
+        
         @media (max-width: 900px) {
             .main-container { grid-template-columns: 1fr; }
-            .control-panel { position: relative; top: 0; max-height: none; }
             .sheet-a4 { transform: scale(0.6); transform-origin: top left; margin-bottom: -40%; }
         }
     </style>
@@ -214,13 +181,10 @@
 <body>
 
     <header class="br-header">
-        <div class="header-container">
-            <div class="header-brand">ARQUIVO / SEC</div>
-        </div>
+        <div class="header-container">ARQUIVO / SEC</div>
     </header>
 
     <main class="main-container">
-
         <aside class="control-panel">
             <h2 class="panel-title"><i class="fas fa-tags"></i> Gerador de Etiquetas</h2>
             
@@ -231,71 +195,62 @@
 
             <div id="formDocumental">
                 <div class="form-group">
-                    <label class="form-label">Tipo de Etiqueta</label>
+                    <label class="form-label">Modelo</label>
                     <select id="docTipo" class="form-control" onchange="toggleCamposDoc()">
                         <option value="eliminacao">ELIMINAÇÃO (Padrão)</option>
                         <option value="permanente">GUARDA PERMANENTE</option>
-                        <option value="amostragem">AMOSTRAGEM</option>
                     </select>
                 </div>
 
-                <div id="fieldsComum">
+                <div class="form-group">
+                    <label class="form-label">Portador / Setor</label>
+                    <input type="text" id="docPortador" class="form-control" placeholder="Busque pelo nº ou nome..." oninput="buscarSetor(this, 'listSetorDoc')" autocomplete="off">
+                    <div id="listSetorDoc" class="autocomplete-list"></div>
+                </div>
+
+                <div class="row-2">
                     <div class="form-group">
-                        <label class="form-label">Portador / Setor (Nome + Nº)</label>
-                        <input type="text" id="docPortador" class="form-control" placeholder="Busca: Digite o nome ou nº..." oninput="buscarSetor(this, 'listSetorDoc')" autocomplete="off">
-                        <div id="listSetorDoc" class="autocomplete-list"></div>
+                        <label class="form-label">Nº Doc.</label>
+                        <input type="text" id="docNum" class="form-control">
                     </div>
-
-                    <div class="row-2">
-                        <div class="form-group">
-                            <label class="form-label">Nº Doc.</label>
-                            <input type="text" id="docNum" class="form-control">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Ano do Doc.</label>
-                            <input type="text" id="docAno" class="form-control" placeholder="AAAA">
-                        </div>
-                    </div>
-                    
-                    <div class="row-2">
-                        <div class="form-group">
-                            <label class="form-label">Código</label>
-                            <input type="text" id="docCodigo" class="form-control">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Tipo</label>
-                            <input type="text" id="docTipoText" class="form-control">
-                        </div>
-                    </div>
-
-                    <div class="row-2">
-                        <div class="form-group">
-                            <label class="form-label">Qtd (cm)</label>
-                            <input type="number" id="docQtd" class="form-control">
-                        </div>
-                        <div class="form-group" id="groupAnoElim">
-                            <label class="form-label" style="color: #d32f2f;">Ano Eliminação</label>
-                            <input type="text" id="docElim" class="form-control" placeholder="AAAA" style="border-color: #d32f2f; color: #d32f2f; font-weight: 700;">
-                        </div>
-                    </div>
-
                     <div class="form-group">
-                        <label class="form-label">Descrição</label>
-                        <textarea id="docDesc" class="form-control" placeholder="Resumo do conteúdo..."></textarea>
+                        <label class="form-label">Ano Doc.</label>
+                        <input type="text" id="docAno" class="form-control" placeholder="AAAA">
                     </div>
                 </div>
 
-                <div id="fieldsAmostragem" style="display: none;">
-                    <div class="form-group"><label class="form-label">Unidade</label><input type="text" id="amoUnid" class="form-control"></div>
-                    <div class="form-group"><label class="form-label">Processo</label><input type="text" id="amoProc" class="form-control"></div>
-                    <div class="form-group"><label class="form-label">Descrição</label><textarea id="amoDesc" class="form-control"></textarea></div>
+                <div class="row-2">
+                    <div class="form-group">
+                        <label class="form-label">Código</label>
+                        <input type="text" id="docCodigo" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tipo</label>
+                        <input type="text" id="docTipoText" class="form-control">
+                    </div>
+                </div>
+
+                <div class="row-2">
+                    <div class="form-group">
+                        <label class="form-label">Qtd (cm)</label>
+                        <input type="number" id="docQtd" class="form-control">
+                    </div>
+                    <div class="form-group" id="groupAnoElim">
+                        <label class="form-label" style="color: #cc0000;">Ano Eliminação</label>
+                        <input type="text" id="docElim" class="form-control" placeholder="AAAA" style="border-color: #cc0000; color: #cc0000; font-weight: 700;">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Descrição</label>
+                    <textarea id="docDesc" class="form-control" placeholder="Resumo do conteúdo..."></textarea>
                 </div>
             </div>
 
             <div id="formNumerica" style="display: none;">
                 <div class="form-group">
                     <label class="form-label">Número da Caixa</label>
-                    <input type="number" id="numCaixa" class="form-control" style="font-size: 24px; text-align: center; font-weight: 700;" placeholder="00">
+                    <input type="number" id="numCaixa" class="form-control" style="font-size: 24px; text-align: center; font-weight: 700;">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Nome do Setor</label>
@@ -312,19 +267,19 @@
                 <i class="fas fa-plus-circle"></i> Adicionar à Folha
             </button>
             <button class="btn btn-outline" onclick="preencherVazios()">
-                <i class="fas fa-magic"></i> Preencher Vazios
+                <i class="fas fa-clone"></i> Preencher Vazios
             </button>
             
             <a href="index.html" class="btn btn-outline" style="text-decoration: none;">
                 <i class="fas fa-arrow-left"></i> Voltar
             </a>
 
-            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+            <div style="border-top: 1px solid #eee; margin: 20px 0;"></div>
 
             <button class="btn btn-success" onclick="window.print()">
-                <i class="fas fa-print"></i> Imprimir Folha
+                <i class="fas fa-print"></i> Imprimir
             </button>
-            <button class="btn btn-outline" style="border-color: #ffcccc; color: #cc0000;" onclick="limparTudo()">
+            <button class="btn btn-outline" style="color: #cc0000; border-color: #ffcccc;" onclick="limparTudo()">
                 <i class="fas fa-trash"></i> Limpar Tudo
             </button>
         </aside>
@@ -333,127 +288,80 @@
             <div id="folhaA4" class="sheet-a4">
                 </div>
         </section>
-
     </main>
 
     <footer class="br-footer">
-        <div class="footer-container">
-            <p>© 2026 Desenvolvido por Vinicius A. de Souza com Claude.ai, Gemini e ChatGPT</p>
-        </div>
+        © 2026 Desenvolvido por Vinicius A. de Souza com Claude.ai, Gemini e ChatGPT
     </footer>
 
     <script>
-        // --- BASE DE DADOS (Simulação de Nº + Nome) ---
+        // DADOS MOCK
         const BASE_SETORES = [
-            {n:"1502 - GABINETE DO PREFEITO"},
-            {n:"1344 - SEC. MUNICIPAL DE EDUCAÇÃO"},
-            {n:"1620 - RECURSOS HUMANOS"},
-            {n:"1805 - FINANÇAS / CONTABILIDADE"},
-            {n:"1910 - CORPO DE BOMBEIROS"},
-            {n:"2100 - SAÚDE / ADMINISTRATIVO"},
-            {n:"2250 - JURÍDICO"},
-            {n:"3010 - OBRAS E SERVIÇOS"},
-            {n:"4100 - CULTURA E TURISMO"},
-            {n:"5005 - EMEF DOM PEDRO I"}
+            {n:"1502 - GABINETE DO PREFEITO"}, {n:"1344 - SEC. MUNICIPAL DE EDUCAÇÃO"},
+            {n:"1620 - RECURSOS HUMANOS"}, {n:"1805 - FINANÇAS / CONTABILIDADE"},
+            {n:"1910 - CORPO DE BOMBEIROS"}, {n:"2100 - SAÚDE / ADMINISTRATIVO"},
+            {n:"2250 - JURÍDICO"}, {n:"3010 - OBRAS E SERVIÇOS"}
         ];
 
         let etiquetas = [];
         const MAX_ETIQUETAS = 6; 
 
-        // --- CONTROLE UI ---
         function setModo(modo) {
             document.getElementById('btnModeDoc').className = modo === 'documental' ? 'mode-btn active' : 'mode-btn';
             document.getElementById('btnModeNum').className = modo === 'numerica' ? 'mode-btn active' : 'mode-btn';
-            
             document.getElementById('formDocumental').style.display = modo === 'documental' ? 'block' : 'none';
             document.getElementById('formNumerica').style.display = modo === 'numerica' ? 'block' : 'none';
         }
 
         function toggleCamposDoc() {
             const tipo = document.getElementById('docTipo').value;
-            if (tipo === 'amostragem') {
-                document.getElementById('fieldsComum').style.display = 'none';
-                document.getElementById('fieldsAmostragem').style.display = 'block';
-            } else {
-                document.getElementById('fieldsComum').style.display = 'block';
-                document.getElementById('fieldsAmostragem').style.display = 'none';
-                
-                // Toggle Ano Eliminação
-                const divElim = document.getElementById('groupAnoElim');
-                divElim.style.visibility = tipo === 'eliminacao' ? 'visible' : 'hidden';
-            }
+            const elimGroup = document.getElementById('groupAnoElim');
+            elimGroup.style.visibility = (tipo === 'eliminacao') ? 'visible' : 'hidden';
         }
 
-        // --- AUTOCOMPLETE ---
         function buscarSetor(input, listId) {
             const val = input.value.toUpperCase();
             const list = document.getElementById(listId);
             list.innerHTML = '';
-            
             if (!val) { list.style.display = 'none'; return; }
-
             const matches = BASE_SETORES.filter(s => s.n.includes(val));
-            
             if (matches.length > 0) {
                 list.style.display = 'block';
                 matches.forEach(item => {
                     const div = document.createElement('div');
                     div.className = 'autocomplete-item';
                     div.innerText = item.n;
-                    div.onclick = () => {
-                        input.value = item.n;
-                        list.style.display = 'none';
-                    };
+                    div.onclick = () => { input.value = item.n; list.style.display = 'none'; };
                     list.appendChild(div);
                 });
-            } else {
-                list.style.display = 'none';
-            }
+            } else { list.style.display = 'none'; }
         }
 
         document.addEventListener('click', (e) => {
             if (!e.target.matches('input')) document.querySelectorAll('.autocomplete-list').forEach(el => el.style.display = 'none');
         });
 
-        // --- AÇÕES ---
         function adicionar() {
             if (etiquetas.length >= MAX_ETIQUETAS) { alert("Folha cheia!"); return; }
-
             const modo = document.getElementById('formNumerica').style.display === 'block' ? 'numerica' : 'documental';
             let data = {};
 
             if (modo === 'numerica') {
-                data = {
-                    tipo: 'numerica',
-                    numero: document.getElementById('numCaixa').value || "00",
-                    setor: document.getElementById('numSetor').value || "GERAL",
-                    ano: document.getElementById('numAno').value || new Date().getFullYear()
-                };
+                data = { tipo: 'numerica', numero: document.getElementById('numCaixa').value || "00", setor: document.getElementById('numSetor').value || "GERAL", ano: document.getElementById('numAno').value || new Date().getFullYear() };
                 document.getElementById('numCaixa').value = parseInt(data.numero) + 1;
             } else {
-                const subTipo = document.getElementById('docTipo').value;
-                if (subTipo === 'amostragem') {
-                    data = {
-                        tipo: 'amostragem',
-                        setor: document.getElementById('amoUnid').value,
-                        proc: document.getElementById('amoProc').value,
-                        desc: document.getElementById('amoDesc').value
-                    };
-                } else {
-                    data = {
-                        tipo: subTipo,
-                        portador: document.getElementById('docPortador').value || "",
-                        numDoc: document.getElementById('docNum').value || "",
-                        anoDoc: document.getElementById('docAno').value || "",
-                        codigo: document.getElementById('docCodigo').value || "",
-                        tipoTexto: document.getElementById('docTipoText').value || "",
-                        qtd: document.getElementById('docQtd').value || "",
-                        desc: document.getElementById('docDesc').value || "",
-                        elim: document.getElementById('docElim').value || ""
-                    };
-                }
+                data = {
+                    tipo: document.getElementById('docTipo').value,
+                    portador: document.getElementById('docPortador').value || "",
+                    numDoc: document.getElementById('docNum').value || "",
+                    anoDoc: document.getElementById('docAno').value || "",
+                    codigo: document.getElementById('docCodigo').value || "",
+                    tipoTexto: document.getElementById('docTipoText').value || "",
+                    qtd: document.getElementById('docQtd').value || "",
+                    desc: document.getElementById('docDesc').value || "",
+                    elim: document.getElementById('docElim').value || ""
+                };
             }
-
             etiquetas.push(data);
             renderizar();
         }
@@ -469,14 +377,9 @@
             renderizar();
         }
 
-        function remover(idx) {
-            etiquetas.splice(idx, 1);
-            renderizar();
-        }
-
+        function remover(idx) { etiquetas.splice(idx, 1); renderizar(); }
         function limparTudo() { etiquetas = []; renderizar(); }
 
-        // --- RENDERIZAÇÃO ---
         function renderizar() {
             const container = document.getElementById('folhaA4');
             container.innerHTML = '';
@@ -485,33 +388,48 @@
                 const box = document.createElement('div');
                 box.className = 'etiqueta-box';
                 const btnDel = `<button class="btn-delete" onclick="remover(${idx})"><i class="fas fa-times"></i></button>`;
-                
                 let html = '';
 
                 if (et.tipo === 'eliminacao') {
-                    // Layout Exato Solicitado
+                    // LAYOUT DE GRID PERFEITO
                     html = `
                         <div class="layout-eliminacao">
-                            <div class="eli-line">
-                                <span class="eli-lbl">Nº DOC.:</span> <span class="eli-val">${et.numDoc}</span>
-                                <span class="eli-lbl" style="margin-left:10px">DATA:</span> <span class="eli-val">30/12/${et.anoDoc}</span>
+                            <div class="eli-row">
+                                <div class="eli-cell" style="width: 60%;">
+                                    <span class="eli-lbl">Nº DOC.:</span> <span class="eli-val">${et.numDoc}</span>
+                                </div>
+                                <div class="eli-cell" style="width: 40%;">
+                                    <span class="eli-lbl">DATA:</span> <span class="eli-val">30/12/${et.anoDoc}</span>
+                                </div>
                             </div>
-                            <div class="eli-line">
-                                <span class="eli-lbl">PORTADOR:</span> <span class="eli-val">${et.portador}</span>
+                            <div class="eli-row">
+                                <div class="eli-cell" style="width: 100%;">
+                                    <span class="eli-lbl">PORTADOR:</span> <span class="eli-val">${et.portador}</span>
+                                </div>
                             </div>
-                            <div class="eli-line">
-                                <span class="eli-lbl">DESTINATÁRIO:</span> <span class="eli-val fixed">1344 – SEC. MUNICIPAL DE EDUCAÇÃO</span>
+                            <div class="eli-row">
+                                <div class="eli-cell" style="width: 100%;">
+                                    <span class="eli-lbl">DESTINATÁRIO:</span> <span class="eli-val fixed">1344 – SEC. MUNICIPAL DE EDUCAÇÃO</span>
+                                </div>
                             </div>
-                            <div class="eli-line">
-                                <span class="eli-lbl">CÓDIGO:</span> <span class="eli-val">${et.codigo}</span>
-                                <span class="eli-lbl" style="margin-left:10px">SIT. DOC.:</span> <span class="eli-val fixed">AGUARDANDO PLANILHA</span>
+                            <div class="eli-row">
+                                <div class="eli-cell" style="width: 50%;">
+                                    <span class="eli-lbl">CÓDIGO:</span> <span class="eli-val">${et.codigo}</span>
+                                </div>
+                                <div class="eli-cell" style="width: 50%;">
+                                    <span class="eli-lbl">SIT. DOC.:</span> <span class="eli-val fixed">AGUARDANDO PLANILHA</span>
+                                </div>
                             </div>
-                            <div class="eli-line">
-                                <span class="eli-lbl">TIPO:</span> <span class="eli-val">${et.tipoTexto}</span>
-                                <span class="eli-lbl" style="margin-left:10px">QUANTIDADE:</span> <span class="eli-val">${et.qtd} cm</span>
+                            <div class="eli-row">
+                                <div class="eli-cell" style="width: 70%;">
+                                    <span class="eli-lbl">TIPO:</span> <span class="eli-val">${et.tipoTexto}</span>
+                                </div>
+                                <div class="eli-cell" style="width: 30%;">
+                                    <span class="eli-lbl">QTD:</span> <span class="eli-val">${et.qtd} cm</span>
+                                </div>
                             </div>
-                            <div class="eli-desc-box">
-                                <span class="eli-lbl">DESCRIÇÃO:</span><br>
+                            <div class="eli-desc">
+                                <span class="eli-lbl" style="display:block; margin-bottom:2px;">DESCRIÇÃO:</span>
                                 ${et.desc}
                             </div>
                             <div class="eli-footer">
@@ -520,24 +438,12 @@
                         </div>
                     `;
                 } else if (et.tipo === 'permanente') {
-                    // Layout Adaptado para Permanente
                     html = `
-                        <div class="layout-eliminacao" style="border: 4px double #000">
-                             <div style="text-align:center; font-weight:900; border-bottom:1px solid #000; margin-bottom:5px;">GUARDA PERMANENTE</div>
-                             <div class="eli-line"><span class="eli-lbl">PORTADOR:</span> <span class="eli-val">${et.portador}</span></div>
-                             <div class="eli-line"><span class="eli-lbl">Nº DOC:</span> <span class="eli-val">${et.numDoc}/${et.anoDoc}</span></div>
-                             <div class="eli-line"><span class="eli-lbl">CÓDIGO:</span> <span class="eli-val">${et.codigo}</span></div>
-                             <div class="eli-desc-box" style="flex:1"><span class="eli-lbl">CONTEÚDO:</span><br>${et.desc}</div>
-                             <div style="text-align:center; font-size:10px; font-weight:700; margin-top:5px;">DOCUMENTO DE VALOR HISTÓRICO</div>
-                        </div>
-                    `;
-                } else if (et.tipo === 'amostragem') {
-                     html = `
-                        <div class="layout-eliminacao" style="border: 2px dashed #000">
-                             <div style="text-align:center; font-weight:900; margin-bottom:5px;">AMOSTRAGEM</div>
-                             <div class="eli-line"><span class="eli-lbl">UNIDADE:</span> <span class="eli-val">${et.setor}</span></div>
-                             <div class="eli-line"><span class="eli-lbl">PROCESSO:</span> <span class="eli-val">${et.proc}</span></div>
-                             <div class="eli-desc-box"><span class="eli-lbl">DESCRIÇÃO:</span><br>${et.desc}</div>
+                        <div class="layout-eliminacao" style="border: 4px double #000;">
+                            <div style="text-align:center; padding:5px; font-weight:800; border-bottom:2px solid #000;">GUARDA PERMANENTE</div>
+                            <div class="eli-row"><div class="eli-cell" style="width:100%"><span class="eli-lbl">SETOR:</span> <span class="eli-val">${et.portador}</span></div></div>
+                            <div class="eli-row"><div class="eli-cell" style="width:100%"><span class="eli-lbl">DOC:</span> <span class="eli-val">${et.numDoc} / ${et.anoDoc}</span></div></div>
+                            <div class="eli-desc" style="flex:1"><span class="eli-lbl">CONTEÚDO:</span><br>${et.desc}</div>
                         </div>
                     `;
                 } else if (et.tipo === 'numerica') {
@@ -555,7 +461,6 @@
             });
         }
         
-        // Init
         toggleCamposDoc();
     </script>
 </body>
