@@ -460,7 +460,7 @@
                             </div>
 
                             <div class="tag-row">
-                                <div class="tag-col" style="width:100%;">
+                                <div class="tag-col" style="width:100%; padding: 12px 6px;">
                                     <span class="tag-label">TIPO:</span>
                                     <span class="tag-val">${et.tipoTexto}</span>
                                 </div>
@@ -474,17 +474,17 @@
                             <div class="tag-footer-split">
                                 <div class="footer-left">
                                     <span class="tag-label" style="font-size:10px;">QTD:</span>
-                                    <span class="tag-val">_ _ _ _ _ cm</span>
+                                    <span class="tag-val">${et.qtd} cm</span>
                                 </div>
                                 <div class="footer-right">
                                     <span class="tag-label" style="font-size:10px;">ELIMINAÇÃO:</span>
-                                    <span class="tag-val">31/12/_ _ _ _ _</span>
+                                    <span class="tag-val">31/12/${et.elim}</span>
                                 </div>
                             </div>
                         </div>
                     `;
                 } else if(et.tipo === 'permanente') {
-                    // Guarda Permanente (Adaptado para o novo footer se necessário, mas mantendo estilo antigo por enquanto)
+                    // Guarda Permanente
                     html = `
                          <div class="layout-oficial" style="border:4px double #000;">
                             <div class="tag-header">GUARDA PERMANENTE</div>
