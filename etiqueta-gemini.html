@@ -271,8 +271,8 @@
 
                 <div class="row-2">
                     <div class="form-group">
-                        <label class="form-label">Qtd (cm)</label>
-                        <input type="number" id="docQtd" class="form-control">
+                        <label class="form-label"> (cm)</label>
+                        <input type="number" id="doc" class="form-control">
                     </div>
                     <div class="form-group" id="groupAnoElim">
                         <label class="form-label" style="color: #c00;">Ano Eliminação</label>
@@ -433,7 +433,7 @@
 
                 if(et.tipo === 'eliminacao') {
                     // AJUSTE: Espaço extra para "cm" e layout alinhado ao fundo
-                    const qtdDisplay = et.qtd ? et.qtd : '__________ '; // Espaço extra após underscore
+                    const qtdDisplay = et.qtd ? et.qtd : '________ '; // Espaço extra após underscore
                     const elimDisplay = et.elim ? et.elim : '_______';
 
                     html = `
