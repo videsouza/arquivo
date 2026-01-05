@@ -144,33 +144,35 @@
             overflow: hidden; text-align: justify;
         }
 
-        /* Novo Footer Unificado (AJUSTADO) */
+        /* --- FOOTER CORRIGIDO E FORÇADO --- */
         .tag-footer-split {
             border-top: 2px solid #000;
             background: #f0f0f0;
             display: flex;
-            align-items: stretch; /* Garante altura total */
+            height: 55px; /* Altura fixa garantida para escrita */
+            min-height: 55px;
+            align-items: flex-end; /* Força todo conteúdo para baixo */
         }
         
         .footer-left {
             width: 40%;
+            height: 100%;
             border-right: 1px solid #000;
             display: flex; 
             align-items: flex-end; /* Texto cola no fundo */
-            padding: 10px 8px 3px 8px; /* Padding Top maior, Bottom menor */
+            padding: 0 8px 4px 8px; /* Padding bottom leve para não colar na linha preta */
             gap: 5px;
-            min-height: 35px; /* Altura mínima para espaço de escrita */
         }
         
         .footer-right {
             width: 60%;
+            height: 100%;
             display: flex; 
             align-items: flex-end; /* Texto cola no fundo */
             justify-content: flex-end; 
-            padding: 10px 8px 3px 8px; /* Padding Top maior, Bottom menor */
+            padding: 0 8px 4px 8px; /* Padding bottom leve */
             gap: 5px;
             font-weight: 800;
-            min-height: 35px;
         }
 
         /* Layout Numérico */
@@ -181,61 +183,29 @@
         .num-setor { font-size: 22px; font-weight: 800; text-transform: uppercase; line-height: 1.2; }
         .num-footer { background: #eee; border-top: 3px solid #000; padding: 5px; font-weight: 700; font-size: 14px; }
 
-        /* --- IMPRESSÃO (CORRIGIDO PARA OCUPAR A PÁGINA) --- */
+        /* --- IMPRESSÃO --- */
         @media print {
-            /* 1. Força A4 sem margens */
-            @page {
-                size: A4 portrait;
-                margin: 0;
-            }
-
-            /* 2. Zera as margens do corpo */
-            html, body {
-                width: 210mm;
-                height: 297mm;
-                margin: 0;
-                padding: 0;
-                background: white;
-            }
-
-            /* 3. Esconde elementos da interface */
-            .br-header, .control-panel, .br-footer, .btn-delete, .mode-switcher, .preview-title { 
-                display: none !important; 
-            }
-
-            /* 4. Prepara o container principal */
+            @page { size: A4 portrait; margin: 0; }
+            html, body { width: 210mm; height: 297mm; margin: 0; padding: 0; background: white; }
+            
+            .br-header, .control-panel, .br-footer, .btn-delete, .mode-switcher, .preview-title { display: none !important; }
+            
             .main-container, .preview-area { 
-                display: block; 
-                margin: 0; 
-                padding: 0; 
-                width: 100%; 
-                height: 100%;
-                max-width: none;
-                border: none;
-                background: white;
+                display: block; margin: 0; padding: 0; width: 100%; height: 100%;
+                max-width: none; border: none; background: white;
             }
 
-            /* 5. A folha A4 em si (Grid de Etiquetas) */
             .sheet-a4 {
-                width: 100%; /* Ocupa tudo */
-                height: 100%;
-                margin: 0;
-                padding: 10mm; /* Margem de segurança para impressão */
-                box-shadow: none;
-                display: grid; 
-                grid-template-columns: 1fr 1fr; 
-                grid-template-rows: repeat(3, 1fr);
-                gap: 5mm; 
-                page-break-after: always;
-                box-sizing: border-box;
+                width: 100%; height: 100%; margin: 0; padding: 10mm; box-shadow: none;
+                display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(3, 1fr);
+                gap: 5mm; page-break-after: always; box-sizing: border-box;
             }
 
-            /* 6. Remove tracejado e força cores */
             .etiqueta-box { border: none !important; }
-            .tag-header, .tag-footer-split, .num-header, .num-footer { 
-                -webkit-print-color-adjust: exact; 
-                print-color-adjust: exact; 
-            }
+            .tag-header, .tag-footer-split, .num-header, .num-footer { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            
+            /* Garante altura na impressão também */
+            .tag-footer-split { height: 55px !important; }
         }
 
         @media (max-width: 900px) {
@@ -376,7 +346,6 @@
         let etiquetas = [];
         const MAX = 6;
 
-        // --- UI LOGIC ---
         function setModo(m) {
             document.getElementById('btnModeDoc').className = m === 'documental' ? 'mode-btn active' : 'mode-btn';
             document.getElementById('btnModeNum').className = m === 'numerica' ? 'mode-btn active' : 'mode-btn';
@@ -405,7 +374,6 @@
         
         document.addEventListener('click', e => { if(!e.target.matches('input')) document.querySelectorAll('.autocomplete-list').forEach(l=>l.style.display='none'); });
 
-        // --- ACTIONS ---
         function adicionar() {
             if(etiquetas.length >= MAX) { alert('Folha cheia!'); return; }
             
@@ -452,7 +420,6 @@
         function remover(i) { etiquetas.splice(i,1); renderizar(); }
         function limparTudo() { etiquetas=[]; renderizar(); }
 
-        // --- RENDER ---
         function renderizar() {
             const container = document.getElementById('folhaA4');
             container.innerHTML = '';
@@ -465,8 +432,8 @@
                 let html = '';
 
                 if(et.tipo === 'eliminacao') {
-                    // LÓGICA DE ESPAÇOS PARA ESCRITA MANUAL
-                    const qtdDisplay = et.qtd ? et.qtd : '________';
+                    // AJUSTE: Espaço extra para "cm" e layout alinhado ao fundo
+                    const qtdDisplay = et.qtd ? et.qtd : '__________ '; // Espaço extra após underscore
                     const elimDisplay = et.elim ? et.elim : '_______';
 
                     html = `
@@ -534,7 +501,6 @@
                         </div>
                     `;
                 } else if(et.tipo === 'permanente') {
-                    // Guarda Permanente
                     html = `
                          <div class="layout-oficial" style="border:4px double #000;">
                             <div class="tag-header">GUARDA PERMANENTE</div>
@@ -544,7 +510,6 @@
                                 <div class="tag-col" style="width:40%"><span class="tag-label">ANO:</span><span class="tag-val">${et.ano}</span></div>
                             </div>
                             <div class="tag-desc"><span class="tag-label">CONTEÚDO:</span><br>${et.desc}</div>
-                            
                              <div class="tag-footer-split">
                                 <div class="footer-left" style="border:none; width:100%; justify-content:center; background:#000; color:#fff; align-items:center;">
                                     HISTÓRICO - NÃO ELIMINAR
@@ -567,7 +532,6 @@
             });
         }
         
-        // Init
         document.getElementById('docTipo').dispatchEvent(new Event('change'));
     </script>
 </body>
