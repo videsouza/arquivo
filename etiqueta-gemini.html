@@ -140,7 +140,8 @@
         .tag-val.fixed { font-family: Arial, sans-serif; font-size: 10px; font-weight: 700; }
         
         .tag-desc { 
-            flex: 1; padding: 6px; font-size: 11px; line-height: 1.3; 
+            flex: 1; /* Ocupa o espaço restante */
+            padding: 6px; font-size: 11px; line-height: 1.3; 
             overflow: hidden; text-align: justify;
         }
 
@@ -149,8 +150,8 @@
             border-top: 2px solid #000;
             background: #f0f0f0;
             display: flex;
-            height: 55px; /* Altura fixa grande para escrita */
-            min-height: 55px;
+            height: 40px; /* Reduzido de 55px para 40px para dar espaço à descrição */
+            min-height: 40px;
             align-items: flex-end; /* Texto "cola" no fundo */
         }
         
@@ -204,8 +205,8 @@
             .etiqueta-box { border: none !important; }
             .tag-header, .tag-footer-split, .num-header, .num-footer { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             
-            /* Garante altura na impressão também */
-            .tag-footer-split { height: 55px !important; }
+            /* Altura fixa na impressão também */
+            .tag-footer-split { height: 40px !important; }
         }
 
         @media (max-width: 900px) {
@@ -272,7 +273,7 @@
                 <div class="row-2">
                     <div class="form-group">
                         <label class="form-label">Qtd (cm)</label>
-                        <input type="text" id="docQtd" class="form-control">
+                        <input type="number" id="docQtd" class="form-control">
                     </div>
                     <div class="form-group" id="groupAnoElim">
                         <label class="form-label" style="color: #c00;">Ano Eliminação</label>
@@ -346,7 +347,6 @@
         let etiquetas = [];
         const MAX = 6;
 
-        // --- UI LOGIC ---
         function setModo(m) {
             document.getElementById('btnModeDoc').className = m === 'documental' ? 'mode-btn active' : 'mode-btn';
             document.getElementById('btnModeNum').className = m === 'numerica' ? 'mode-btn active' : 'mode-btn';
@@ -375,7 +375,6 @@
         
         document.addEventListener('click', e => { if(!e.target.matches('input')) document.querySelectorAll('.autocomplete-list').forEach(l=>l.style.display='none'); });
 
-        // --- ACTIONS ---
         function adicionar() {
             try {
                 if(etiquetas.length >= MAX) { alert('Folha cheia!'); return; }
@@ -390,7 +389,6 @@
                         setor: document.getElementById('numSetor').value || "GERAL",
                         ano: document.getElementById('numAno').value || new Date().getFullYear()
                     };
-                    // Incremento automático
                     const currentNum = parseInt(data.num);
                     if(!isNaN(currentNum)) document.getElementById('numCaixa').value = currentNum + 1;
                     
@@ -412,7 +410,7 @@
                 renderizar();
             } catch (error) {
                 console.error(error);
-                alert("Erro ao adicionar etiqueta. Verifique o console.");
+                alert("Erro ao adicionar etiqueta.");
             }
         }
 
@@ -433,7 +431,6 @@
         function remover(i) { etiquetas.splice(i,1); renderizar(); }
         function limparTudo() { etiquetas=[]; renderizar(); }
 
-        // --- RENDER ---
         function renderizar() {
             const container = document.getElementById('folhaA4');
             container.innerHTML = '';
@@ -446,7 +443,6 @@
                 let html = '';
 
                 if(et.tipo === 'eliminacao') {
-                    // LÓGICA DE ESPAÇOS: Se vazio, exibe linha.
                     const qtdDisplay = et.qtd ? et.qtd : '________ '; 
                     const elimDisplay = et.elim ? et.elim : '_______';
 
@@ -515,7 +511,6 @@
                         </div>
                     `;
                 } else if(et.tipo === 'permanente') {
-                    // Guarda Permanente
                     html = `
                          <div class="layout-oficial" style="border:4px double #000;">
                             <div class="tag-header">GUARDA PERMANENTE</div>
@@ -525,7 +520,6 @@
                                 <div class="tag-col" style="width:40%"><span class="tag-label">ANO:</span><span class="tag-val">${et.ano}</span></div>
                             </div>
                             <div class="tag-desc"><span class="tag-label">CONTEÚDO:</span><br>${et.desc}</div>
-                            
                              <div class="tag-footer-split">
                                 <div class="footer-left" style="border:none; width:100%; justify-content:center; background:#000; color:#fff; align-items:center;">
                                     HISTÓRICO - NÃO ELIMINAR
@@ -548,7 +542,6 @@
             });
         }
         
-        // Inicializa estado
         document.getElementById('docTipo').dispatchEvent(new Event('change'));
     </script>
 </body>
