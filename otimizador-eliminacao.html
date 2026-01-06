@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Otimizador de Eliminação (Multi-Abas) | Arquivo SEC</title>
+    <title>Otimizador de Eliminação (Diagnóstico Visual) | Arquivo SEC</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -90,6 +90,14 @@
         
         /* Resultados */
         .results-area { display: flex; flex-direction: column; gap: 20px; }
+        
+        /* Confirm Bar */
+        .confirm-bar {
+            background: #eef6ff; border: 1px solid #bdd7f9; color: #1e429f;
+            padding: 10px; border-radius: 4px; font-size: 12px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .confirm-bar strong { font-weight: 900; }
+
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
         .stat-card { background: white; padding: 15px; border-radius: 4px; border: 1px solid var(--border-color); text-align: center; }
         .stat-val { font-size: 24px; font-weight: 900; color: var(--gov-blue); display: block; }
@@ -117,11 +125,22 @@
             background: var(--gov-blue); color: white; padding: 8px 12px;
             font-size: 12px; font-weight: 700; display: flex; justify-content: space-between; align-items: center;
         }
-        .block-meta {
-            background: #f0f4f8; padding: 8px 12px; font-size: 11px; color: #444; border-bottom: 1px solid #eee;
-            display: grid; grid-template-columns: 1fr 1fr; gap: 5px;
+        
+        /* Diagnóstico Visual */
+        .block-diagnostics {
+            padding: 10px; background: #f9fafb; border-bottom: 1px solid #eee;
         }
-        .block-content { padding: 10px; flex: 1; display: flex; flex-wrap: wrap; gap: 5px; align-content: flex-start; }
+        .diag-row { margin-bottom: 6px; }
+        .diag-label { font-size: 10px; color: #555; display: flex; justify-content: space-between; margin-bottom: 2px; }
+        .progress-bar-bg { width: 100%; height: 6px; background: #e5e7eb; border-radius: 3px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background: #10b981; border-radius: 3px; transition: width 0.3s; }
+        .progress-bar-fill.warning { background: #f59e0b; }
+        .progress-bar-fill.danger { background: #ef4444; }
+
+        .block-content { padding: 10px; flex: 1; display: flex; flex-wrap: wrap; gap: 5px; align-content: flex-start; max-height: 150px; overflow-y: auto; }
+        .block-footer {
+            background: #fff; padding: 5px 10px; font-size: 10px; color: #666; border-top: 1px solid #eee; text-align: right; font-family: 'Roboto Mono', monospace;
+        }
         .box-tag {
             background: #eee; color: #333; padding: 3px 6px; border-radius: 3px; font-size: 10px; font-weight: 700; border: 1px solid #ddd;
         }
@@ -145,7 +164,7 @@
 
     <header class="br-header">
         <div class="header-container">
-            <i class="fas fa-cubes"></i> Arquivo / Otimizador (Multi-Abas)
+            <i class="fas fa-cubes"></i> Arquivo / Otimizador (Diagnóstico)
         </div>
     </header>
 
@@ -173,7 +192,7 @@
                 </label>
                 <div class="info-tag" id="sheetInfo">Aguardando arquivo...</div>
                 <div style="font-size:9px; color:#666; margin-top:5px;">
-                    *Lê Aba 1 (K2) e Aba 2 (K1)
+                    *Lê K2 (Aba 1) e K1 (Aba 2+)
                 </div>
             </div>
 
@@ -181,12 +200,14 @@
 
             <div class="form-group">
                 <label class="form-label">Max Códigos (un)</label>
-                <input type="number" id="configMaxCodes" class="form-control" value="5">
+                <input type="number" id="configMaxCodes" class="form-control" value="30">
+                <div style="font-size:9px; color:#666; margin-top:2px;">Se atingir 30, o bloco fecha.</div>
             </div>
 
             <div class="form-group">
                 <label class="form-label">Max Setores (un)</label>
-                <input type="number" id="configMaxSectors" class="form-control" value="3">
+                <input type="number" id="configMaxSectors" class="form-control" value="12">
+                <div style="font-size:9px; color:#666; margin-top:2px;">Se atingir 12, o bloco fecha.</div>
             </div>
 
             <div style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
@@ -204,10 +225,13 @@
 
         <section class="results-area" id="resultsArea" style="display:none;">
             
+            <div class="confirm-bar" id="paramConfirmBar">
+                </div>
+
             <div class="stats-grid">
                 <div class="stat-card">
                     <span class="stat-val" id="statProcessed">0</span>
-                    <span class="stat-label">Caixas na Lista</span>
+                    <span class="stat-label">Caixas Únicas (Input)</span>
                 </div>
                 <div class="stat-card">
                     <span class="stat-val" id="statValid">0</span>
@@ -229,13 +253,13 @@
                 <ul class="log-list" id="complexList"></ul>
             </div>
 
-            <div class="panel-title">Distribuição dos Blocos</div>
+            <div class="panel-title">Distribuição dos Blocos (Com Diagnóstico)</div>
             <div class="blocks-container" id="blocksContainer"></div>
 
         </section>
 
         <section id="emptyState" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #999; text-align: center; padding: 50px;">
-            <i class="fas fa-exchange-alt" style="font-size: 50px; margin-bottom: 20px; color: #ddd;"></i>
+            <i class="fas fa-search-location" style="font-size: 50px; margin-bottom: 20px; color: #ddd;"></i>
             <p>Carregue a <strong>Base de Dados</strong> e a <strong>Lista de Eliminação</strong><br>para iniciar a validação.</p>
         </section>
 
@@ -243,7 +267,7 @@
 
     <div id="loadingOverlay">
         <div class="spinner"></div>
-        <div style="font-weight: 700; color: var(--gov-blue);">Processando Coordenadas...</div>
+        <div style="font-weight: 700; color: var(--gov-blue);">Processando...</div>
     </div>
 
     <footer class="br-footer">
@@ -253,17 +277,17 @@
     <script>
         // --- ESTADO GLOBAL ---
         let state = {
-            validBoxes: new Set(), // Set de IDs válidos da Base
-            inputDataMap: new Map(), // Mapa dos dados lidos do Input
-            finalBlocks: []
+            validBoxes: new Set(),
+            inputDataMap: new Map(),
+            finalBlocks: [],
+            totalRowsInput: 0
         };
 
-        // --- 1. LEITURA DE ARQUIVOS COM COORDENADAS FIXAS ---
+        // --- 1. LEITURA ---
         function handleFile(input, type) {
             const file = input.files[0];
             if(!file) return;
 
-            // UI Feedback
             const wrapId = type === 'base' ? 'wrapBase' : 'wrapInput';
             const txtId = type === 'base' ? 'txtBase' : 'txtInput';
             document.getElementById(wrapId).classList.add('active');
@@ -273,12 +297,8 @@
             reader.onload = (e) => {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, {type: 'array'});
-
-                if(type === 'base') {
-                    processBaseFile(workbook);
-                } else {
-                    processInputFile(workbook);
-                }
+                if(type === 'base') processBaseFile(workbook);
+                else processInputFile(workbook);
                 checkReady();
             };
             reader.readAsArrayBuffer(file);
@@ -290,106 +310,80 @@
             }
         }
 
-        // --- PROCESSAMENTO: BASE DE DADOS (COORDENADAS) ---
+        // --- BASE ---
         function processBaseFile(workbook) {
-            const sheetName = workbook.SheetNames[0]; // Lê só a primeira aba da base
+            const sheetName = workbook.SheetNames[0];
             const ws = workbook.Sheets[sheetName];
             const rows = XLSX.utils.sheet_to_json(ws, {header: 1});
-
             state.validBoxes.clear();
-
-            // Começa na linha 4 (Índice 3 do Array) | Coluna A = Índice 0
-            for(let i = 3; i < rows.length; i++) {
+            for(let i = 3; i < rows.length; i++) { // Linha 4
                 const row = rows[i];
-                if(row && row[0]) { 
-                    const boxId = String(row[0]).trim().toUpperCase();
-                    state.validBoxes.add(boxId);
-                }
+                if(row && row[0]) state.validBoxes.add(String(row[0]).trim().toUpperCase());
             }
-            console.log(`Base carregada: ${state.validBoxes.size} caixas válidas encontradas.`);
+            console.log(`Base: ${state.validBoxes.size} caixas.`);
         }
 
-        // --- PROCESSAMENTO: LISTA ELIMINAÇÃO (MULTI-ABAS) ---
+        // --- INPUT (MULTI-ABAS) ---
         function processInputFile(workbook) {
             state.inputDataMap.clear();
             let totalSheetsRead = 0;
-            let totalRowsRead = 0;
+            state.totalRowsInput = 0;
 
-            // Percorre TODAS as abas disponíveis
             workbook.SheetNames.forEach((sheetName, sheetIndex) => {
                 const ws = workbook.Sheets[sheetName];
                 const rows = XLSX.utils.sheet_to_json(ws, {header: 1});
                 
-                // LÓGICA DE LINHAS INICIAIS
-                // Aba 1 (índice 0): Começa em K2 (Linha 2 -> Índice 1)
-                // Aba 2+ (índice > 0): Começa em K1 (Linha 1 -> Índice 0)
-                let startIndex = (sheetIndex === 0) ? 1 : 0;
-                
-                // Se a aba estiver vazia, ignora
+                let startIndex = (sheetIndex === 0) ? 1 : 0; // K2 na primeira, K1 nas outras
                 if(rows.length <= startIndex) return;
-
                 totalSheetsRead++;
                 
                 for(let i = startIndex; i < rows.length; i++) {
                     const row = rows[i];
-                    
-                    // Coluna K (Box) -> Índice 10 
-                    // Coluna E (Setor) -> Índice 4
-                    // Coluna Q (Código) -> Índice 16
-                    const rawBox = row[10];
-                    const rawSetor = row[4];
-                    const rawCod = row[16];
+                    state.totalRowsInput++;
+                    const rawBox = row[10]; // K
+                    const rawSetor = row[4]; // E
+                    const rawCod = row[16]; // Q
 
                     if(rawBox) {
                         const boxId = String(rawBox).trim().toUpperCase();
-                        
                         if(!state.inputDataMap.has(boxId)) {
-                            state.inputDataMap.set(boxId, {
-                                id: boxId,
-                                setores: new Set(),
-                                codigos: new Set()
-                            });
+                            state.inputDataMap.set(boxId, { id: boxId, setores: new Set(), codigos: new Set() });
                         }
-
                         const entry = state.inputDataMap.get(boxId);
-                        if(rawSetor) entry.setores.add(String(rawSetor).trim());
+                        if(rawSetor) entry.setores.add(String(rawSetor).trim().toUpperCase());
                         if(rawCod) entry.codigos.add(String(rawCod).trim());
-                        totalRowsRead++;
                     }
                 }
             });
-
-            // Atualiza UI com info das abas
-            document.getElementById('sheetInfo').innerText = `Lidas: ${totalSheetsRead} Abas | ${totalRowsRead} Registros`;
+            document.getElementById('sheetInfo').innerText = `Lidas: ${totalSheetsRead} Abas | ${state.totalRowsInput} Linhas`;
             document.getElementById('sheetInfo').style.color = 'var(--gov-blue)';
-            document.getElementById('sheetInfo').style.fontWeight = 'bold';
-            
-            console.log(`Input carregado: ${state.inputDataMap.size} caixas únicas lidas de ${totalSheetsRead} abas.`);
         }
 
-        // --- 2. EXECUÇÃO DA LÓGICA ---
+        // --- 2. EXECUÇÃO ---
         function runOptimization() {
             showLoading(true);
 
+            // Lê explicitamente os valores no momento do clique
+            const valCodes = document.getElementById('configMaxCodes').value;
+            const valSectors = document.getElementById('configMaxSectors').value;
+            
+            // Tratamento: Se vazio ou 0 -> Infinito
+            const limitCodes = (valCodes === "" || valCodes == 0) ? Infinity : parseInt(valCodes);
+            const limitSectors = (valSectors === "" || valSectors == 0) ? Infinity : parseInt(valSectors);
+
+            const LIMITS = { boxes: 99999, codes: limitCodes, sectors: limitSectors };
+
             setTimeout(() => {
                 try {
-                    const LIMITS = {
-                        boxes: 99999, // Infinito (Algoritmo define o máx)
-                        codes: parseInt(document.getElementById('configMaxCodes').value) || 5,
-                        sectors: parseInt(document.getElementById('configMaxSectors').value) || 3
-                    };
-
                     const boxesToProcess = [];
                     const notFoundBoxes = [];
                     const complexBoxes = [];
 
-                    // 1. Cross-Check e Separação
                     state.inputDataMap.forEach(box => {
-                        // Verifica se existe na Base
                         if(!state.validBoxes.has(box.id)) {
                             notFoundBoxes.push(box.id);
                         } else {
-                            // Verifica se é complexa (já estoura limites sozinha)
+                            // Validação inicial
                             if(box.codigos.size > LIMITS.codes || box.setores.size > LIMITS.sectors) {
                                 complexBoxes.push(box);
                             } else {
@@ -398,17 +392,15 @@
                         }
                     });
 
-                    // 2. Bin Packing (First Fit)
+                    // Bin Packing
                     let openBlocks = [];
                     let closedBlocks = [];
 
-                    // Complexas viram blocos unitários
+                    // Complexas
                     complexBoxes.forEach(box => {
                         closedBlocks.push({
-                            id: 0,
-                            boxes: [box],
-                            codigos: box.codigos,
-                            setores: box.setores
+                            id: 0, boxes: [box], codigos: box.codigos, setores: box.setores,
+                            reason: "Complexa (Isolada)", satCodes: box.codigos.size, satSectors: box.setores.size
                         });
                     });
 
@@ -426,24 +418,35 @@
                         }
                         if (!placed) {
                             openBlocks.push({
-                                id: 0,
-                                boxes: [box],
-                                codigos: new Set(box.codigos),
-                                setores: new Set(box.setores)
+                                id: 0, boxes: [box], codigos: new Set(box.codigos), setores: new Set(box.setores),
+                                reason: ""
                             });
                         }
                     }
 
-                    // Finalização
+                    // Define Motivo de Parada
+                    openBlocks.forEach(block => {
+                        block.satCodes = block.codigos.size;
+                        block.satSectors = block.setores.size;
+                        
+                        if(LIMITS.codes !== Infinity && block.satCodes >= LIMITS.codes) {
+                            block.reason = "Limite de Códigos";
+                        } else if(LIMITS.sectors !== Infinity && block.satSectors >= LIMITS.sectors) {
+                            block.reason = "Limite de Setores";
+                        } else {
+                            block.reason = "Fim da Lista";
+                        }
+                    });
+
                     state.finalBlocks = [...closedBlocks, ...openBlocks];
                     state.finalBlocks.forEach((b, i) => b.id = i + 1);
 
-                    renderResults(state.finalBlocks, notFoundBoxes, complexBoxes, state.inputDataMap.size);
+                    renderResults(state.finalBlocks, notFoundBoxes, complexBoxes, LIMITS);
                     document.getElementById('btnExportar').disabled = false;
 
                 } catch (err) {
                     console.error(err);
-                    alert("Erro no processamento: " + err.message);
+                    alert("Erro: " + err.message);
                 } finally {
                     showLoading(false);
                 }
@@ -462,57 +465,98 @@
             return true;
         }
 
-        // --- 3. UI RENDER ---
-        function renderResults(blocks, notFoundIds, complexBoxes, totalInput) {
+        // --- 3. RENDER DIAGNÓSTICO ---
+        function renderResults(blocks, notFoundIds, complexBoxes, limits) {
             document.getElementById('emptyState').style.display = 'none';
             document.getElementById('resultsArea').style.display = 'flex';
 
-            const validCount = blocks.reduce((acc, b) => acc + b.boxes.length, 0);
-            
-            document.getElementById('statProcessed').innerText = totalInput;
-            document.getElementById('statValid').innerText = validCount;
+            // Barra de Confirmação
+            const codesText = limits.codes === Infinity ? "Sem Limite" : limits.codes;
+            const sectorsText = limits.sectors === Infinity ? "Sem Limite" : limits.sectors;
+            document.getElementById('paramConfirmBar').innerHTML = `
+                <span><i class="fas fa-cog"></i> Configuração Aplicada:</span>
+                <div>
+                    Max Códigos: <strong>${codesText}</strong> &nbsp;|&nbsp; 
+                    Max Setores: <strong>${sectorsText}</strong>
+                </div>
+            `;
+
+            document.getElementById('statProcessed').innerText = state.inputDataMap.size;
+            document.getElementById('statValid').innerText = blocks.reduce((acc, b) => acc + b.boxes.length, 0);
             document.getElementById('statBlocks').innerText = blocks.length;
 
-            // Logs
             const errLog = document.getElementById('crossCheckLog');
             if(notFoundIds.length > 0) {
                 errLog.style.display = 'block';
-                document.getElementById('errorList').innerHTML = notFoundIds.map(id => 
-                    `<li><span>Box <strong>${id}</strong></span> <span>Não localizado na base (A4)</span></li>`
-                ).join('');
+                document.getElementById('errorList').innerHTML = notFoundIds.map(id => `<li><span>${id}</span></li>`).join('');
             } else { errLog.style.display = 'none'; }
 
             const warnLog = document.getElementById('complexLog');
             if(complexBoxes.length > 0) {
                 warnLog.style.display = 'block';
-                document.getElementById('complexList').innerHTML = complexBoxes.map(b => 
-                    `<li><span>Box <strong>${b.id}</strong></span> <span>Excede limites (${b.codigos.size} cód / ${b.setores.size} set)</span></li>`
-                ).join('');
+                document.getElementById('complexList').innerHTML = complexBoxes.map(b => `<li>Box ${b.id}</li>`).join('');
             } else { warnLog.style.display = 'none'; }
 
-            // Grid
             const container = document.getElementById('blocksContainer');
             container.innerHTML = '';
+            
             blocks.forEach(block => {
                 const boxTags = block.boxes.map(b => `<span class="box-tag">${b.id}</span>`).join('');
+                
+                // Cálculos de Porcentagem
+                let pctCodes = 0;
+                if(limits.codes !== Infinity) pctCodes = Math.min(100, (block.codigos.size / limits.codes) * 100);
+                
+                let pctSectors = 0;
+                if(limits.sectors !== Infinity) pctSectors = Math.min(100, (block.setores.size / limits.sectors) * 100);
+
+                // Classes de cor
+                let colorCode = pctCodes >= 100 ? 'danger' : (pctCodes >= 80 ? 'warning' : '');
+                let colorSector = pctSectors >= 100 ? 'danger' : (pctSectors >= 80 ? 'warning' : '');
+
+                // Tooltip content (Lista os itens ao passar o mouse)
+                const listCodes = Array.from(block.codigos).join('\n');
+                const listSectors = Array.from(block.setores).join('\n');
+
                 const html = `
                     <div class="block-card">
                         <div class="block-header">
                             <span>BLOCO #${block.id}</span>
-                            <span style="opacity:0.9">${block.boxes.length} Caixas</span>
+                            <span style="opacity:0.9">${block.boxes.length} Cxs</span>
                         </div>
-                        <div class="block-meta">
-                            <span><i class="fas fa-barcode"></i> ${block.codigos.size} Cód. Distintos</span>
-                            <span><i class="fas fa-building"></i> ${block.setores.size} Setores</span>
+                        
+                        <div class="block-diagnostics">
+                            <div class="diag-row" title="${listCodes}">
+                                <div class="diag-label">
+                                    <span>Códigos</span>
+                                    <strong>${block.codigos.size} / ${limits.codes === Infinity ? '∞' : limits.codes}</strong>
+                                </div>
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill ${colorCode}" style="width: ${pctCodes}%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="diag-row" title="${listSectors}">
+                                <div class="diag-label">
+                                    <span>Setores</span>
+                                    <strong>${block.setores.size} / ${limits.sectors === Infinity ? '∞' : limits.sectors}</strong>
+                                </div>
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill ${colorSector}" style="width: ${pctSectors}%"></div>
+                                </div>
+                            </div>
                         </div>
+
                         <div class="block-content">${boxTags}</div>
+                        <div class="block-footer">
+                            Status: ${block.reason}
+                        </div>
                     </div>
                 `;
                 container.innerHTML += html;
             });
         }
 
-        // --- 4. EXPORTAÇÃO ---
         function exportarExcel() {
             if(!state.finalBlocks.length) return;
             const data = [];
@@ -520,16 +564,19 @@
                 b.boxes.forEach(box => {
                     data.push({
                         'Bloco': b.id,
+                        'Motivo Fechamento': b.reason,
                         'Caixa': box.id,
-                        'Setores': Array.from(box.setores).join(', '),
-                        'Códigos': Array.from(box.codigos).join(', ')
+                        'Qtd Códigos': box.codigos.size,
+                        'Qtd Setores': box.setores.size,
+                        'Lista Códigos': Array.from(box.codigos).join(', '),
+                        'Lista Setores': Array.from(box.setores).join(', ')
                     });
                 });
             });
             const ws = XLSX.utils.json_to_sheet(data);
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Resultado");
-            XLSX.writeFile(wb, "Otimizacao_Posicional.xlsx");
+            XLSX.utils.book_append_sheet(wb, ws, "Diagnostico");
+            XLSX.writeFile(wb, "Otimizacao_Diagnostico.xlsx");
         }
 
         function showLoading(show) {
