@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Otimizador de Eliminação | Arquivo SEC</title>
+    <title>Otimizador de Eliminação (Validação Cruzada) | Arquivo SEC</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -61,25 +61,18 @@
         }
         .form-control:focus { border-color: var(--gov-blue); }
 
-        /* File Upload Customizado (CORRIGIDO) */
+        /* Upload Styles */
+        .upload-section { margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         .file-upload-wrapper {
-            border: 2px dashed #ccc; 
-            border-radius: 4px; 
-            padding: 20px; 
-            text-align: center;
-            background: #fafafa; 
-            cursor: pointer; 
-            transition: all 0.2s;
-            width: 100%; /* Ocupa tudo */
-            display: flex; /* Flex para centralizar */
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            box-sizing: border-box;
+            border: 2px dashed #ccc; border-radius: 4px; padding: 15px; 
+            text-align: center; background: #fafafa; cursor: pointer; transition: all 0.2s;
+            width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
+        .file-upload-wrapper.active { border-color: var(--success); background: #f0fff4; }
         .file-upload-wrapper:hover { border-color: var(--gov-blue); background: #eef6ff; }
-        .file-upload-wrapper i { font-size: 24px; color: var(--gov-blue); margin-bottom: 10px; }
-        .file-upload-text { font-size: 11px; color: #666; display: block; }
+        .file-upload-wrapper i { font-size: 20px; color: #888; margin-bottom: 8px; }
+        .file-upload-wrapper.active i { color: var(--success); }
+        .file-upload-text { font-size: 10px; color: #666; font-weight: 500; }
         input[type="file"] { display: none; }
 
         /* Botões */
@@ -93,31 +86,33 @@
         .btn-primary:hover { background: var(--gov-blue-dark); }
         .btn-success { background: var(--success); color: white; }
         
-        /* Resultados (Main Area) */
+        /* Resultados */
         .results-area { display: flex; flex-direction: column; gap: 20px; }
-        
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
         .stat-card { background: white; padding: 15px; border-radius: 4px; border: 1px solid var(--border-color); text-align: center; }
         .stat-val { font-size: 24px; font-weight: 900; color: var(--gov-blue); display: block; }
         .stat-label { font-size: 10px; text-transform: uppercase; color: #777; font-weight: 700; }
 
-        /* Logs de Erro */
+        /* Logs */
         .log-box {
-            background: #fff5f5; border: 1px solid #fcc; border-radius: 4px; padding: 15px;
-            display: none; /* Hidden by default */
+            background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 15px;
+            display: none; 
         }
-        .log-title { font-size: 12px; font-weight: 700; color: var(--danger); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
-        .log-list { list-style: none; font-size: 11px; max-height: 150px; overflow-y: auto; color: #555; }
-        .log-list li { padding: 2px 0; border-bottom: 1px solid #fee; }
+        .log-box.error { background: #fff5f5; border-color: #fcc; }
+        .log-box.warning { background: #fffbf0; border-color: #ffe08a; }
+        
+        .log-title { font-size: 12px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; text-transform: uppercase; }
+        .log-box.error .log-title { color: var(--danger); }
+        .log-box.warning .log-title { color: #d97706; }
 
-        /* Visualização dos Blocos */
-        .blocks-container {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px;
-        }
+        .log-list { list-style: none; font-size: 11px; max-height: 150px; overflow-y: auto; color: #555; }
+        .log-list li { padding: 3px 0; border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between;}
+
+        /* Blocos Grid */
+        .blocks-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
         .block-card {
             background: white; border: 1px solid var(--border-color); border-radius: 4px;
-            overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.03);
-            display: flex; flex-direction: column;
+            overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.03); display: flex; flex-direction: column;
         }
         .block-header {
             background: var(--gov-blue); color: white; padding: 8px 12px;
@@ -127,16 +122,12 @@
             background: #f0f4f8; padding: 8px 12px; font-size: 11px; color: #444; border-bottom: 1px solid #eee;
             display: grid; grid-template-columns: 1fr 1fr; gap: 5px;
         }
-        .block-meta span { display: block; }
-        
-        .block-content { padding: 10px; flex: 1; }
+        .block-content { padding: 10px; flex: 1; display: flex; flex-wrap: wrap; gap: 5px; align-content: flex-start; }
         .box-tag {
-            display: inline-block; background: #eee; color: #333;
-            padding: 3px 6px; border-radius: 3px; font-size: 10px; font-weight: 700;
-            margin: 2px; border: 1px solid #ddd;
+            background: #eee; color: #333; padding: 3px 6px; border-radius: 3px; font-size: 10px; font-weight: 700; border: 1px solid #ddd;
         }
         
-        /* Loading Overlay */
+        /* Loading */
         #loadingOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(255,255,255,0.8); z-index: 1000;
@@ -148,9 +139,7 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        @media (max-width: 900px) {
-            .main-container { grid-template-columns: 1fr; }
-        }
+        @media (max-width: 900px) { .main-container { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -164,31 +153,41 @@
     <main class="main-container">
         
         <aside class="control-panel">
-            <div class="panel-title">Entrada de Dados</div>
+            <div class="panel-title">1. Bases de Dados</div>
             
-            <div class="form-group">
-                <label class="file-upload-wrapper" for="fileInput">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                    <span class="file-upload-text" id="fileNameDisplay">Clique para selecionar Planilha (.xlsx)</span>
-                    <input type="file" id="fileInput" accept=".xlsx, .xls" onchange="handleFile(this)">
+            <div class="upload-section">
+                <label class="form-label">Base de Dados (Sistema)</label>
+                <label class="file-upload-wrapper" id="wrapBase" for="fileBase">
+                    <i class="fas fa-database"></i>
+                    <span class="file-upload-text" id="txtBase">Carregar Base Geral (.xlsx)</span>
+                    <input type="file" id="fileBase" accept=".xlsx, .xls" onchange="handleFile(this, 'base')">
                 </label>
             </div>
 
-            <div class="panel-title" style="margin-top: 20px;">Parâmetros do Bloco</div>
+            <div class="upload-section">
+                <label class="form-label">Lista de Eliminação</label>
+                <label class="file-upload-wrapper" id="wrapInput" for="fileInput">
+                    <i class="fas fa-list-ul"></i>
+                    <span class="file-upload-text" id="txtInput">Carregar Lista (.xlsx)</span>
+                    <input type="file" id="fileInput" accept=".xlsx, .xls" onchange="handleFile(this, 'input')">
+                </label>
+            </div>
+
+            <div class="panel-title" style="margin-top: 10px;">2. Parâmetros</div>
 
             <div class="form-group">
-                <label class="form-label" title="Máximo de códigos de classificação distintos no bloco">Max Códigos (un)</label>
+                <label class="form-label">Max Códigos (un)</label>
                 <input type="number" id="configMaxCodes" class="form-control" value="5">
             </div>
 
             <div class="form-group">
-                <label class="form-label" title="Máximo de setores distintos no bloco">Max Setores (un)</label>
+                <label class="form-label">Max Setores (un)</label>
                 <input type="number" id="configMaxSectors" class="form-control" value="3">
             </div>
 
             <div style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
                 <button class="btn btn-primary" onclick="runOptimization()" id="btnProcessar" disabled>
-                    <i class="fas fa-cogs"></i> Processar Otimização
+                    <i class="fas fa-check-double"></i> Validar e Processar
                 </button>
                 <button class="btn btn-success" onclick="exportarExcel()" id="btnExportar" disabled>
                     <i class="fas fa-file-excel"></i> Exportar Resultado
@@ -203,45 +202,44 @@
             
             <div class="stats-grid">
                 <div class="stat-card">
-                    <span class="stat-val" id="statTotalBoxes">0</span>
-                    <span class="stat-label">Caixas Processadas</span>
+                    <span class="stat-val" id="statProcessed">0</span>
+                    <span class="stat-label">Caixas na Lista</span>
                 </div>
                 <div class="stat-card">
-                    <span class="stat-val" id="statTotalBlocks">0</span>
+                    <span class="stat-val" id="statValid">0</span>
+                    <span class="stat-label">Caixas Válidas (Base)</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-val" id="statBlocks">0</span>
                     <span class="stat-label">Blocos Gerados</span>
                 </div>
-                <div class="stat-card">
-                    <span class="stat-val" id="statAvgFill">0</span>
-                    <span class="stat-label">Média Caixas/Bloco</span>
-                </div>
             </div>
 
-            <div class="log-box" id="complexLog">
-                <div class="log-title"><i class="fas fa-exclamation-triangle"></i> Caixas Complexas (Sozinhas no Bloco)</div>
-                <ul class="log-list" id="complexList"></ul>
-            </div>
-
-            <div class="log-box" id="crossCheckLog">
-                <div class="log-title"><i class="fas fa-times-circle"></i> Caixas Rejeitadas (Erro de Dados)</div>
+            <div class="log-box error" id="crossCheckLog">
+                <div class="log-title"><i class="fas fa-times-circle"></i> Erro: Caixas não encontradas na Base</div>
                 <ul class="log-list" id="errorList"></ul>
             </div>
 
-            <div class="panel-title">Visualização dos Blocos</div>
-            <div class="blocks-container" id="blocksContainer">
-                </div>
+            <div class="log-box warning" id="complexLog">
+                <div class="log-title"><i class="fas fa-exclamation-triangle"></i> Atenção: Caixas Sozinhas (Complexas)</div>
+                <ul class="log-list" id="complexList"></ul>
+            </div>
+
+            <div class="panel-title">Distribuição dos Blocos</div>
+            <div class="blocks-container" id="blocksContainer"></div>
 
         </section>
 
         <section id="emptyState" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #999; text-align: center; padding: 50px;">
-            <i class="fas fa-chart-pie" style="font-size: 60px; margin-bottom: 20px; color: #ddd;"></i>
-            <p>Carregue uma planilha e clique em processar para ver a otimização.</p>
+            <i class="fas fa-exchange-alt" style="font-size: 50px; margin-bottom: 20px; color: #ddd;"></i>
+            <p>Carregue a <strong>Base de Dados</strong> e a <strong>Lista de Eliminação</strong><br>para iniciar a validação cruzada.</p>
         </section>
 
     </main>
 
     <div id="loadingOverlay">
         <div class="spinner"></div>
-        <div style="font-weight: 700; color: var(--gov-blue);">Processando Algoritmo...</div>
+        <div style="font-weight: 700; color: var(--gov-blue);">Processando Cruzamento de Dados...</div>
     </div>
 
     <footer class="br-footer">
@@ -251,110 +249,144 @@
     <script>
         // --- ESTADO GLOBAL ---
         let state = {
-            rawData: [],
+            baseData: [],     // Dados da Planilha de Referência
+            inputData: [],    // Dados da Planilha de Eliminação
             finalBlocks: [],
-            boxesMap: new Map(), 
-            headers: []
+            baseMap: new Map() // Mapa otimizado para busca rápida
         };
 
-        // --- 1. LEITURA DE ARQUIVO ---
-        function handleFile(input) {
+        // --- 1. LEITURA DE ARQUIVOS (DUPLA) ---
+        function handleFile(input, type) {
             const file = input.files[0];
             if(!file) return;
-            
-            document.getElementById('fileNameDisplay').innerText = file.name;
+
+            // UI Feedback
+            const wrapId = type === 'base' ? 'wrapBase' : 'wrapInput';
+            const txtId = type === 'base' ? 'txtBase' : 'txtInput';
+            document.getElementById(wrapId).classList.add('active');
+            document.getElementById(txtId).innerText = file.name;
             
             const reader = new FileReader();
             reader.onload = (e) => {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, {type: 'array'});
                 
-                // Consolida todas as abas
-                state.rawData = [];
+                let loadedRows = [];
                 workbook.SheetNames.forEach(sheetName => {
                     const worksheet = workbook.Sheets[sheetName];
                     const json = XLSX.utils.sheet_to_json(worksheet);
-                    state.rawData = state.rawData.concat(json);
+                    loadedRows = loadedRows.concat(json);
                 });
 
-                if(state.rawData.length > 0) {
-                    state.headers = Object.keys(state.rawData[0]);
-                    document.getElementById('btnProcessar').disabled = false;
-                    alert(`Arquivo carregado! ${state.rawData.length} linhas importadas.`);
+                if(type === 'base') {
+                    state.baseData = loadedRows;
+                    // Indexar base por BOX para busca rápida
+                    state.baseMap.clear();
+                    loadedRows.forEach(row => {
+                        const boxKey = findKey(row, 'BOX');
+                        if(boxKey && row[boxKey]) {
+                            const id = String(row[boxKey]).trim().toUpperCase();
+                            if(!state.baseMap.has(id)) {
+                                state.baseMap.set(id, []); // Pode haver vários docs na mesma caixa
+                            }
+                            state.baseMap.get(id).push(row);
+                        }
+                    });
                 } else {
-                    alert("A planilha parece vazia.");
+                    state.inputData = loadedRows;
                 }
+
+                checkReady();
             };
             reader.readAsArrayBuffer(file);
         }
 
-        // --- 2. OTIMIZAÇÃO (CORE ALGORITHM) ---
+        // Habilita botão se ambos carregados
+        function checkReady() {
+            if(state.baseData.length > 0 && state.inputData.length > 0) {
+                document.getElementById('btnProcessar').disabled = false;
+            }
+        }
+
+        // Helper para achar chaves insensíveis a maiúsculas/acentos
+        function findKey(row, term) {
+            return Object.keys(row).find(k => k.toUpperCase().includes(term));
+        }
+
+        // --- 2. VALIDAÇÃO E OTIMIZAÇÃO ---
         function runOptimization() {
             showLoading(true);
 
             setTimeout(() => {
                 try {
-                    // Parâmetros (MAX CAIXAS removido, definido como 'infinito' para o algoritmo)
                     const LIMITS = {
-                        boxes: 99999, // Valor alto para simular "máximo possível"
+                        boxes: 99999, // Infinito
                         codes: parseInt(document.getElementById('configMaxCodes').value) || 5,
                         sectors: parseInt(document.getElementById('configMaxSectors').value) || 3
                     };
 
-                    // A. Pré-processamento: Agrupar documentos por BOX
-                    const boxesRaw = new Map();
-                    state.rawData.forEach(row => {
-                        const keyBox = Object.keys(row).find(k => k.toUpperCase().trim() === 'BOX');
-                        const keySetor = Object.keys(row).find(k => k.toUpperCase().trim() === 'SETOR' || k.toUpperCase().trim() === 'UNIDADE');
-                        const keyCod = Object.keys(row).find(k => k.toUpperCase().trim() === 'CÓDIGO' || k.toUpperCase().trim() === 'CODIGO' || k.toUpperCase().trim() === 'COD');
+                    // A. Cruzamento de Dados (Cross-Check)
+                    // Vamos agrupar a LISTA DE INPUT por Caixa
+                    const inputBoxesMap = new Map();
+                    const notFoundBoxes = new Set(); // Caixas do input que não existem na base
 
-                        if(keyBox && row[keyBox]) {
-                            const boxId = String(row[keyBox]).trim();
-                            if(!boxesRaw.has(boxId)) {
-                                boxesRaw.set(boxId, {
-                                    id: boxId,
-                                    documentos: [],
-                                    setores: new Set(),
-                                    codigos: new Set()
+                    // 1. Identificar Caixas no Input
+                    state.inputData.forEach(row => {
+                        const boxKey = findKey(row, 'BOX');
+                        if(boxKey && row[boxKey]) {
+                            const boxId = String(row[boxKey]).trim().toUpperCase();
+                            
+                            // VALIDAR CONTRA A BASE
+                            if(!state.baseMap.has(boxId)) {
+                                notFoundBoxes.add(boxId);
+                            } else {
+                                // Se existe na base, usamos os dados da BASE (mais confiáveis) para montar o objeto
+                                // Ou usamos o Input? Geralmente usa-se a Base para pegar Setor/Código corretos.
+                                const baseDocs = state.baseMap.get(boxId);
+                                
+                                if(!inputBoxesMap.has(boxId)) {
+                                    inputBoxesMap.set(boxId, {
+                                        id: boxId,
+                                        setores: new Set(),
+                                        codigos: new Set(),
+                                        docs: baseDocs // Guardamos os docs reais da base
+                                    });
+                                }
+
+                                // Popula metadados baseado na BASE (para garantir integridade)
+                                const entry = inputBoxesMap.get(boxId);
+                                baseDocs.forEach(doc => {
+                                    const kSetor = findKey(doc, 'SETOR') || findKey(doc, 'UNIDADE');
+                                    const kCod = findKey(doc, 'CÓDIGO') || findKey(doc, 'CODIGO') || findKey(doc, 'COD');
+                                    
+                                    if(kSetor) entry.setores.add(String(doc[kSetor]).trim());
+                                    if(kCod) entry.codigos.add(String(doc[kCod]).trim());
                                 });
                             }
-                            const entry = boxesRaw.get(boxId);
-                            entry.documentos.push({
-                                ...row,
-                                SETOR: keySetor ? String(row[keySetor]).trim() : "N/D",
-                                COD: keyCod ? String(row[keyCod]).trim() : "N/D"
-                            });
-                            entry.setores.add(entry.documentos[entry.documentos.length-1].SETOR);
-                            entry.codigos.add(entry.documentos[entry.documentos.length-1].COD);
                         }
                     });
 
-                    // B. Separação: Válidos vs Inválidos
+                    // B. Separação: Normais vs Complexas
                     const validBoxes = [];
-                    const rejectedBoxes = []; 
-                    const complexBoxes = []; 
+                    const complexBoxes = [];
 
-                    boxesRaw.forEach(box => {
-                        const validation = isBoxValid(box, LIMITS);
-                        if(validation.valid) {
-                            validBoxes.push(box);
+                    inputBoxesMap.forEach(box => {
+                        // Verifica se caixa sozinha já estoura limite
+                        if(box.codigos.size > LIMITS.codes || box.setores.size > LIMITS.sectors) {
+                            complexBoxes.push(box);
                         } else {
-                            if(validation.reason === 'exceeds_limits_solo') {
-                                complexBoxes.push(box);
-                            } else {
-                                rejectedBoxes.push({ id: box.id, motivo: validation.reason });
-                            }
+                            validBoxes.push(box);
                         }
                     });
 
-                    // C. Algoritmo Guloso (Greedy Fit)
-                    let openBlocks = []; 
-                    let closedBlocks = []; 
+                    // C. Algoritmo de Bin Packing (First Fit)
+                    let openBlocks = [];
+                    let closedBlocks = [];
 
-                    // Processar caixas complexas (1 por bloco)
+                    // Complexas = 1 por bloco
                     complexBoxes.forEach(box => {
                         closedBlocks.push({
-                            id: closedBlocks.length + 1,
+                            id: 0,
                             boxes: [box],
                             codigos: box.codigos,
                             setores: box.setores,
@@ -362,67 +394,59 @@
                         });
                     });
 
-                    // Processar caixas normais
+                    // Normais
                     for (const box of validBoxes) {
                         let placed = false;
-                        
-                        // Tenta encaixar num bloco aberto existente
                         for (const block of openBlocks) {
                             if (canFit(block, box, LIMITS)) {
                                 block.boxes.push(box);
                                 box.codigos.forEach(c => block.codigos.add(c));
                                 box.setores.forEach(s => block.setores.add(s));
-                                // NOTA: Removemos a lógica de "fechar" bloco por contagem de caixas,
-                                // pois o limite é "o máximo que o algoritmo conseguir".
                                 placed = true;
                                 break;
                             }
                         }
-
-                        // Se não coube em nenhum, cria novo bloco
                         if (!placed) {
-                            const newBlock = {
-                                id: null, 
+                            openBlocks.push({
+                                id: 0,
                                 boxes: [box],
                                 codigos: new Set(box.codigos),
                                 setores: new Set(box.setores),
                                 isComplex: false
-                            };
-                            openBlocks.push(newBlock);
+                            });
                         }
                     }
 
-                    // Move blocos restantes para finalizados
-                    closedBlocks = [...closedBlocks, ...openBlocks];
+                    // Finaliza
+                    state.finalBlocks = [...closedBlocks, ...openBlocks];
+                    state.finalBlocks.forEach((b, i) => b.id = i + 1); // Renumera
 
-                    // Renumera IDs sequencialmente
-                    closedBlocks.forEach((b, i) => b.id = i + 1);
+                    // Renderiza
+                    renderResults(
+                        state.finalBlocks, 
+                        Array.from(notFoundBoxes), 
+                        complexBoxes, 
+                        inputBoxesMap.size + notFoundBoxes.size
+                    );
 
-                    state.finalBlocks = closedBlocks;
-                    
-                    renderResults(state.finalBlocks, rejectedBoxes, complexBoxes);
                     document.getElementById('btnExportar').disabled = false;
 
                 } catch (err) {
                     console.error(err);
-                    alert("Erro ao processar: " + err.message);
+                    alert("Erro no processamento: " + err.message);
                 } finally {
                     showLoading(false);
                 }
             }, 100);
         }
 
-        // Verifica se cabe no bloco sem estourar limites
         function canFit(block, box, limits) {
-            // 1. Limite de Caixas (Ignorado / Infinito neste caso)
-            if (block.boxes.length + 1 > limits.boxes) return false;
-
-            // 2. Limite de Códigos (União dos sets)
+            // Verifica Códigos
             const combinedCodes = new Set(block.codigos);
             box.codigos.forEach(c => combinedCodes.add(c));
             if (combinedCodes.size > limits.codes) return false;
 
-            // 3. Limite de Setores (União dos sets)
+            // Verifica Setores
             const combinedSectors = new Set(block.setores);
             box.setores.forEach(s => combinedSectors.add(s));
             if (combinedSectors.size > limits.sectors) return false;
@@ -430,64 +454,51 @@
             return true;
         }
 
-        function isBoxValid(box, limits) {
-            if (box.codigos.size > limits.codes) return { valid: false, reason: 'exceeds_limits_solo' };
-            if (box.setores.size > limits.sectors) return { valid: false, reason: 'exceeds_limits_solo' };
-            return { valid: true };
-        }
-
-        // --- 3. RENDERIZAÇÃO ---
-        function renderResults(blocks, rejeitados, complexos) {
+        // --- 3. UI RENDER ---
+        function renderResults(blocks, notFoundIds, complexBoxes, totalInputCount) {
             document.getElementById('emptyState').style.display = 'none';
             document.getElementById('resultsArea').style.display = 'flex';
 
-            // Stats
-            const totalBoxes = blocks.reduce((acc, b) => acc + b.boxes.length, 0);
-            const avgBoxes = blocks.length > 0 ? (totalBoxes / blocks.length).toFixed(1) : 0;
-
-            document.getElementById('statTotalBoxes').innerText = totalBoxes;
-            document.getElementById('statTotalBlocks').innerText = blocks.length;
-            document.getElementById('statAvgFill').innerText = avgBoxes; // Média simples agora
-
-            // Logs
-            const complexLog = document.getElementById('complexLog');
-            const errorLog = document.getElementById('crossCheckLog');
+            const validCount = blocks.reduce((acc, b) => acc + b.boxes.length, 0);
             
-            if(complexos.length > 0) {
-                complexLog.style.display = 'block';
-                document.getElementById('complexList').innerHTML = complexos.map(b => 
-                    `<li><strong>Box ${b.id}:</strong> Excede limites sozinho (${b.codigos.size} Códigos / ${b.setores.size} Setores)</li>`
-                ).join('');
-            } else { complexLog.style.display = 'none'; }
+            document.getElementById('statProcessed').innerText = totalInputCount;
+            document.getElementById('statValid').innerText = validCount;
+            document.getElementById('statBlocks').innerText = blocks.length;
 
-            if(rejeitados.length > 0) {
-                errorLog.style.display = 'block';
-                document.getElementById('errorList').innerHTML = rejeitados.map(r => 
-                    `<li><strong>Box ${r.id}:</strong> ${r.motivo}</li>`
+            // Log de Erros (Não encontrado na base)
+            const errLog = document.getElementById('crossCheckLog');
+            if(notFoundIds.length > 0) {
+                errLog.style.display = 'block';
+                document.getElementById('errorList').innerHTML = notFoundIds.map(id => 
+                    `<li><span>Box <strong>${id}</strong></span> <span>Não existe na Base de Dados</span></li>`
                 ).join('');
-            } else { errorLog.style.display = 'none'; }
+            } else { errLog.style.display = 'none'; }
 
-            // Blocos Grid
+            // Log de Complexos
+            const warnLog = document.getElementById('complexLog');
+            if(complexBoxes.length > 0) {
+                warnLog.style.display = 'block';
+                document.getElementById('complexList').innerHTML = complexBoxes.map(b => 
+                    `<li><span>Box <strong>${b.id}</strong></span> <span>Sozinho excede limites (${b.codigos.size} cód / ${b.setores.size} set)</span></li>`
+                ).join('');
+            } else { warnLog.style.display = 'none'; }
+
+            // Grid
             const container = document.getElementById('blocksContainer');
             container.innerHTML = '';
-
             blocks.forEach(block => {
-                const boxListHtml = block.boxes.map(b => `<span class="box-tag"><i class="fas fa-box"></i> ${b.id}</span>`).join('');
-                
-                // Header sem limite fixo
+                const boxTags = block.boxes.map(b => `<span class="box-tag">${b.id}</span>`).join('');
                 const html = `
                     <div class="block-card">
                         <div class="block-header">
                             <span>BLOCO #${block.id}</span>
-                            <span style="opacity:0.8">${block.boxes.length} Cxs</span>
+                            <span style="opacity:0.9">${block.boxes.length} Caixas</span>
                         </div>
                         <div class="block-meta">
-                            <span><i class="fas fa-barcode"></i> ${block.codigos.size} Códigos</span>
+                            <span><i class="fas fa-barcode"></i> ${block.codigos.size} Cód. Distintos</span>
                             <span><i class="fas fa-building"></i> ${block.setores.size} Setores</span>
                         </div>
-                        <div class="block-content">
-                            ${boxListHtml}
-                        </div>
+                        <div class="block-content">${boxTags}</div>
                     </div>
                 `;
                 container.innerHTML += html;
@@ -497,27 +508,23 @@
         // --- 4. EXPORTAÇÃO ---
         function exportarExcel() {
             if(!state.finalBlocks.length) return;
-
             const data = [];
             state.finalBlocks.forEach(b => {
                 b.boxes.forEach(box => {
-                    box.documentos.forEach(doc => {
+                    // Usamos os docs da BASE para exportar dados ricos
+                    box.docs.forEach(doc => {
                         data.push({
-                            'Bloco Sugerido': b.id,
-                            'Box Original': box.id,
-                            'Setor': doc.SETOR,
-                            'Código': doc.COD,
-                            'Tipo Documental': doc['TIPO DOCUMENTAL'] || doc['ASSUNTO'] || '',
-                            'Ano': doc['ANO'] || ''
+                            'Bloco Otimizado': b.id,
+                            'Caixa': box.id,
+                            ...doc // Espalha todos os campos originais da base
                         });
                     });
                 });
             });
-
             const ws = XLSX.utils.json_to_sheet(data);
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Otimizacao");
-            XLSX.writeFile(wb, "Resultado_Otimizacao_Eliminacao.xlsx");
+            XLSX.utils.book_append_sheet(wb, ws, "Resultado");
+            XLSX.writeFile(wb, "Otimizacao_Conferida.xlsx");
         }
 
         function showLoading(show) {
