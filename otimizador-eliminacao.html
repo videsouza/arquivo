@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Otimizador de Eliminação (Posicional) | Arquivo SEC</title>
+    <title>Otimizador de Eliminação (Multi-Abas) | Arquivo SEC</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
     <style>
-        /* --- DESIGN SYSTEM (AZUL INSTITUCIONAL) --- */
+        /* --- DESIGN SYSTEM --- */
         :root {
             --gov-blue: #1351b4;
             --gov-blue-dark: #0c326f;
@@ -43,7 +43,7 @@
             display: grid; grid-template-columns: 320px 1fr; gap: 30px; align-items: start;
         }
 
-        /* Painel de Controle (Sidebar) */
+        /* Sidebar */
         .control-panel {
             background: white; border: 1px solid var(--border-color); border-radius: 4px; padding: 20px;
             position: sticky; top: 20px; max-height: calc(100vh - 40px); overflow-y: auto;
@@ -52,7 +52,6 @@
 
         .panel-title { font-size: 14px; font-weight: 700; color: var(--gov-blue); margin-bottom: 15px; border-bottom: 2px solid var(--gov-blue); padding-bottom: 8px; text-transform: uppercase; }
 
-        /* Inputs e Upload */
         .form-group { margin-bottom: 15px; width: 100%; }
         .form-label { display: block; font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; }
         .form-control {
@@ -75,6 +74,9 @@
         .file-upload-text { font-size: 10px; color: #666; font-weight: 500; }
         input[type="file"] { display: none; }
 
+        /* Info Tags */
+        .info-tag { font-size: 10px; color: #666; background: #eee; padding: 2px 5px; border-radius: 3px; margin-top: 5px; display: inline-block; }
+
         /* Botões */
         .btn {
             width: 100%; padding: 10px; border-radius: 3px; font-size: 12px; font-weight: 700; cursor: pointer;
@@ -94,10 +96,7 @@
         .stat-label { font-size: 10px; text-transform: uppercase; color: #777; font-weight: 700; }
 
         /* Logs */
-        .log-box {
-            background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 15px;
-            display: none; 
-        }
+        .log-box { background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 15px; display: none; }
         .log-box.error { background: #fff5f5; border-color: #fcc; }
         .log-box.warning { background: #fffbf0; border-color: #ffe08a; }
         
@@ -146,7 +145,7 @@
 
     <header class="br-header">
         <div class="header-container">
-            <i class="fas fa-cubes"></i> Arquivo / Otimizador (Modo Posicional)
+            <i class="fas fa-cubes"></i> Arquivo / Otimizador (Multi-Abas)
         </div>
     </header>
 
@@ -162,9 +161,7 @@
                     <span class="file-upload-text" id="txtBase">Carregar Base (.xlsx)</span>
                     <input type="file" id="fileBase" accept=".xlsx, .xls" onchange="handleFile(this, 'base')">
                 </label>
-                <div style="font-size:10px; color:#666; margin-top:5px;">
-                    *Lê BOX em A4 e Total em I4
-                </div>
+                <div class="info-tag">Leitura: A4 (Box) / I4 (Total)</div>
             </div>
 
             <div class="upload-section">
@@ -174,9 +171,9 @@
                     <span class="file-upload-text" id="txtInput">Carregar Lista (.xlsx)</span>
                     <input type="file" id="fileInput" accept=".xlsx, .xls" onchange="handleFile(this, 'input')">
                 </label>
-                <div style="font-size:10px; color:#666; margin-top:5px;">
-                    *Aba 1: Início K2 | Aba 2: Início K1<br>
-                    *Setor: Col E | Código: Col Q
+                <div class="info-tag" id="sheetInfo">Aguardando arquivo...</div>
+                <div style="font-size:9px; color:#666; margin-top:5px;">
+                    *Lê Aba 1 (K2) e Aba 2 (K1)
                 </div>
             </div>
 
@@ -238,8 +235,8 @@
         </section>
 
         <section id="emptyState" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #999; text-align: center; padding: 50px;">
-            <i class="fas fa-search-location" style="font-size: 50px; margin-bottom: 20px; color: #ddd;"></i>
-            <p>Carregue os arquivos conforme as coordenadas especificadas<br>para iniciar a validação.</p>
+            <i class="fas fa-exchange-alt" style="font-size: 50px; margin-bottom: 20px; color: #ddd;"></i>
+            <p>Carregue a <strong>Base de Dados</strong> e a <strong>Lista de Eliminação</strong><br>para iniciar a validação.</p>
         </section>
 
     </main>
@@ -257,7 +254,7 @@
         // --- ESTADO GLOBAL ---
         let state = {
             validBoxes: new Set(), // Set de IDs válidos da Base
-            inputDataMap: new Map(), // Mapa dos dados lidos do Input (Box -> {Setores, Codigos})
+            inputDataMap: new Map(), // Mapa dos dados lidos do Input
             finalBlocks: []
         };
 
@@ -266,7 +263,7 @@
             const file = input.files[0];
             if(!file) return;
 
-            // UI Update
+            // UI Feedback
             const wrapId = type === 'base' ? 'wrapBase' : 'wrapInput';
             const txtId = type === 'base' ? 'txtBase' : 'txtInput';
             document.getElementById(wrapId).classList.add('active');
@@ -295,21 +292,16 @@
 
         // --- PROCESSAMENTO: BASE DE DADOS (COORDENADAS) ---
         function processBaseFile(workbook) {
-            // Assume que os dados estão na primeira aba
-            const sheetName = workbook.SheetNames[0];
+            const sheetName = workbook.SheetNames[0]; // Lê só a primeira aba da base
             const ws = workbook.Sheets[sheetName];
-            
-            // sheet_to_json com header:1 cria uma matriz de Arrays (Linhas x Colunas)
-            // Índice 0 = Coluna A, Índice 1 = Coluna B, etc.
             const rows = XLSX.utils.sheet_to_json(ws, {header: 1});
 
             state.validBoxes.clear();
 
-            // Começa na linha 4 (Índice 3 do Array)
-            // A4 -> Coluna A é índice 0
+            // Começa na linha 4 (Índice 3 do Array) | Coluna A = Índice 0
             for(let i = 3; i < rows.length; i++) {
                 const row = rows[i];
-                if(row && row[0]) { // Coluna A (Box)
+                if(row && row[0]) { 
                     const boxId = String(row[0]).trim().toUpperCase();
                     state.validBoxes.add(boxId);
                 }
@@ -317,23 +309,31 @@
             console.log(`Base carregada: ${state.validBoxes.size} caixas válidas encontradas.`);
         }
 
-        // --- PROCESSAMENTO: LISTA ELIMINAÇÃO (COORDENADAS) ---
+        // --- PROCESSAMENTO: LISTA ELIMINAÇÃO (MULTI-ABAS) ---
         function processInputFile(workbook) {
             state.inputDataMap.clear();
+            let totalSheetsRead = 0;
+            let totalRowsRead = 0;
 
-            // Percorre todas as abas (pode ser 1 ou 2)
+            // Percorre TODAS as abas disponíveis
             workbook.SheetNames.forEach((sheetName, sheetIndex) => {
                 const ws = workbook.Sheets[sheetName];
                 const rows = XLSX.utils.sheet_to_json(ws, {header: 1});
-
-                // Aba 1: Começa em K2 (Linha 2 -> Índice 1)
-                // Aba 2+: Começa em K1 (Linha 1 -> Índice 0)
+                
+                // LÓGICA DE LINHAS INICIAIS
+                // Aba 1 (índice 0): Começa em K2 (Linha 2 -> Índice 1)
+                // Aba 2+ (índice > 0): Começa em K1 (Linha 1 -> Índice 0)
                 let startIndex = (sheetIndex === 0) ? 1 : 0;
+                
+                // Se a aba estiver vazia, ignora
+                if(rows.length <= startIndex) return;
 
+                totalSheetsRead++;
+                
                 for(let i = startIndex; i < rows.length; i++) {
                     const row = rows[i];
                     
-                    // Coluna K (Box) -> Índice 10 (A=0, ..., K=10)
+                    // Coluna K (Box) -> Índice 10 
                     // Coluna E (Setor) -> Índice 4
                     // Coluna Q (Código) -> Índice 16
                     const rawBox = row[10];
@@ -354,10 +354,17 @@
                         const entry = state.inputDataMap.get(boxId);
                         if(rawSetor) entry.setores.add(String(rawSetor).trim());
                         if(rawCod) entry.codigos.add(String(rawCod).trim());
+                        totalRowsRead++;
                     }
                 }
             });
-            console.log(`Input carregado: ${state.inputDataMap.size} caixas únicas lidas.`);
+
+            // Atualiza UI com info das abas
+            document.getElementById('sheetInfo').innerText = `Lidas: ${totalSheetsRead} Abas | ${totalRowsRead} Registros`;
+            document.getElementById('sheetInfo').style.color = 'var(--gov-blue)';
+            document.getElementById('sheetInfo').style.fontWeight = 'bold';
+            
+            console.log(`Input carregado: ${state.inputDataMap.size} caixas únicas lidas de ${totalSheetsRead} abas.`);
         }
 
         // --- 2. EXECUÇÃO DA LÓGICA ---
@@ -381,8 +388,6 @@
                         // Verifica se existe na Base
                         if(!state.validBoxes.has(box.id)) {
                             notFoundBoxes.push(box.id);
-                            // Opcional: Ainda processa? Geralmente não, pois é inválida.
-                            // Aqui vamos ignorá-la para o packing.
                         } else {
                             // Verifica se é complexa (já estoura limites sozinha)
                             if(box.codigos.size > LIMITS.codes || box.setores.size > LIMITS.sectors) {
@@ -513,8 +518,6 @@
             const data = [];
             state.finalBlocks.forEach(b => {
                 b.boxes.forEach(box => {
-                    // Exporta linha por caixa
-                    // Concatena códigos e setores em strings para caber na célula
                     data.push({
                         'Bloco': b.id,
                         'Caixa': box.id,
