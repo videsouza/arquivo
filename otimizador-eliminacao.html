@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Otimizador de Eliminação (Validação Cruzada) | Arquivo SEC</title>
+    <title>Otimizador de Eliminação (Posicional) | Arquivo SEC</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -146,7 +146,7 @@
 
     <header class="br-header">
         <div class="header-container">
-            <i class="fas fa-cubes"></i> Arquivo / Otimizador de Eliminação
+            <i class="fas fa-cubes"></i> Arquivo / Otimizador (Modo Posicional)
         </div>
     </header>
 
@@ -159,9 +159,12 @@
                 <label class="form-label">Base de Dados (Sistema)</label>
                 <label class="file-upload-wrapper" id="wrapBase" for="fileBase">
                     <i class="fas fa-database"></i>
-                    <span class="file-upload-text" id="txtBase">Carregar Base Geral (.xlsx)</span>
+                    <span class="file-upload-text" id="txtBase">Carregar Base (.xlsx)</span>
                     <input type="file" id="fileBase" accept=".xlsx, .xls" onchange="handleFile(this, 'base')">
                 </label>
+                <div style="font-size:10px; color:#666; margin-top:5px;">
+                    *Lê BOX em A4 e Total em I4
+                </div>
             </div>
 
             <div class="upload-section">
@@ -171,6 +174,10 @@
                     <span class="file-upload-text" id="txtInput">Carregar Lista (.xlsx)</span>
                     <input type="file" id="fileInput" accept=".xlsx, .xls" onchange="handleFile(this, 'input')">
                 </label>
+                <div style="font-size:10px; color:#666; margin-top:5px;">
+                    *Aba 1: Início K2 | Aba 2: Início K1<br>
+                    *Setor: Col E | Código: Col Q
+                </div>
             </div>
 
             <div class="panel-title" style="margin-top: 10px;">2. Parâmetros</div>
@@ -207,7 +214,7 @@
                 </div>
                 <div class="stat-card">
                     <span class="stat-val" id="statValid">0</span>
-                    <span class="stat-label">Caixas Válidas (Base)</span>
+                    <span class="stat-label">Válidas (Na Base)</span>
                 </div>
                 <div class="stat-card">
                     <span class="stat-val" id="statBlocks">0</span>
@@ -216,12 +223,12 @@
             </div>
 
             <div class="log-box error" id="crossCheckLog">
-                <div class="log-title"><i class="fas fa-times-circle"></i> Erro: Caixas não encontradas na Base</div>
+                <div class="log-title"><i class="fas fa-times-circle"></i> Não Encontradas na Base</div>
                 <ul class="log-list" id="errorList"></ul>
             </div>
 
             <div class="log-box warning" id="complexLog">
-                <div class="log-title"><i class="fas fa-exclamation-triangle"></i> Atenção: Caixas Sozinhas (Complexas)</div>
+                <div class="log-title"><i class="fas fa-exclamation-triangle"></i> Atenção: Caixas Complexas (Isoladas)</div>
                 <ul class="log-list" id="complexList"></ul>
             </div>
 
@@ -231,15 +238,15 @@
         </section>
 
         <section id="emptyState" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #999; text-align: center; padding: 50px;">
-            <i class="fas fa-exchange-alt" style="font-size: 50px; margin-bottom: 20px; color: #ddd;"></i>
-            <p>Carregue a <strong>Base de Dados</strong> e a <strong>Lista de Eliminação</strong><br>para iniciar a validação cruzada.</p>
+            <i class="fas fa-search-location" style="font-size: 50px; margin-bottom: 20px; color: #ddd;"></i>
+            <p>Carregue os arquivos conforme as coordenadas especificadas<br>para iniciar a validação.</p>
         </section>
 
     </main>
 
     <div id="loadingOverlay">
         <div class="spinner"></div>
-        <div style="font-weight: 700; color: var(--gov-blue);">Processando Cruzamento de Dados...</div>
+        <div style="font-weight: 700; color: var(--gov-blue);">Processando Coordenadas...</div>
     </div>
 
     <footer class="br-footer">
@@ -249,18 +256,17 @@
     <script>
         // --- ESTADO GLOBAL ---
         let state = {
-            baseData: [],     // Dados da Planilha de Referência
-            inputData: [],    // Dados da Planilha de Eliminação
-            finalBlocks: [],
-            baseMap: new Map() // Mapa otimizado para busca rápida
+            validBoxes: new Set(), // Set de IDs válidos da Base
+            inputDataMap: new Map(), // Mapa dos dados lidos do Input (Box -> {Setores, Codigos})
+            finalBlocks: []
         };
 
-        // --- 1. LEITURA DE ARQUIVOS (DUPLA) ---
+        // --- 1. LEITURA DE ARQUIVOS COM COORDENADAS FIXAS ---
         function handleFile(input, type) {
             const file = input.files[0];
             if(!file) return;
 
-            // UI Feedback
+            // UI Update
             const wrapId = type === 'base' ? 'wrapBase' : 'wrapInput';
             const txtId = type === 'base' ? 'txtBase' : 'txtInput';
             document.getElementById(wrapId).classList.add('active');
@@ -270,132 +276,139 @@
             reader.onload = (e) => {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, {type: 'array'});
-                
-                let loadedRows = [];
-                workbook.SheetNames.forEach(sheetName => {
-                    const worksheet = workbook.Sheets[sheetName];
-                    const json = XLSX.utils.sheet_to_json(worksheet);
-                    loadedRows = loadedRows.concat(json);
-                });
 
                 if(type === 'base') {
-                    state.baseData = loadedRows;
-                    // Indexar base por BOX para busca rápida
-                    state.baseMap.clear();
-                    loadedRows.forEach(row => {
-                        const boxKey = findKey(row, 'BOX');
-                        if(boxKey && row[boxKey]) {
-                            const id = String(row[boxKey]).trim().toUpperCase();
-                            if(!state.baseMap.has(id)) {
-                                state.baseMap.set(id, []); // Pode haver vários docs na mesma caixa
-                            }
-                            state.baseMap.get(id).push(row);
-                        }
-                    });
+                    processBaseFile(workbook);
                 } else {
-                    state.inputData = loadedRows;
+                    processInputFile(workbook);
                 }
-
                 checkReady();
             };
             reader.readAsArrayBuffer(file);
         }
 
-        // Habilita botão se ambos carregados
         function checkReady() {
-            if(state.baseData.length > 0 && state.inputData.length > 0) {
+            if(state.validBoxes.size > 0 && state.inputDataMap.size > 0) {
                 document.getElementById('btnProcessar').disabled = false;
             }
         }
 
-        // Helper para achar chaves insensíveis a maiúsculas/acentos
-        function findKey(row, term) {
-            return Object.keys(row).find(k => k.toUpperCase().includes(term));
+        // --- PROCESSAMENTO: BASE DE DADOS (COORDENADAS) ---
+        function processBaseFile(workbook) {
+            // Assume que os dados estão na primeira aba
+            const sheetName = workbook.SheetNames[0];
+            const ws = workbook.Sheets[sheetName];
+            
+            // sheet_to_json com header:1 cria uma matriz de Arrays (Linhas x Colunas)
+            // Índice 0 = Coluna A, Índice 1 = Coluna B, etc.
+            const rows = XLSX.utils.sheet_to_json(ws, {header: 1});
+
+            state.validBoxes.clear();
+
+            // Começa na linha 4 (Índice 3 do Array)
+            // A4 -> Coluna A é índice 0
+            for(let i = 3; i < rows.length; i++) {
+                const row = rows[i];
+                if(row && row[0]) { // Coluna A (Box)
+                    const boxId = String(row[0]).trim().toUpperCase();
+                    state.validBoxes.add(boxId);
+                }
+            }
+            console.log(`Base carregada: ${state.validBoxes.size} caixas válidas encontradas.`);
         }
 
-        // --- 2. VALIDAÇÃO E OTIMIZAÇÃO ---
+        // --- PROCESSAMENTO: LISTA ELIMINAÇÃO (COORDENADAS) ---
+        function processInputFile(workbook) {
+            state.inputDataMap.clear();
+
+            // Percorre todas as abas (pode ser 1 ou 2)
+            workbook.SheetNames.forEach((sheetName, sheetIndex) => {
+                const ws = workbook.Sheets[sheetName];
+                const rows = XLSX.utils.sheet_to_json(ws, {header: 1});
+
+                // Aba 1: Começa em K2 (Linha 2 -> Índice 1)
+                // Aba 2+: Começa em K1 (Linha 1 -> Índice 0)
+                let startIndex = (sheetIndex === 0) ? 1 : 0;
+
+                for(let i = startIndex; i < rows.length; i++) {
+                    const row = rows[i];
+                    
+                    // Coluna K (Box) -> Índice 10 (A=0, ..., K=10)
+                    // Coluna E (Setor) -> Índice 4
+                    // Coluna Q (Código) -> Índice 16
+                    const rawBox = row[10];
+                    const rawSetor = row[4];
+                    const rawCod = row[16];
+
+                    if(rawBox) {
+                        const boxId = String(rawBox).trim().toUpperCase();
+                        
+                        if(!state.inputDataMap.has(boxId)) {
+                            state.inputDataMap.set(boxId, {
+                                id: boxId,
+                                setores: new Set(),
+                                codigos: new Set()
+                            });
+                        }
+
+                        const entry = state.inputDataMap.get(boxId);
+                        if(rawSetor) entry.setores.add(String(rawSetor).trim());
+                        if(rawCod) entry.codigos.add(String(rawCod).trim());
+                    }
+                }
+            });
+            console.log(`Input carregado: ${state.inputDataMap.size} caixas únicas lidas.`);
+        }
+
+        // --- 2. EXECUÇÃO DA LÓGICA ---
         function runOptimization() {
             showLoading(true);
 
             setTimeout(() => {
                 try {
                     const LIMITS = {
-                        boxes: 99999, // Infinito
+                        boxes: 99999, // Infinito (Algoritmo define o máx)
                         codes: parseInt(document.getElementById('configMaxCodes').value) || 5,
                         sectors: parseInt(document.getElementById('configMaxSectors').value) || 3
                     };
 
-                    // A. Cruzamento de Dados (Cross-Check)
-                    // Vamos agrupar a LISTA DE INPUT por Caixa
-                    const inputBoxesMap = new Map();
-                    const notFoundBoxes = new Set(); // Caixas do input que não existem na base
+                    const boxesToProcess = [];
+                    const notFoundBoxes = [];
+                    const complexBoxes = [];
 
-                    // 1. Identificar Caixas no Input
-                    state.inputData.forEach(row => {
-                        const boxKey = findKey(row, 'BOX');
-                        if(boxKey && row[boxKey]) {
-                            const boxId = String(row[boxKey]).trim().toUpperCase();
-                            
-                            // VALIDAR CONTRA A BASE
-                            if(!state.baseMap.has(boxId)) {
-                                notFoundBoxes.add(boxId);
+                    // 1. Cross-Check e Separação
+                    state.inputDataMap.forEach(box => {
+                        // Verifica se existe na Base
+                        if(!state.validBoxes.has(box.id)) {
+                            notFoundBoxes.push(box.id);
+                            // Opcional: Ainda processa? Geralmente não, pois é inválida.
+                            // Aqui vamos ignorá-la para o packing.
+                        } else {
+                            // Verifica se é complexa (já estoura limites sozinha)
+                            if(box.codigos.size > LIMITS.codes || box.setores.size > LIMITS.sectors) {
+                                complexBoxes.push(box);
                             } else {
-                                // Se existe na base, usamos os dados da BASE (mais confiáveis) para montar o objeto
-                                // Ou usamos o Input? Geralmente usa-se a Base para pegar Setor/Código corretos.
-                                const baseDocs = state.baseMap.get(boxId);
-                                
-                                if(!inputBoxesMap.has(boxId)) {
-                                    inputBoxesMap.set(boxId, {
-                                        id: boxId,
-                                        setores: new Set(),
-                                        codigos: new Set(),
-                                        docs: baseDocs // Guardamos os docs reais da base
-                                    });
-                                }
-
-                                // Popula metadados baseado na BASE (para garantir integridade)
-                                const entry = inputBoxesMap.get(boxId);
-                                baseDocs.forEach(doc => {
-                                    const kSetor = findKey(doc, 'SETOR') || findKey(doc, 'UNIDADE');
-                                    const kCod = findKey(doc, 'CÓDIGO') || findKey(doc, 'CODIGO') || findKey(doc, 'COD');
-                                    
-                                    if(kSetor) entry.setores.add(String(doc[kSetor]).trim());
-                                    if(kCod) entry.codigos.add(String(doc[kCod]).trim());
-                                });
+                                boxesToProcess.push(box);
                             }
                         }
                     });
 
-                    // B. Separação: Normais vs Complexas
-                    const validBoxes = [];
-                    const complexBoxes = [];
-
-                    inputBoxesMap.forEach(box => {
-                        // Verifica se caixa sozinha já estoura limite
-                        if(box.codigos.size > LIMITS.codes || box.setores.size > LIMITS.sectors) {
-                            complexBoxes.push(box);
-                        } else {
-                            validBoxes.push(box);
-                        }
-                    });
-
-                    // C. Algoritmo de Bin Packing (First Fit)
+                    // 2. Bin Packing (First Fit)
                     let openBlocks = [];
                     let closedBlocks = [];
 
-                    // Complexas = 1 por bloco
+                    // Complexas viram blocos unitários
                     complexBoxes.forEach(box => {
                         closedBlocks.push({
                             id: 0,
                             boxes: [box],
                             codigos: box.codigos,
-                            setores: box.setores,
-                            isComplex: true
+                            setores: box.setores
                         });
                     });
 
                     // Normais
-                    for (const box of validBoxes) {
+                    for (const box of boxesToProcess) {
                         let placed = false;
                         for (const block of openBlocks) {
                             if (canFit(block, box, LIMITS)) {
@@ -411,24 +424,16 @@
                                 id: 0,
                                 boxes: [box],
                                 codigos: new Set(box.codigos),
-                                setores: new Set(box.setores),
-                                isComplex: false
+                                setores: new Set(box.setores)
                             });
                         }
                     }
 
-                    // Finaliza
+                    // Finalização
                     state.finalBlocks = [...closedBlocks, ...openBlocks];
-                    state.finalBlocks.forEach((b, i) => b.id = i + 1); // Renumera
+                    state.finalBlocks.forEach((b, i) => b.id = i + 1);
 
-                    // Renderiza
-                    renderResults(
-                        state.finalBlocks, 
-                        Array.from(notFoundBoxes), 
-                        complexBoxes, 
-                        inputBoxesMap.size + notFoundBoxes.size
-                    );
-
+                    renderResults(state.finalBlocks, notFoundBoxes, complexBoxes, state.inputDataMap.size);
                     document.getElementById('btnExportar').disabled = false;
 
                 } catch (err) {
@@ -441,12 +446,10 @@
         }
 
         function canFit(block, box, limits) {
-            // Verifica Códigos
             const combinedCodes = new Set(block.codigos);
             box.codigos.forEach(c => combinedCodes.add(c));
             if (combinedCodes.size > limits.codes) return false;
 
-            // Verifica Setores
             const combinedSectors = new Set(block.setores);
             box.setores.forEach(s => combinedSectors.add(s));
             if (combinedSectors.size > limits.sectors) return false;
@@ -455,31 +458,30 @@
         }
 
         // --- 3. UI RENDER ---
-        function renderResults(blocks, notFoundIds, complexBoxes, totalInputCount) {
+        function renderResults(blocks, notFoundIds, complexBoxes, totalInput) {
             document.getElementById('emptyState').style.display = 'none';
             document.getElementById('resultsArea').style.display = 'flex';
 
             const validCount = blocks.reduce((acc, b) => acc + b.boxes.length, 0);
             
-            document.getElementById('statProcessed').innerText = totalInputCount;
+            document.getElementById('statProcessed').innerText = totalInput;
             document.getElementById('statValid').innerText = validCount;
             document.getElementById('statBlocks').innerText = blocks.length;
 
-            // Log de Erros (Não encontrado na base)
+            // Logs
             const errLog = document.getElementById('crossCheckLog');
             if(notFoundIds.length > 0) {
                 errLog.style.display = 'block';
                 document.getElementById('errorList').innerHTML = notFoundIds.map(id => 
-                    `<li><span>Box <strong>${id}</strong></span> <span>Não existe na Base de Dados</span></li>`
+                    `<li><span>Box <strong>${id}</strong></span> <span>Não localizado na base (A4)</span></li>`
                 ).join('');
             } else { errLog.style.display = 'none'; }
 
-            // Log de Complexos
             const warnLog = document.getElementById('complexLog');
             if(complexBoxes.length > 0) {
                 warnLog.style.display = 'block';
                 document.getElementById('complexList').innerHTML = complexBoxes.map(b => 
-                    `<li><span>Box <strong>${b.id}</strong></span> <span>Sozinho excede limites (${b.codigos.size} cód / ${b.setores.size} set)</span></li>`
+                    `<li><span>Box <strong>${b.id}</strong></span> <span>Excede limites (${b.codigos.size} cód / ${b.setores.size} set)</span></li>`
                 ).join('');
             } else { warnLog.style.display = 'none'; }
 
@@ -511,20 +513,20 @@
             const data = [];
             state.finalBlocks.forEach(b => {
                 b.boxes.forEach(box => {
-                    // Usamos os docs da BASE para exportar dados ricos
-                    box.docs.forEach(doc => {
-                        data.push({
-                            'Bloco Otimizado': b.id,
-                            'Caixa': box.id,
-                            ...doc // Espalha todos os campos originais da base
-                        });
+                    // Exporta linha por caixa
+                    // Concatena códigos e setores em strings para caber na célula
+                    data.push({
+                        'Bloco': b.id,
+                        'Caixa': box.id,
+                        'Setores': Array.from(box.setores).join(', '),
+                        'Códigos': Array.from(box.codigos).join(', ')
                     });
                 });
             });
             const ws = XLSX.utils.json_to_sheet(data);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Resultado");
-            XLSX.writeFile(wb, "Otimizacao_Conferida.xlsx");
+            XLSX.writeFile(wb, "Otimizacao_Posicional.xlsx");
         }
 
         function showLoading(show) {
