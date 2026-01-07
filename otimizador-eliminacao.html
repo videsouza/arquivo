@@ -3,608 +3,454 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Otimizador de Eliminação (Com Estratégia) | Arquivo SEC</title>
+    <title>Otimizador Turbo (Clustering & Inspeção) | Arquivo SEC</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
     <style>
-        /* --- DESIGN SYSTEM --- */
         :root {
-            --gov-blue: #1351b4;
-            --gov-blue-dark: #0c326f;
-            --bg-body: #f8f8f8;
-            --border-color: #e5e5e5;
-            --text-primary: #131313;
-            --text-secondary: #555;
-            --success: #168821;
-            --warning: #ffcd07;
-            --danger: #e60000;
+            --gov-blue: #1351b4; --bg-body: #f3f4f6; --text-primary: #1f2937;
+            --success: #059669; --warning: #d97706; --danger: #dc2626;
         }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
+        * { box-sizing: border-box; outline: none; }
+        body { font-family: 'Roboto', sans-serif; background: var(--bg-body); color: var(--text-primary); margin: 0; padding: 20px; display: flex; flex-direction: column; min-height: 100vh; }
         
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-primary);
-            display: flex; flex-direction: column; min-height: 100vh;
-        }
-
-        /* Header & Footer */
-        .br-header { background: var(--gov-blue); color: white; padding: 8px 0; border-bottom: 4px solid var(--gov-blue-dark); }
-        .header-container { max-width: 1400px; margin: 0 auto; padding: 0 20px; font-weight: 700; font-size: 16px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .br-footer { background: var(--gov-blue-dark); color: white; padding: 10px 0; font-size: 11px; margin-top: auto; text-align: center; }
-
-        /* Layout */
-        .main-container {
-            max-width: 1400px; margin: 30px auto; padding: 0 20px; width: 100%;
-            display: grid; grid-template-columns: 320px 1fr; gap: 30px; align-items: start;
-        }
-
+        .header { background: var(--gov-blue); color: white; padding: 15px; border-radius: 6px; margin-bottom: 20px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+        
+        .grid-layout { display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
+        
         /* Sidebar */
-        .control-panel {
-            background: white; border: 1px solid var(--border-color); border-radius: 4px; padding: 20px;
-            position: sticky; top: 20px; max-height: calc(100vh - 40px); overflow-y: auto;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-
-        .panel-title { font-size: 14px; font-weight: 700; color: var(--gov-blue); margin-bottom: 15px; border-bottom: 2px solid var(--gov-blue); padding-bottom: 8px; text-transform: uppercase; }
-
-        .form-group { margin-bottom: 15px; width: 100%; }
-        .form-label { display: block; font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; }
-        .form-control {
-            width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 3px;
-            font-size: 13px; transition: border-color 0.2s;
-        }
-        .form-control:focus { border-color: var(--gov-blue); }
-        select.form-control { background: #fff; cursor: pointer; }
-
-        /* Upload Styles */
-        .upload-section { margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        .file-upload-wrapper {
-            border: 2px dashed #ccc; border-radius: 4px; padding: 15px; 
-            text-align: center; background: #fafafa; cursor: pointer; transition: all 0.2s;
-            width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .file-upload-wrapper.active { border-color: var(--success); background: #f0fff4; }
-        .file-upload-wrapper:hover { border-color: var(--gov-blue); background: #eef6ff; }
-        .file-upload-wrapper i { font-size: 20px; color: #888; margin-bottom: 8px; }
-        .file-upload-wrapper.active i { color: var(--success); }
-        .file-upload-text { font-size: 10px; color: #666; font-weight: 500; }
-        input[type="file"] { display: none; }
-
-        /* Info Tags */
-        .info-tag { font-size: 10px; color: #666; background: #eee; padding: 2px 5px; border-radius: 3px; margin-top: 5px; display: inline-block; }
-
-        /* Botões */
-        .btn {
-            width: 100%; padding: 10px; border-radius: 3px; font-size: 12px; font-weight: 700; cursor: pointer;
-            border: none; display: flex; align-items: center; justify-content: center; gap: 6px; text-transform: uppercase; margin-top: 10px;
-            transition: opacity 0.2s;
-        }
-        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .sidebar { background: white; padding: 20px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); height: fit-content; }
+        .sidebar h3 { font-size: 14px; text-transform: uppercase; color: var(--gov-blue); border-bottom: 2px solid #eee; padding-bottom: 8px; margin-top: 0; }
+        
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 11px; font-weight: 700; color: #555; margin-bottom: 4px; text-transform: uppercase; }
+        .form-control { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
+        
+        .file-drop { border: 2px dashed #ccc; padding: 20px; text-align: center; background: #fafafa; cursor: pointer; border-radius: 4px; transition: 0.2s; }
+        .file-drop:hover { border-color: var(--gov-blue); background: #eff6ff; }
+        .file-drop.active { border-color: var(--success); background: #f0fdf4; }
+        
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 4px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 12px; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-primary { background: var(--gov-blue); color: white; }
-        .btn-primary:hover { background: var(--gov-blue-dark); }
-        .btn-success { background: var(--success); color: white; }
+        .btn-primary:disabled { background: #9ca3af; cursor: not-allowed; }
         
-        /* Resultados */
-        .results-area { display: flex; flex-direction: column; gap: 20px; }
+        /* Main Content */
+        .main-content { display: flex; flex-direction: column; gap: 20px; }
         
-        /* Confirm Bar */
-        .confirm-bar {
-            background: #eef6ff; border: 1px solid #bdd7f9; color: #1e429f;
-            padding: 10px; border-radius: 4px; font-size: 12px; display: flex; justify-content: space-between; align-items: center;
-        }
-        .confirm-bar strong { font-weight: 900; }
-
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
-        .stat-card { background: white; padding: 15px; border-radius: 4px; border: 1px solid var(--border-color); text-align: center; }
+        /* Stats */
+        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .stat-box { background: white; padding: 15px; border-radius: 4px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
         .stat-val { font-size: 24px; font-weight: 900; color: var(--gov-blue); display: block; }
-        .stat-label { font-size: 10px; text-transform: uppercase; color: #777; font-weight: 700; }
-
-        /* Logs */
-        .log-box { background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 15px; display: none; }
-        .log-box.error { background: #fff5f5; border-color: #fcc; }
-        .log-box.warning { background: #fffbf0; border-color: #ffe08a; }
+        .stat-lbl { font-size: 10px; text-transform: uppercase; color: #666; font-weight: 700; }
         
-        .log-title { font-size: 12px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; text-transform: uppercase; }
-        .log-box.error .log-title { color: var(--danger); }
-        .log-box.warning .log-title { color: #d97706; }
+        /* Inspector Table */
+        .inspector-box { background: #fff; border: 1px solid #e5e7eb; border-radius: 4px; overflow: hidden; font-size: 11px; }
+        .inspector-header { background: #f9fafb; padding: 8px 12px; font-weight: 700; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; }
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 6px 10px; border-bottom: 1px solid #eee; white-space: nowrap; }
+        th { background: #f3f4f6; color: #374151; font-weight: 700; }
+        td { font-family: 'Roboto Mono', monospace; }
 
-        .log-list { list-style: none; font-size: 11px; max-height: 150px; overflow-y: auto; color: #555; }
-        .log-list li { padding: 3px 0; border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between;}
+        /* Blocks */
+        .blocks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
+        .block-card { background: white; border-radius: 4px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
+        .block-head { background: var(--gov-blue); color: white; padding: 8px 12px; font-weight: 700; font-size: 12px; display: flex; justify-content: space-between; }
+        .block-body { padding: 10px; flex: 1; max-height: 150px; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 4px; align-content: flex-start; }
+        .tag { background: #f3f4f6; border: 1px solid #e5e7eb; padding: 2px 6px; font-size: 10px; border-radius: 3px; font-weight: 600; }
+        .block-foot { background: #fdf2f8; color: #be185d; padding: 6px 10px; font-size: 10px; font-weight: 700; border-top: 1px solid #fbcfe8; text-align: right; }
 
-        /* Blocos Grid */
-        .blocks-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
-        .block-card {
-            background: white; border: 1px solid var(--border-color); border-radius: 4px;
-            overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.03); display: flex; flex-direction: column;
-        }
-        .block-header {
-            background: var(--gov-blue); color: white; padding: 8px 12px;
-            font-size: 12px; font-weight: 700; display: flex; justify-content: space-between; align-items: center;
-        }
-        
-        /* Diagnóstico Visual */
-        .block-diagnostics {
-            padding: 10px; background: #f9fafb; border-bottom: 1px solid #eee;
-        }
-        .diag-row { margin-bottom: 6px; }
-        .diag-label { font-size: 10px; color: #555; display: flex; justify-content: space-between; margin-bottom: 2px; }
-        .progress-bar-bg { width: 100%; height: 6px; background: #e5e7eb; border-radius: 3px; overflow: hidden; }
-        .progress-bar-fill { height: 100%; background: #10b981; border-radius: 3px; transition: width 0.3s; }
-        .progress-bar-fill.warning { background: #f59e0b; }
-        .progress-bar-fill.danger { background: #ef4444; }
-
-        .block-content { padding: 10px; flex: 1; display: flex; flex-wrap: wrap; gap: 5px; align-content: flex-start; max-height: 150px; overflow-y: auto; }
-        .block-footer {
-            background: #fff; padding: 5px 10px; font-size: 10px; color: #666; border-top: 1px solid #eee; text-align: right; font-family: 'Roboto Mono', monospace;
-        }
-        .box-tag {
-            background: #eee; color: #333; padding: 3px 6px; border-radius: 3px; font-size: 10px; font-weight: 700; border: 1px solid #ddd;
-        }
-        
-        /* Loading */
-        #loadingOverlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.8); z-index: 1000;
-            display: none; justify-content: center; align-items: center; flex-direction: column;
-        }
-        .spinner {
-            width: 40px; height: 40px; border: 4px solid #eee; border-top: 4px solid var(--gov-blue);
-            border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 10px;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        @media (max-width: 900px) { .main-container { grid-template-columns: 1fr; } }
+        .spinner { width: 40px; height: 40px; border: 4px solid #eee; border-top-color: var(--gov-blue); border-radius: 50%; animation: spin 1s infinite; margin: 0 auto; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        #loading { position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 50; display: none; align-items: center; justify-content: center; flex-direction: column; }
     </style>
 </head>
 <body>
 
-    <header class="br-header">
-        <div class="header-container">
-            <i class="fas fa-cubes"></i> Arquivo / Otimizador
-        </div>
-    </header>
+<div id="loading"><div class="spinner"></div><p style="margin-top:10px; font-weight:700;">Processando Algoritmo...</p></div>
 
-    <main class="main-container">
+<div class="header">
+    <span><i class="fas fa-microchip"></i> OTIMIZADOR "TURBO" (CLUSTERING)</span>
+    <span style="font-size:11px; opacity:0.8;">V 3.0 (Posicional)</span>
+</div>
+
+<div class="grid-layout">
+    
+    <aside class="sidebar">
+        <h3>1. Arquivos</h3>
         
-        <aside class="control-panel">
-            <div class="panel-title">1. Bases de Dados</div>
-            
-            <div class="upload-section">
-                <label class="form-label">Base de Dados (Sistema)</label>
-                <label class="file-upload-wrapper" id="wrapBase" for="fileBase">
-                    <i class="fas fa-database"></i>
-                    <span class="file-upload-text" id="txtBase">Carregar Base (.xlsx)</span>
-                    <input type="file" id="fileBase" accept=".xlsx, .xls" onchange="handleFile(this, 'base')">
-                </label>
-                <div class="info-tag">Leitura: A4 (Box)</div>
+        <div class="input-group">
+            <label>Lista de Eliminação (.xlsx)</label>
+            <div class="file-drop" id="dropInput" onclick="document.getElementById('fileInput').click()">
+                <i class="fas fa-file-excel fa-2x" style="color:#ccc;"></i>
+                <div id="nameInput" style="font-size:11px; margin-top:5px;">Clique para carregar</div>
+                <input type="file" id="fileInput" hidden accept=".xlsx, .xls" onchange="loadFile(this, 'input')">
             </div>
+            <div style="font-size:10px; color:#666; margin-top:5px;">Lê: Box(K), Setor(E), Cod(Q)</div>
+        </div>
 
-            <div class="upload-section">
-                <label class="form-label">Lista de Eliminação</label>
-                <label class="file-upload-wrapper" id="wrapInput" for="fileInput">
-                    <i class="fas fa-list-ul"></i>
-                    <span class="file-upload-text" id="txtInput">Carregar Lista (.xlsx)</span>
-                    <input type="file" id="fileInput" accept=".xlsx, .xls" onchange="handleFile(this, 'input')">
-                </label>
-                <div class="info-tag" id="sheetInfo">Aguardando arquivo...</div>
-                <div style="font-size:9px; color:#666; margin-top:5px;">*Lê K2 (Aba 1) e K1 (Aba 2+)</div>
+        <div class="input-group">
+            <label>Base Validação (Opcional)</label>
+            <div class="file-drop" id="dropBase" onclick="document.getElementById('fileBase').click()">
+                <i class="fas fa-database fa-2x" style="color:#ccc;"></i>
+                <div id="nameBase" style="font-size:11px; margin-top:5px;">Clique para carregar</div>
+                <input type="file" id="fileBase" hidden accept=".xlsx, .xls" onchange="loadFile(this, 'base')">
             </div>
+        </div>
 
-            <div class="panel-title" style="margin-top: 10px;">2. Configuração</div>
+        <h3>2. Estratégia</h3>
+        
+        <div class="input-group">
+            <label>Método de Agrupamento</label>
+            <select id="sortMethod" class="form-control" style="background:#eef6ff; font-weight:700; border-color:var(--gov-blue);">
+                <option value="cluster">CLUSTER (Setor -> Código)</option>
+                <option value="original">ORIGINAL (Ordem da Planilha)</option>
+            </select>
+            <div style="font-size:10px; color:#666; margin-top:4px;">*Cluster: Agrupa itens iguais antes de processar (Gera blocos maiores)</div>
+        </div>
 
-            <div class="form-group">
-                <label class="form-label">Objetivo da Otimização</label>
-                <select id="optStrategy" class="form-control">
-                    <option value="max_boxes">Maximizar Qtde Caixas</option>
-                    <option value="max_docs">Maximizar Qtde Documentos</option>
-                </select>
+        <h3>3. Limites (0 = Infinito)</h3>
+        <div class="input-group">
+            <label>Max Códigos</label>
+            <input type="number" id="limCode" class="form-control" value="30">
+        </div>
+        <div class="input-group">
+            <label>Max Setores</label>
+            <input type="number" id="limSector" class="form-control" value="12">
+        </div>
+
+        <button class="btn btn-primary" id="btnRun" disabled onclick="runEngine()">
+            <i class="fas fa-play"></i> Executar
+        </button>
+        <button class="btn btn-primary" style="background:#059669;" onclick="exportExcel()">
+            <i class="fas fa-download"></i> Baixar Excel
+        </button>
+    </aside>
+
+    <main class="main-content">
+        
+        <div class="stats-row">
+            <div class="stat-box">
+                <span class="stat-val" id="valRows">0</span>
+                <span class="stat-lbl">Linhas Lidas</span>
             </div>
-
-            <div class="form-group">
-                <label class="form-label">Max Códigos (un)</label>
-                <input type="number" id="configMaxCodes" class="form-control" value="30">
+            <div class="stat-box">
+                <span class="stat-val" id="valBoxes">0</span>
+                <span class="stat-lbl">Caixas Únicas</span>
             </div>
-
-            <div class="form-group">
-                <label class="form-label">Max Setores (un)</label>
-                <input type="number" id="configMaxSectors" class="form-control" value="12">
+            <div class="stat-box">
+                <span class="stat-val" id="valBlocks">0</span>
+                <span class="stat-lbl">Blocos Criados</span>
             </div>
-
-            <div style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
-                <button class="btn btn-primary" onclick="runOptimization()" id="btnProcessar" disabled>
-                    <i class="fas fa-check-double"></i> Validar e Processar
-                </button>
-                <button class="btn btn-success" onclick="exportarExcel()" id="btnExportar" disabled>
-                    <i class="fas fa-file-excel"></i> Exportar Resultado
-                </button>
-                 <a href="index.html" class="btn btn-primary" style="background: white; color: #444; border: 1px solid #ccc; text-decoration: none;">
-                    <i class="fas fa-arrow-left"></i> Voltar
-                </a>
+            <div class="stat-box" style="border:1px solid var(--gov-blue);">
+                <span class="stat-val" id="valMaxBlock">0</span>
+                <span class="stat-lbl">Maior Bloco (Cxs)</span>
             </div>
-        </aside>
+        </div>
 
-        <section class="results-area" id="resultsArea" style="display:none;">
-            
-            <div class="confirm-bar" id="paramConfirmBar"></div>
-
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <span class="stat-val" id="statProcessed">0</span>
-                    <span class="stat-label">Caixas Únicas</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-val" id="statDocs">0</span>
-                    <span class="stat-label">Total Documentos</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-val" id="statBlocks">0</span>
-                    <span class="stat-label">Blocos Gerados</span>
-                </div>
+        <div class="inspector-box">
+            <div class="inspector-header">
+                <span><i class="fas fa-microscope"></i> INSPETOR DE DADOS (Primeiras 5 Linhas)</span>
+                <span style="font-size:10px; font-weight:400;">Verifique se as colunas estão corretas</span>
             </div>
-
-            <div class="log-box error" id="crossCheckLog">
-                <div class="log-title"><i class="fas fa-times-circle"></i> Não Encontradas na Base</div>
-                <ul class="log-list" id="errorList"></ul>
+            <div class="table-wrap">
+                <table id="inspectorTable">
+                    <thead>
+                        <tr><th>Linha Excel</th><th>Box (K)</th><th>Setor (E)</th><th>Código (Q)</th><th>Status</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="5" style="text-align:center; padding:20px; color:#999;">Aguardando arquivo...</td></tr>
+                    </tbody>
+                </table>
             </div>
+        </div>
 
-            <div class="log-box warning" id="complexLog">
-                <div class="log-title"><i class="fas fa-exclamation-triangle"></i> Atenção: Caixas Complexas</div>
-                <ul class="log-list" id="complexList"></ul>
-            </div>
+        <div id="debugLog" style="background:#fffbe6; padding:10px; border:1px solid #ffe58f; border-radius:4px; font-size:11px; color:#b7791f; display:none;">
+            <strong>Diagnóstico do Bloco 1:</strong> <span id="debugText">...</span>
+        </div>
 
-            <div class="panel-title">Distribuição dos Blocos</div>
-            <div class="blocks-container" id="blocksContainer"></div>
-
-        </section>
-
-        <section id="emptyState" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #999; text-align: center; padding: 50px;">
-            <i class="fas fa-search-location" style="font-size: 50px; margin-bottom: 20px; color: #ddd;"></i>
-            <p>Carregue os arquivos para iniciar.</p>
-        </section>
+        <h3 style="margin:0; font-size:14px; color:#333; text-transform:uppercase;">Visualização dos Blocos</h3>
+        <div class="blocks-grid" id="gridBlocks"></div>
 
     </main>
+</div>
 
-    <div id="loadingOverlay">
-        <div class="spinner"></div>
-        <div style="font-weight: 700; color: var(--gov-blue);">Processando...</div>
-    </div>
+<script>
+    let rawData = [];
+    let baseData = new Set();
+    let finalBlocks = [];
 
-    <footer class="br-footer">
-        © 2026 Desenvolvido por Vinicius A. de Souza com Claude.ai, Gemini e ChatGPT
-    </footer>
+    // --- LEITURA E INSPEÇÃO ---
+    function loadFile(el, type) {
+        const file = el.files[0];
+        if(!file) return;
 
-    <script>
-        // --- ESTADO GLOBAL ---
-        let state = {
-            validBoxes: new Set(),
-            inputDataMap: new Map(),
-            finalBlocks: [],
-            totalRowsInput: 0,
-            totalDocsCount: 0
+        document.getElementById(type === 'input' ? 'dropInput' : 'dropBase').classList.add('active');
+        document.getElementById(type === 'input' ? 'nameInput' : 'nameBase').innerText = file.name;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const data = new Uint8Array(e.target.result);
+            const wb = XLSX.read(data, {type:'array'});
+            
+            if(type === 'base') {
+                const ws = wb.Sheets[wb.SheetNames[0]];
+                const rows = XLSX.utils.sheet_to_json(ws, {header:1});
+                baseData.clear();
+                for(let i=3; i<rows.length; i++) { // A4
+                    if(rows[i] && rows[i][0]) baseData.add(String(rows[i][0]).trim().toUpperCase());
+                }
+                alert(`Base carregada: ${baseData.size} caixas validadas.`);
+            } else {
+                parseInput(wb);
+            }
         };
+        reader.readAsArrayBuffer(file);
+    }
 
-        // --- 1. LEITURA ---
-        function handleFile(input, type) {
-            const file = input.files[0];
-            if(!file) return;
+    function parseInput(wb) {
+        rawData = [];
+        const inspectorBody = document.querySelector('#inspectorTable tbody');
+        inspectorBody.innerHTML = '';
+        
+        let previewCount = 0;
 
-            const wrapId = type === 'base' ? 'wrapBase' : 'wrapInput';
-            const txtId = type === 'base' ? 'txtBase' : 'txtInput';
-            document.getElementById(wrapId).classList.add('active');
-            document.getElementById(txtId).innerText = file.name;
-            
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, {type: 'array'});
-                if(type === 'base') processBaseFile(workbook);
-                else processInputFile(workbook);
-                checkReady();
-            };
-            reader.readAsArrayBuffer(file);
-        }
+        wb.SheetNames.forEach((name, idx) => {
+            const ws = wb.Sheets[name];
+            const rows = XLSX.utils.sheet_to_json(ws, {header:1});
+            let start = (idx === 0) ? 1 : 0; // K2 na aba 1, K1 nas outras
 
-        function checkReady() {
-            if(state.validBoxes.size > 0 && state.inputDataMap.size > 0) {
-                document.getElementById('btnProcessar').disabled = false;
-            }
-        }
+            for(let i=start; i<rows.length; i++) {
+                const r = rows[i];
+                // Pega dados brutos
+                const valBox = r[10]; // K
+                const valSet = r[4];  // E
+                const valCod = r[16]; // Q
 
-        // --- BASE ---
-        function processBaseFile(workbook) {
-            const sheetName = workbook.SheetNames[0];
-            const ws = workbook.Sheets[sheetName];
-            const rows = XLSX.utils.sheet_to_json(ws, {header: 1});
-            state.validBoxes.clear();
-            for(let i = 3; i < rows.length; i++) { 
-                const row = rows[i];
-                if(row && row[0]) state.validBoxes.add(String(row[0]).trim().toUpperCase());
-            }
-            console.log(`Base: ${state.validBoxes.size} caixas.`);
-        }
+                if(valBox) {
+                    // Limpeza Agressiva
+                    const cleanBox = String(valBox).trim().toUpperCase();
+                    const cleanSet = valSet ? String(valSet).trim().toUpperCase().replace(/\s+/g, ' ') : "N/D";
+                    const cleanCod = valCod ? String(valCod).trim().toUpperCase().replace(/\s+/g, ' ') : "N/D";
 
-        // --- INPUT ---
-        function processInputFile(workbook) {
-            state.inputDataMap.clear();
-            let totalSheetsRead = 0;
-            state.totalRowsInput = 0;
-            state.totalDocsCount = 0;
+                    rawData.push({
+                        box: cleanBox,
+                        setor: cleanSet,
+                        cod: cleanCod,
+                        rowIdx: i+1,
+                        sheet: name
+                    });
 
-            workbook.SheetNames.forEach((sheetName, sheetIndex) => {
-                const ws = workbook.Sheets[sheetName];
-                const rows = XLSX.utils.sheet_to_json(ws, {header: 1});
-                let startIndex = (sheetIndex === 0) ? 1 : 0;
-                
-                if(rows.length <= startIndex) return;
-                totalSheetsRead++;
-                
-                for(let i = startIndex; i < rows.length; i++) {
-                    const row = rows[i];
-                    state.totalRowsInput++;
-                    const rawBox = row[10]; // K
-
-                    if(rawBox) {
-                        const boxId = String(rawBox).trim().toUpperCase();
-                        
-                        if(!state.inputDataMap.has(boxId)) {
-                            state.inputDataMap.set(boxId, { 
-                                id: boxId, 
-                                setores: new Set(), 
-                                codigos: new Set(),
-                                docCount: 0 // Novo campo para contagem
-                            });
-                        }
-
-                        const entry = state.inputDataMap.get(boxId);
-                        
-                        // Incrementa contagem de documentos
-                        entry.docCount++;
-                        state.totalDocsCount++;
-
-                        const rawSetor = row[4];
-                        const rawCod = row[16];
-                        if(rawSetor) entry.setores.add(String(rawSetor).trim().toUpperCase());
-                        if(rawCod) entry.codigos.add(String(rawCod).trim());
+                    // Popula Inspetor (apenas os 5 primeiros)
+                    if(previewCount < 5) {
+                        const tr = `<tr>
+                            <td>${name} : L${i+1}</td>
+                            <td style="font-weight:bold">${cleanBox}</td>
+                            <td>${cleanSet}</td>
+                            <td>${cleanCod}</td>
+                            <td><i class="fas fa-check text-green-500"></i></td>
+                        </tr>`;
+                        inspectorBody.innerHTML += tr;
+                        previewCount++;
                     }
                 }
+            }
+        });
+
+        document.getElementById('valRows').innerText = rawData.length;
+        document.getElementById('btnRun').disabled = false;
+    }
+
+    // --- ENGINE DE OTIMIZAÇÃO ---
+    function runEngine() {
+        document.getElementById('loading').style.display = 'flex';
+
+        setTimeout(() => {
+            // 1. Configurações
+            const limitCode = parseInt(document.getElementById('limCode').value) || Infinity;
+            const limitSect = parseInt(document.getElementById('limSector').value) || Infinity;
+            if(limitCode === 0) limitCode = Infinity; 
+            if(limitSect === 0) limitSect = Infinity;
+
+            const strategy = document.getElementById('sortMethod').value;
+
+            // 2. Agrupamento Inicial (Box Unique)
+            let boxMap = new Map();
+            rawData.forEach(item => {
+                if(!boxMap.has(item.box)) {
+                    boxMap.set(item.box, {
+                        id: item.box,
+                        setores: new Set(),
+                        codigos: new Set(),
+                        docs: 0
+                    });
+                }
+                let entry = boxMap.get(item.box);
+                entry.setores.add(item.setor);
+                entry.codigos.add(item.cod);
+                entry.docs++;
             });
-            document.getElementById('sheetInfo').innerText = `Lidas: ${totalSheetsRead} Abas | ${state.totalRowsInput} Linhas`;
-            document.getElementById('sheetInfo').style.color = 'var(--gov-blue)';
-        }
 
-        // --- 2. EXECUÇÃO ---
-        function runOptimization() {
-            showLoading(true);
+            // Validação Cruzada (Se base carregada)
+            let boxes = Array.from(boxMap.values());
+            if(baseData.size > 0) {
+                boxes = boxes.filter(b => baseData.has(b.id));
+            }
 
-            // Parâmetros
-            const valCodes = document.getElementById('configMaxCodes').value;
-            const valSectors = document.getElementById('configMaxSectors').value;
-            const strategy = document.getElementById('optStrategy').value; // Estratégia Escolhida
-            
-            const limitCodes = (valCodes === "" || valCodes == 0) ? Infinity : parseInt(valCodes);
-            const limitSectors = (valSectors === "" || valSectors == 0) ? Infinity : parseInt(valSectors);
+            // 3. ESTRATÉGIA DE ORDENAÇÃO (O SEGREDO DO 687)
+            if(strategy === 'cluster') {
+                // Ordena por Nome do Setor (Para agrupar setores iguais) + Código
+                boxes.sort((a, b) => {
+                    const sA = Array.from(a.setores)[0] || "";
+                    const sB = Array.from(b.setores)[0] || "";
+                    if(sA < sB) return -1;
+                    if(sA > sB) return 1;
+                    
+                    // Se setor igual, agrupa por código
+                    const cA = Array.from(a.codigos)[0] || "";
+                    const cB = Array.from(b.codigos)[0] || "";
+                    return cA.localeCompare(cB);
+                });
+            }
+            // Se 'original', mantém a ordem de leitura (FIFO)
 
-            const LIMITS = { boxes: 99999, codes: limitCodes, sectors: limitSectors };
+            // 4. Bin Packing
+            let blocks = [];
+            let currentBlock = newBlock(1);
+            let closedBlocks = [];
 
-            setTimeout(() => {
-                try {
-                    const boxesToProcess = [];
-                    const notFoundBoxes = [];
-                    const complexBoxes = [];
+            // Variável de Debug para o Bloco 1
+            let debugReason = "";
 
-                    state.inputDataMap.forEach(box => {
-                        if(!state.validBoxes.has(box.id)) {
-                            notFoundBoxes.push(box.id);
-                        } else {
-                            if(box.codigos.size > LIMITS.codes || box.setores.size > LIMITS.sectors) {
-                                complexBoxes.push(box);
-                            } else {
-                                boxesToProcess.push(box);
-                            }
-                        }
-                    });
-
-                    // --- APLICAÇÃO DA ESTRATÉGIA DE ORDENAÇÃO ---
-                    if(strategy === 'max_docs') {
-                        // Ordena por Quantidade de Documentos (Decrescente)
-                        // Caixas com muitos docs vão primeiro
-                        boxesToProcess.sort((a, b) => b.docCount - a.docCount);
-                    } else {
-                        // Max Boxes (Default): Ordena por "Leveza" (Crescente)
-                        // Caixas com poucos setores/códigos vão primeiro
-                        boxesToProcess.sort((a, b) => {
-                            const complexityA = a.codigos.size + a.setores.size;
-                            const complexityB = b.codigos.size + b.setores.size;
-                            return complexityA - complexityB;
-                        });
-                    }
-
-                    // Bin Packing
-                    let openBlocks = [];
-                    let closedBlocks = [];
-
-                    // Complexas
-                    complexBoxes.forEach(box => {
-                        closedBlocks.push({
-                            id: 0, boxes: [box], codigos: box.codigos, setores: box.setores,
-                            docCount: box.docCount,
-                            reason: "Complexa (Isolada)", satCodes: box.codigos.size, satSectors: box.setores.size
-                        });
-                    });
-
-                    // Normais
-                    for (const box of boxesToProcess) {
-                        let placed = false;
-                        for (const block of openBlocks) {
-                            if (canFit(block, box, LIMITS)) {
-                                block.boxes.push(box);
-                                box.codigos.forEach(c => block.codigos.add(c));
-                                box.setores.forEach(s => block.setores.add(s));
-                                block.docCount += box.docCount;
-                                placed = true;
-                                break;
-                            }
-                        }
-                        if (!placed) {
-                            openBlocks.push({
-                                id: 0, boxes: [box], codigos: new Set(box.codigos), setores: new Set(box.setores),
-                                docCount: box.docCount,
-                                reason: ""
-                            });
-                        }
-                    }
-
-                    // Define Motivo
-                    openBlocks.forEach(block => {
-                        block.satCodes = block.codigos.size;
-                        block.satSectors = block.setores.size;
+            for(let box of boxes) {
+                // Tenta colocar no bloco atual
+                if(checkFit(currentBlock, box, limitCode, limitSect)) {
+                    addToBlock(currentBlock, box);
+                } else {
+                    // Falhou em entrar. Por quê? (Apenas para o bloco 1)
+                    if(currentBlock.id === 1 && !debugReason) {
+                        const simCodes = new Set(currentBlock.codes);
+                        box.codigos.forEach(c => simCodes.add(c));
                         
-                        if(LIMITS.codes !== Infinity && block.satCodes >= LIMITS.codes) {
-                            block.reason = "Limite de Códigos";
-                        } else if(LIMITS.sectors !== Infinity && block.satSectors >= LIMITS.sectors) {
-                            block.reason = "Limite de Setores";
-                        } else {
-                            block.reason = "Fim da Lista";
-                        }
-                    });
+                        const simSects = new Set(currentBlock.sects);
+                        box.setores.forEach(s => simSects.add(s));
+                        
+                        debugReason = `Ao tentar adicionar a caixa ${box.id}: Códigos iriam para ${simCodes.size} (Limite ${limitCode}) | Setores iriam para ${simSects.size} (Limite ${limitSect})`;
+                    }
 
-                    state.finalBlocks = [...closedBlocks, ...openBlocks];
-                    state.finalBlocks.forEach((b, i) => b.id = i + 1);
-
-                    renderResults(state.finalBlocks, notFoundBoxes, complexBoxes, LIMITS, strategy);
-                    document.getElementById('btnExportar').disabled = false;
-
-                } catch (err) {
-                    console.error(err);
-                    alert("Erro: " + err.message);
-                } finally {
-                    showLoading(false);
+                    // Fecha bloco atual e cria novo
+                    currentBlock.reason = "Limite Atingido";
+                    closedBlocks.push(currentBlock);
+                    
+                    currentBlock = newBlock(closedBlocks.length + 1);
+                    // Adiciona a caixa no novo bloco (assumindo que cabe sozinha)
+                    addToBlock(currentBlock, box); 
                 }
-            }, 100);
-        }
+            }
+            closedBlocks.push(currentBlock); // Adiciona o último
+            finalBlocks = closedBlocks;
 
-        function canFit(block, box, limits) {
-            const combinedCodes = new Set(block.codigos);
-            box.codigos.forEach(c => combinedCodes.add(c));
-            if (combinedCodes.size > limits.codes) return false;
-
-            const combinedSectors = new Set(block.setores);
-            box.setores.forEach(s => combinedSectors.add(s));
-            if (combinedSectors.size > limits.sectors) return false;
-
-            return true;
-        }
-
-        // --- 3. RENDER ---
-        function renderResults(blocks, notFoundIds, complexBoxes, limits, strategy) {
-            document.getElementById('emptyState').style.display = 'none';
-            document.getElementById('resultsArea').style.display = 'flex';
-
-            const stratText = strategy === 'max_docs' ? 'Maximizar Documentos' : 'Maximizar Caixas';
+            // 5. Render
+            renderResults();
             
-            document.getElementById('paramConfirmBar').innerHTML = `
-                <span><i class="fas fa-filter"></i> Estratégia: <strong>${stratText}</strong></span>
-                <div>Max Códigos: <strong>${limits.codes}</strong> | Max Setores: <strong>${limits.sectors}</strong></div>
-            `;
+            // Debug Log
+            const dbg = document.getElementById('debugLog');
+            if(debugReason) {
+                dbg.style.display = 'block';
+                document.getElementById('debugText').innerText = debugReason;
+            } else {
+                dbg.style.display = 'none';
+            }
 
-            document.getElementById('statProcessed').innerText = state.inputDataMap.size;
-            document.getElementById('statDocs').innerText = state.totalDocsCount;
-            document.getElementById('statBlocks').innerText = blocks.length;
+            document.getElementById('loading').style.display = 'none';
 
-            // Logs
-            const errLog = document.getElementById('crossCheckLog');
-            if(notFoundIds.length > 0) {
-                errLog.style.display = 'block';
-                document.getElementById('errorList').innerHTML = notFoundIds.map(id => `<li><span>${id}</span></li>`).join('');
-            } else { errLog.style.display = 'none'; }
+        }, 100);
+    }
 
-            const warnLog = document.getElementById('complexLog');
-            if(complexBoxes.length > 0) {
-                warnLog.style.display = 'block';
-                document.getElementById('complexList').innerHTML = complexBoxes.map(b => `<li>Box ${b.id}</li>`).join('');
-            } else { warnLog.style.display = 'none'; }
+    function newBlock(id) {
+        return {
+            id: id,
+            boxes: [],
+            codes: new Set(),
+            sects: new Set(),
+            reason: ""
+        };
+    }
 
-            const container = document.getElementById('blocksContainer');
-            container.innerHTML = '';
-            
-            blocks.forEach(block => {
-                const boxTags = block.boxes.map(b => `<span class="box-tag">${b.id} <small>(${b.docCount})</small></span>`).join('');
-                
-                let pctCodes = 0;
-                if(limits.codes !== Infinity) pctCodes = Math.min(100, (block.codigos.size / limits.codes) * 100);
-                let pctSectors = 0;
-                if(limits.sectors !== Infinity) pctSectors = Math.min(100, (block.setores.size / limits.sectors) * 100);
+    function checkFit(block, box, maxC, maxS) {
+        // Simula união
+        let tempC = new Set(block.codes);
+        box.codigos.forEach(c => tempC.add(c));
+        if(tempC.size > maxC) return false;
 
-                let colorCode = pctCodes >= 100 ? 'danger' : (pctCodes >= 80 ? 'warning' : '');
-                let colorSector = pctSectors >= 100 ? 'danger' : (pctSectors >= 80 ? 'warning' : '');
+        let tempS = new Set(block.sects);
+        box.setores.forEach(s => tempS.add(s));
+        if(tempS.size > maxS) return false;
 
-                const listCodes = Array.from(block.codigos).join('\n');
-                const listSectors = Array.from(block.setores).join('\n');
+        return true;
+    }
 
-                const html = `
-                    <div class="block-card">
-                        <div class="block-header">
-                            <span>BLOCO #${block.id}</span>
-                            <span style="opacity:0.9">${block.boxes.length} Cxs | ${block.docCount} Docs</span>
-                        </div>
-                        
-                        <div class="block-diagnostics">
-                            <div class="diag-row" title="${listCodes}">
-                                <div class="diag-label">
-                                    <span>Códigos</span>
-                                    <strong>${block.codigos.size} / ${limits.codes === Infinity ? '∞' : limits.codes}</strong>
-                                </div>
-                                <div class="progress-bar-bg"><div class="progress-bar-fill ${colorCode}" style="width: ${pctCodes}%"></div></div>
-                            </div>
-                            <div class="diag-row" title="${listSectors}">
-                                <div class="diag-label">
-                                    <span>Setores</span>
-                                    <strong>${block.setores.size} / ${limits.sectors === Infinity ? '∞' : limits.sectors}</strong>
-                                </div>
-                                <div class="progress-bar-bg"><div class="progress-bar-fill ${colorSector}" style="width: ${pctSectors}%"></div></div>
-                            </div>
-                        </div>
+    function addToBlock(block, box) {
+        block.boxes.push(box);
+        box.codigos.forEach(c => block.codes.add(c));
+        box.setores.forEach(s => block.sects.add(s));
+    }
 
-                        <div class="block-content">${boxTags}</div>
-                        <div class="block-footer">Status: ${block.reason}</div>
+    function renderResults() {
+        document.getElementById('valBoxes').innerText = new Set(rawData.map(r=>r.box)).size;
+        document.getElementById('valBlocks').innerText = finalBlocks.length;
+        
+        let max = 0;
+        finalBlocks.forEach(b => { if(b.boxes.length > max) max = b.boxes.length; });
+        document.getElementById('valMaxBlock').innerText = max;
+
+        const grid = document.getElementById('gridBlocks');
+        grid.innerHTML = '';
+        
+        finalBlocks.forEach(b => {
+            const tags = b.boxes.map(bx => `<span class="tag">${bx.id}</span>`).join('');
+            const html = `
+                <div class="block-card">
+                    <div class="block-head">
+                        <span>BLOCO ${b.id}</span>
+                        <span>${b.boxes.length} Cxs</span>
                     </div>
-                `;
-                container.innerHTML += html;
-            });
-        }
+                    <div style="background:#f8fafc; padding:8px; font-size:10px; border-bottom:1px solid #eee;">
+                        <i class="fas fa-barcode"></i> ${b.codes.size} Cód | 
+                        <i class="fas fa-building"></i> ${b.sects.size} Set
+                    </div>
+                    <div class="block-body">${tags}</div>
+                    <div class="block-foot">${b.reason || "Finalizado"}</div>
+                </div>
+            `;
+            grid.innerHTML += html;
+        });
+    }
 
-        // --- 4. EXPORTAÇÃO ---
-        function exportarExcel() {
-            if(!state.finalBlocks.length) return;
-            const data = [];
-            state.finalBlocks.forEach(b => {
-                b.boxes.forEach(box => {
-                    data.push({
-                        'Bloco': b.id,
-                        'Motivo Fechamento': b.reason,
-                        'Caixa': box.id,
-                        'Qtd Docs': box.docCount,
-                        'Qtd Códigos': box.codigos.size,
-                        'Qtd Setores': box.setores.size,
-                        'Lista Códigos': Array.from(box.codigos).join(', '),
-                        'Lista Setores': Array.from(box.setores).join(', ')
-                    });
+    function exportExcel() {
+        if(!finalBlocks.length) return;
+        let data = [];
+        finalBlocks.forEach(b => {
+            b.boxes.forEach(box => {
+                data.push({
+                    'Bloco': b.id,
+                    'Caixa': box.id,
+                    'Qtd Códigos Bloco': b.codes.size,
+                    'Qtd Setores Bloco': b.sects.size,
+                    'Códigos Caixa': Array.from(box.codigos).join(', '),
+                    'Setores Caixa': Array.from(box.setores).join(', ')
                 });
             });
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Resultado");
-            XLSX.writeFile(wb, "Otimizacao_Completa.xlsx");
-        }
+        });
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Resultado");
+        XLSX.writeFile(wb, "Otimizacao_Turbo.xlsx");
+    }
 
-        function showLoading(show) {
-            document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
-        }
-    </script>
+</script>
 </body>
 </html>
