@@ -3,454 +3,558 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Otimizador Turbo (Clustering & Inspeção) | Arquivo SEC</title>
+    <title>Otimizador de Eliminação | Padrão GOV.BR</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
     <style>
+        /* --- DESIGN SYSTEM GOV.BR --- */
         :root {
-            --gov-blue: #1351b4; --bg-body: #f3f4f6; --text-primary: #1f2937;
-            --success: #059669; --warning: #d97706; --danger: #dc2626;
+            --gov-blue: #1351b4;
+            --gov-blue-dark: #0c326f;
+            --gov-blue-light: #2670e8;
+            --bg-body: #f8f8f8;
+            --surface: #ffffff;
+            --border: #e5e5e5;
+            --text-primary: #131313;
+            --text-secondary: #555555;
+            --success: #168821;
+            --warning: #ffcd07;
+            --danger: #e60000;
         }
-        * { box-sizing: border-box; outline: none; }
-        body { font-family: 'Roboto', sans-serif; background: var(--bg-body); color: var(--text-primary); margin: 0; padding: 20px; display: flex; flex-direction: column; min-height: 100vh; }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
         
-        .header { background: var(--gov-blue); color: white; padding: 15px; border-radius: 6px; margin-bottom: 20px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            display: flex; flex-direction: column; min-height: 100vh;
+        }
+
+        /* --- HEADER --- */
+        .br-header {
+            background: linear-gradient(90deg, var(--gov-blue-dark) 0%, var(--gov-blue) 100%);
+            color: white; padding: 16px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header-content {
+            max-width: 1400px; margin: 0 auto; padding: 0 24px;
+            display: flex; align-items: center; gap: 12px;
+        }
+        .header-title { font-weight: 700; font-size: 18px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .header-subtitle { font-weight: 300; font-size: 14px; opacity: 0.9; border-left: 1px solid rgba(255,255,255,0.3); padding-left: 12px; }
+
+        /* --- LAYOUT --- */
+        .main-container {
+            max-width: 1400px; margin: 30px auto; padding: 0 24px; width: 100%;
+            display: grid; grid-template-columns: 320px 1fr; gap: 24px; align-items: start;
+        }
+
+        /* --- SIDEBAR (CONTROLES) --- */
+        .control-panel {
+            background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 24px;
+            position: sticky; top: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .section-title {
+            font-size: 14px; font-weight: 700; color: var(--gov-blue);
+            text-transform: uppercase; margin-bottom: 16px; padding-bottom: 8px;
+            border-bottom: 2px solid var(--gov-blue);
+        }
+
+        /* Inputs e Uploads */
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; font-size: 12px; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; }
         
-        .grid-layout { display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
-        
-        /* Sidebar */
-        .sidebar { background: white; padding: 20px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); height: fit-content; }
-        .sidebar h3 { font-size: 14px; text-transform: uppercase; color: var(--gov-blue); border-bottom: 2px solid #eee; padding-bottom: 8px; margin-top: 0; }
-        
-        .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; font-size: 11px; font-weight: 700; color: #555; margin-bottom: 4px; text-transform: uppercase; }
-        .form-control { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
-        
-        .file-drop { border: 2px dashed #ccc; padding: 20px; text-align: center; background: #fafafa; cursor: pointer; border-radius: 4px; transition: 0.2s; }
-        .file-drop:hover { border-color: var(--gov-blue); background: #eff6ff; }
-        .file-drop.active { border-color: var(--success); background: #f0fdf4; }
-        
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 4px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 12px; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .form-control {
+            width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;
+            font-size: 14px; transition: border-color 0.2s; color: var(--text-primary);
+        }
+        .form-control:focus { border-color: var(--gov-blue); box-shadow: 0 0 0 2px rgba(19, 81, 180, 0.2); }
+
+        .file-drop-zone {
+            border: 2px dashed #ccc; border-radius: 4px; padding: 20px;
+            text-align: center; cursor: pointer; transition: all 0.2s; background: #fafafa;
+        }
+        .file-drop-zone:hover { border-color: var(--gov-blue); background: #eef6ff; }
+        .file-drop-zone.active { border-color: var(--success); background: #f0fdf4; }
+        .file-icon { color: var(--gov-blue); font-size: 24px; margin-bottom: 8px; }
+        .file-text { font-size: 12px; color: #666; font-weight: 500; }
+        .file-subtext { font-size: 10px; color: #999; margin-top: 4px; }
+
+        /* Botões */
+        .btn {
+            width: 100%; padding: 12px; border: none; border-radius: 4px;
+            font-weight: 700; font-size: 13px; text-transform: uppercase; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: background 0.2s;
+        }
         .btn-primary { background: var(--gov-blue); color: white; }
-        .btn-primary:disabled { background: #9ca3af; cursor: not-allowed; }
+        .btn-primary:hover { background: var(--gov-blue-dark); }
+        .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
         
-        /* Main Content */
-        .main-content { display: flex; flex-direction: column; gap: 20px; }
-        
-        /* Stats */
-        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-        .stat-box { background: white; padding: 15px; border-radius: 4px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        .stat-val { font-size: 24px; font-weight: 900; color: var(--gov-blue); display: block; }
-        .stat-lbl { font-size: 10px; text-transform: uppercase; color: #666; font-weight: 700; }
-        
-        /* Inspector Table */
-        .inspector-box { background: #fff; border: 1px solid #e5e7eb; border-radius: 4px; overflow: hidden; font-size: 11px; }
-        .inspector-header { background: #f9fafb; padding: 8px 12px; font-weight: 700; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; }
-        .table-wrap { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; text-align: left; }
-        th, td { padding: 6px 10px; border-bottom: 1px solid #eee; white-space: nowrap; }
-        th { background: #f3f4f6; color: #374151; font-weight: 700; }
-        td { font-family: 'Roboto Mono', monospace; }
+        .btn-success { background: #f8f8f8; color: var(--success); border: 1px solid var(--success); margin-top: 10px; }
+        .btn-success:hover { background: #f0fdf4; }
 
-        /* Blocks */
-        .blocks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
-        .block-card { background: white; border-radius: 4px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
-        .block-head { background: var(--gov-blue); color: white; padding: 8px 12px; font-weight: 700; font-size: 12px; display: flex; justify-content: space-between; }
-        .block-body { padding: 10px; flex: 1; max-height: 150px; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 4px; align-content: flex-start; }
-        .tag { background: #f3f4f6; border: 1px solid #e5e7eb; padding: 2px 6px; font-size: 10px; border-radius: 3px; font-weight: 600; }
-        .block-foot { background: #fdf2f8; color: #be185d; padding: 6px 10px; font-size: 10px; font-weight: 700; border-top: 1px solid #fbcfe8; text-align: right; }
+        /* --- RESULTADOS --- */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+        .stat-card {
+            background: var(--surface); padding: 16px; border-radius: 4px; border: 1px solid var(--border);
+            text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .stat-value { font-size: 28px; font-weight: 900; color: var(--gov-blue); line-height: 1.2; }
+        .stat-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; }
 
-        .spinner { width: 40px; height: 40px; border: 4px solid #eee; border-top-color: var(--gov-blue); border-radius: 50%; animation: spin 1s infinite; margin: 0 auto; }
+        /* Cards dos Blocos */
+        .blocks-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+        
+        .block-card {
+            background: var(--surface); border: 1px solid var(--border); border-radius: 4px;
+            overflow: hidden; display: flex; flex-direction: column;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: transform 0.2s;
+        }
+        .block-card:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+
+        .block-header {
+            background: var(--gov-blue); color: white; padding: 10px 14px;
+            font-size: 13px; font-weight: 700; display: flex; justify-content: space-between; align-items: center;
+        }
+        
+        .block-metrics { background: #f4f6f9; padding: 8px 14px; border-bottom: 1px solid #eee; }
+        
+        /* Barras de Diagnóstico Visual */
+        .diag-item { margin-bottom: 6px; }
+        .diag-info { display: flex; justify-content: space-between; font-size: 10px; color: #555; margin-bottom: 2px; }
+        .progress-track { height: 4px; background: #e5e5e5; border-radius: 2px; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 2px; }
+        .progress-fill.safe { background: var(--success); }
+        .progress-fill.warn { background: var(--warning); }
+        .progress-fill.danger { background: var(--danger); }
+
+        .block-content { padding: 12px; flex: 1; display: flex; flex-wrap: wrap; gap: 4px; align-content: flex-start; max-height: 180px; overflow-y: auto; }
+        
+        .box-tag {
+            background: #eee; color: #333; padding: 4px 8px; border-radius: 4px;
+            font-size: 11px; font-weight: 700; border: 1px solid #ddd;
+        }
+
+        .block-footer {
+            padding: 8px 12px; background: #fff; border-top: 1px solid #eee;
+            font-size: 11px; color: #666; text-align: right; font-style: italic;
+        }
+
+        /* Utilitários */
+        .hidden { display: none; }
+        
+        /* Loading Overlay */
+        #loadingOverlay {
+            position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 9999;
+            display: none; justify-content: center; align-items: center; flex-direction: column;
+        }
+        .spinner {
+            width: 40px; height: 40px; border: 4px solid #eee; border-top-color: var(--gov-blue);
+            border-radius: 50%; animation: spin 0.8s linear infinite;
+        }
         @keyframes spin { 100% { transform: rotate(360deg); } }
-        #loading { position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 50; display: none; align-items: center; justify-content: center; flex-direction: column; }
+
+        /* Logs */
+        .log-box { margin-bottom: 20px; border-radius: 4px; padding: 12px; font-size: 12px; }
+        .log-error { background: #fff5f5; border: 1px solid #feb2b2; color: #c53030; }
+        .log-title { font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+        .log-list { list-style: none; margin: 0; padding: 0; max-height: 100px; overflow-y: auto; }
+        .log-list li { border-bottom: 1px solid rgba(0,0,0,0.05); padding: 2px 0; }
+
+        @media (max-width: 900px) {
+            .main-container { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
 
-<div id="loading"><div class="spinner"></div><p style="margin-top:10px; font-weight:700;">Processando Algoritmo...</p></div>
+    <div id="loadingOverlay">
+        <div class="spinner"></div>
+        <p style="margin-top: 15px; color: var(--gov-blue); font-weight: 700;">Processando Otimização...</p>
+    </div>
 
-<div class="header">
-    <span><i class="fas fa-microchip"></i> OTIMIZADOR "TURBO" (CLUSTERING)</span>
-    <span style="font-size:11px; opacity:0.8;">V 3.0 (Posicional)</span>
-</div>
+    <header class="br-header">
+        <div class="header-content">
+            <i class="fas fa-cubes fa-lg"></i>
+            <div>
+                <div class="header-title">Otimizador de Eliminação</div>
+                <div class="header-subtitle">Gestão Arquivística - Padrão GOV</div>
+            </div>
+        </div>
+    </header>
 
-<div class="grid-layout">
-    
-    <aside class="sidebar">
-        <h3>1. Arquivos</h3>
+    <main class="main-container">
         
-        <div class="input-group">
-            <label>Lista de Eliminação (.xlsx)</label>
-            <div class="file-drop" id="dropInput" onclick="document.getElementById('fileInput').click()">
-                <i class="fas fa-file-excel fa-2x" style="color:#ccc;"></i>
-                <div id="nameInput" style="font-size:11px; margin-top:5px;">Clique para carregar</div>
-                <input type="file" id="fileInput" hidden accept=".xlsx, .xls" onchange="loadFile(this, 'input')">
+        <aside class="control-panel">
+            <div class="section-title">1. Entrada de Dados</div>
+            
+            <div class="form-group">
+                <label class="form-label">Base de Dados (Opcional)</label>
+                <div class="file-drop-zone" id="dropBase" onclick="document.getElementById('fileBase').click()">
+                    <i class="fas fa-database file-icon"></i>
+                    <div class="file-text" id="nameBase">Clique para selecionar</div>
+                    <div class="file-subtext">Validação (A4)</div>
+                    <input type="file" id="fileBase" hidden accept=".xlsx, .xls" onchange="handleFile(this, 'base')">
+                </div>
             </div>
-            <div style="font-size:10px; color:#666; margin-top:5px;">Lê: Box(K), Setor(E), Cod(Q)</div>
-        </div>
 
-        <div class="input-group">
-            <label>Base Validação (Opcional)</label>
-            <div class="file-drop" id="dropBase" onclick="document.getElementById('fileBase').click()">
-                <i class="fas fa-database fa-2x" style="color:#ccc;"></i>
-                <div id="nameBase" style="font-size:11px; margin-top:5px;">Clique para carregar</div>
-                <input type="file" id="fileBase" hidden accept=".xlsx, .xls" onchange="loadFile(this, 'base')">
+            <div class="form-group">
+                <label class="form-label">Lista de Eliminação</label>
+                <div class="file-drop-zone" id="dropInput" onclick="document.getElementById('fileInput').click()">
+                    <i class="fas fa-file-excel file-icon"></i>
+                    <div class="file-text" id="nameInput">Clique para selecionar</div>
+                    <div class="file-subtext">Input: Box(K), Setor(E), Cód(Q)</div>
+                    <input type="file" id="fileInput" hidden accept=".xlsx, .xls" onchange="handleFile(this, 'input')">
+                </div>
             </div>
-        </div>
 
-        <h3>2. Estratégia</h3>
-        
-        <div class="input-group">
-            <label>Método de Agrupamento</label>
-            <select id="sortMethod" class="form-control" style="background:#eef6ff; font-weight:700; border-color:var(--gov-blue);">
-                <option value="cluster">CLUSTER (Setor -> Código)</option>
-                <option value="original">ORIGINAL (Ordem da Planilha)</option>
-            </select>
-            <div style="font-size:10px; color:#666; margin-top:4px;">*Cluster: Agrupa itens iguais antes de processar (Gera blocos maiores)</div>
-        </div>
+            <div class="section-title">2. Parâmetros</div>
 
-        <h3>3. Limites (0 = Infinito)</h3>
-        <div class="input-group">
-            <label>Max Códigos</label>
-            <input type="number" id="limCode" class="form-control" value="30">
-        </div>
-        <div class="input-group">
-            <label>Max Setores</label>
-            <input type="number" id="limSector" class="form-control" value="12">
-        </div>
-
-        <button class="btn btn-primary" id="btnRun" disabled onclick="runEngine()">
-            <i class="fas fa-play"></i> Executar
-        </button>
-        <button class="btn btn-primary" style="background:#059669;" onclick="exportExcel()">
-            <i class="fas fa-download"></i> Baixar Excel
-        </button>
-    </aside>
-
-    <main class="main-content">
-        
-        <div class="stats-row">
-            <div class="stat-box">
-                <span class="stat-val" id="valRows">0</span>
-                <span class="stat-lbl">Linhas Lidas</span>
+            <div class="form-group">
+                <label class="form-label">Estratégia</label>
+                <select id="sortMethod" class="form-control">
+                    <option value="cluster">CLUSTER (Agrupar Iguais)</option>
+                    <option value="original">ORIGINAL (Ordem da Planilha)</option>
+                </select>
             </div>
-            <div class="stat-box">
-                <span class="stat-val" id="valBoxes">0</span>
-                <span class="stat-lbl">Caixas Únicas</span>
-            </div>
-            <div class="stat-box">
-                <span class="stat-val" id="valBlocks">0</span>
-                <span class="stat-lbl">Blocos Criados</span>
-            </div>
-            <div class="stat-box" style="border:1px solid var(--gov-blue);">
-                <span class="stat-val" id="valMaxBlock">0</span>
-                <span class="stat-lbl">Maior Bloco (Cxs)</span>
-            </div>
-        </div>
 
-        <div class="inspector-box">
-            <div class="inspector-header">
-                <span><i class="fas fa-microscope"></i> INSPETOR DE DADOS (Primeiras 5 Linhas)</span>
-                <span style="font-size:10px; font-weight:400;">Verifique se as colunas estão corretas</span>
+            <div class="form-group">
+                <label class="form-label">Max Códigos (0 = Infinito)</label>
+                <input type="number" id="limCode" class="form-control" value="30">
             </div>
-            <div class="table-wrap">
-                <table id="inspectorTable">
-                    <thead>
-                        <tr><th>Linha Excel</th><th>Box (K)</th><th>Setor (E)</th><th>Código (Q)</th><th>Status</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td colspan="5" style="text-align:center; padding:20px; color:#999;">Aguardando arquivo...</td></tr>
-                    </tbody>
-                </table>
+
+            <div class="form-group">
+                <label class="form-label">Max Setores (0 = Infinito)</label>
+                <input type="number" id="limSector" class="form-control" value="12">
             </div>
-        </div>
 
-        <div id="debugLog" style="background:#fffbe6; padding:10px; border:1px solid #ffe58f; border-radius:4px; font-size:11px; color:#b7791f; display:none;">
-            <strong>Diagnóstico do Bloco 1:</strong> <span id="debugText">...</span>
-        </div>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
 
-        <h3 style="margin:0; font-size:14px; color:#333; text-transform:uppercase;">Visualização dos Blocos</h3>
-        <div class="blocks-grid" id="gridBlocks"></div>
+            <button class="btn btn-primary" id="btnRun" disabled onclick="runEngine()">
+                <i class="fas fa-play"></i> Processar
+            </button>
+            <button class="btn btn-success" onclick="exportExcel()">
+                <i class="fas fa-download"></i> Baixar Excel
+            </button>
+        </aside>
+
+        <section class="results-area">
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-value" id="valRows">0</span>
+                    <span class="stat-label">Linhas Lidas</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="valBoxes">0</span>
+                    <span class="stat-label">Caixas Únicas</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="valBlocks">0</span>
+                    <span class="stat-label">Blocos Gerados</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="valMaxBlock">0</span>
+                    <span class="stat-label">Maior Bloco (Cxs)</span>
+                </div>
+            </div>
+
+            <div id="logContainer" class="hidden">
+                <div class="log-box log-error">
+                    <div class="log-title"><i class="fas fa-times-circle"></i> Caixas não encontradas na Base</div>
+                    <ul class="log-list" id="errorList"></ul>
+                </div>
+            </div>
+
+            <div class="section-title" style="border:none; margin-bottom: 10px;">Visualização dos Blocos</div>
+            
+            <div id="emptyState" style="text-align: center; padding: 60px; color: #999;">
+                <i class="fas fa-clipboard-list" style="font-size: 48px; margin-bottom: 15px; color: #ddd;"></i>
+                <p>Carregue os arquivos e clique em processar.</p>
+            </div>
+
+            <div class="blocks-container" id="gridBlocks"></div>
+
+        </section>
 
     </main>
-</div>
 
-<script>
-    let rawData = [];
-    let baseData = new Set();
-    let finalBlocks = [];
+    <script>
+        // --- LÓGICA PRESERVADA (Backend Logic) ---
+        let rawData = [];
+        let baseData = new Set();
+        let finalBlocks = [];
 
-    // --- LEITURA E INSPEÇÃO ---
-    function loadFile(el, type) {
-        const file = el.files[0];
-        if(!file) return;
+        function handleFile(el, type) {
+            const file = el.files[0];
+            if(!file) return;
 
-        document.getElementById(type === 'input' ? 'dropInput' : 'dropBase').classList.add('active');
-        document.getElementById(type === 'input' ? 'nameInput' : 'nameBase').innerText = file.name;
+            // UI Feedback
+            const dropId = type === 'input' ? 'dropInput' : 'dropBase';
+            const nameId = type === 'input' ? 'nameInput' : 'nameBase';
+            document.getElementById(dropId).classList.add('active');
+            document.getElementById(nameId).innerText = file.name;
 
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const data = new Uint8Array(e.target.result);
-            const wb = XLSX.read(data, {type:'array'});
-            
-            if(type === 'base') {
-                const ws = wb.Sheets[wb.SheetNames[0]];
-                const rows = XLSX.utils.sheet_to_json(ws, {header:1});
-                baseData.clear();
-                for(let i=3; i<rows.length; i++) { // A4
-                    if(rows[i] && rows[i][0]) baseData.add(String(rows[i][0]).trim().toUpperCase());
-                }
-                alert(`Base carregada: ${baseData.size} caixas validadas.`);
-            } else {
-                parseInput(wb);
-            }
-        };
-        reader.readAsArrayBuffer(file);
-    }
-
-    function parseInput(wb) {
-        rawData = [];
-        const inspectorBody = document.querySelector('#inspectorTable tbody');
-        inspectorBody.innerHTML = '';
-        
-        let previewCount = 0;
-
-        wb.SheetNames.forEach((name, idx) => {
-            const ws = wb.Sheets[name];
-            const rows = XLSX.utils.sheet_to_json(ws, {header:1});
-            let start = (idx === 0) ? 1 : 0; // K2 na aba 1, K1 nas outras
-
-            for(let i=start; i<rows.length; i++) {
-                const r = rows[i];
-                // Pega dados brutos
-                const valBox = r[10]; // K
-                const valSet = r[4];  // E
-                const valCod = r[16]; // Q
-
-                if(valBox) {
-                    // Limpeza Agressiva
-                    const cleanBox = String(valBox).trim().toUpperCase();
-                    const cleanSet = valSet ? String(valSet).trim().toUpperCase().replace(/\s+/g, ' ') : "N/D";
-                    const cleanCod = valCod ? String(valCod).trim().toUpperCase().replace(/\s+/g, ' ') : "N/D";
-
-                    rawData.push({
-                        box: cleanBox,
-                        setor: cleanSet,
-                        cod: cleanCod,
-                        rowIdx: i+1,
-                        sheet: name
-                    });
-
-                    // Popula Inspetor (apenas os 5 primeiros)
-                    if(previewCount < 5) {
-                        const tr = `<tr>
-                            <td>${name} : L${i+1}</td>
-                            <td style="font-weight:bold">${cleanBox}</td>
-                            <td>${cleanSet}</td>
-                            <td>${cleanCod}</td>
-                            <td><i class="fas fa-check text-green-500"></i></td>
-                        </tr>`;
-                        inspectorBody.innerHTML += tr;
-                        previewCount++;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const data = new Uint8Array(e.target.result);
+                const wb = XLSX.read(data, {type:'array'});
+                
+                if(type === 'base') {
+                    // Lógica da Base: Lê coluna A a partir da linha 4
+                    const ws = wb.Sheets[wb.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(ws, {header:1});
+                    baseData.clear();
+                    for(let i=3; i<rows.length; i++) { // A4
+                        if(rows[i] && rows[i][0]) baseData.add(String(rows[i][0]).trim().toUpperCase());
                     }
-                }
-            }
-        });
-
-        document.getElementById('valRows').innerText = rawData.length;
-        document.getElementById('btnRun').disabled = false;
-    }
-
-    // --- ENGINE DE OTIMIZAÇÃO ---
-    function runEngine() {
-        document.getElementById('loading').style.display = 'flex';
-
-        setTimeout(() => {
-            // 1. Configurações
-            const limitCode = parseInt(document.getElementById('limCode').value) || Infinity;
-            const limitSect = parseInt(document.getElementById('limSector').value) || Infinity;
-            if(limitCode === 0) limitCode = Infinity; 
-            if(limitSect === 0) limitSect = Infinity;
-
-            const strategy = document.getElementById('sortMethod').value;
-
-            // 2. Agrupamento Inicial (Box Unique)
-            let boxMap = new Map();
-            rawData.forEach(item => {
-                if(!boxMap.has(item.box)) {
-                    boxMap.set(item.box, {
-                        id: item.box,
-                        setores: new Set(),
-                        codigos: new Set(),
-                        docs: 0
-                    });
-                }
-                let entry = boxMap.get(item.box);
-                entry.setores.add(item.setor);
-                entry.codigos.add(item.cod);
-                entry.docs++;
-            });
-
-            // Validação Cruzada (Se base carregada)
-            let boxes = Array.from(boxMap.values());
-            if(baseData.size > 0) {
-                boxes = boxes.filter(b => baseData.has(b.id));
-            }
-
-            // 3. ESTRATÉGIA DE ORDENAÇÃO (O SEGREDO DO 687)
-            if(strategy === 'cluster') {
-                // Ordena por Nome do Setor (Para agrupar setores iguais) + Código
-                boxes.sort((a, b) => {
-                    const sA = Array.from(a.setores)[0] || "";
-                    const sB = Array.from(b.setores)[0] || "";
-                    if(sA < sB) return -1;
-                    if(sA > sB) return 1;
-                    
-                    // Se setor igual, agrupa por código
-                    const cA = Array.from(a.codigos)[0] || "";
-                    const cB = Array.from(b.codigos)[0] || "";
-                    return cA.localeCompare(cB);
-                });
-            }
-            // Se 'original', mantém a ordem de leitura (FIFO)
-
-            // 4. Bin Packing
-            let blocks = [];
-            let currentBlock = newBlock(1);
-            let closedBlocks = [];
-
-            // Variável de Debug para o Bloco 1
-            let debugReason = "";
-
-            for(let box of boxes) {
-                // Tenta colocar no bloco atual
-                if(checkFit(currentBlock, box, limitCode, limitSect)) {
-                    addToBlock(currentBlock, box);
+                    alert(`Base carregada com sucesso: ${baseData.size} registros.`);
                 } else {
-                    // Falhou em entrar. Por quê? (Apenas para o bloco 1)
-                    if(currentBlock.id === 1 && !debugReason) {
-                        const simCodes = new Set(currentBlock.codes);
-                        box.codigos.forEach(c => simCodes.add(c));
-                        
-                        const simSects = new Set(currentBlock.sects);
-                        box.setores.forEach(s => simSects.add(s));
-                        
-                        debugReason = `Ao tentar adicionar a caixa ${box.id}: Códigos iriam para ${simCodes.size} (Limite ${limitCode}) | Setores iriam para ${simSects.size} (Limite ${limitSect})`;
-                    }
-
-                    // Fecha bloco atual e cria novo
-                    currentBlock.reason = "Limite Atingido";
-                    closedBlocks.push(currentBlock);
-                    
-                    currentBlock = newBlock(closedBlocks.length + 1);
-                    // Adiciona a caixa no novo bloco (assumindo que cabe sozinha)
-                    addToBlock(currentBlock, box); 
+                    parseInput(wb);
                 }
-            }
-            closedBlocks.push(currentBlock); // Adiciona o último
-            finalBlocks = closedBlocks;
+            };
+            reader.readAsArrayBuffer(file);
+        }
 
-            // 5. Render
-            renderResults();
+        function parseInput(wb) {
+            rawData = [];
             
-            // Debug Log
-            const dbg = document.getElementById('debugLog');
-            if(debugReason) {
-                dbg.style.display = 'block';
-                document.getElementById('debugText').innerText = debugReason;
+            // Lógica Multi-Abas Preservada
+            wb.SheetNames.forEach((name, idx) => {
+                const ws = wb.Sheets[name];
+                const rows = XLSX.utils.sheet_to_json(ws, {header:1});
+                
+                // Regra: Aba 1 começa em K2 (Index 1), Outras em K1 (Index 0)
+                let start = (idx === 0) ? 1 : 0; 
+
+                for(let i=start; i<rows.length; i++) {
+                    const r = rows[i];
+                    // Índices Preservados: K=10, E=4, Q=16
+                    const valBox = r[10]; 
+                    const valSet = r[4];  
+                    const valCod = r[16]; 
+
+                    if(valBox) {
+                        const cleanBox = String(valBox).trim().toUpperCase();
+                        // Limpeza de espaços invisíveis
+                        const cleanSet = valSet ? String(valSet).trim().toUpperCase().replace(/\s+/g, ' ') : "N/D";
+                        const cleanCod = valCod ? String(valCod).trim().toUpperCase().replace(/\s+/g, ' ') : "N/D";
+
+                        rawData.push({
+                            box: cleanBox,
+                            setor: cleanSet,
+                            cod: cleanCod,
+                            rowIdx: i+1,
+                            sheet: name
+                        });
+                    }
+                }
+            });
+
+            document.getElementById('valRows').innerText = rawData.length;
+            document.getElementById('btnRun').disabled = false;
+        }
+
+        function runEngine() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+
+            setTimeout(() => {
+                // Parâmetros
+                let limitCode = parseInt(document.getElementById('limCode').value) || Infinity;
+                let limitSect = parseInt(document.getElementById('limSector').value) || Infinity;
+                if(limitCode === 0) limitCode = Infinity; 
+                if(limitSect === 0) limitSect = Infinity;
+
+                const strategy = document.getElementById('sortMethod').value;
+
+                // Agrupamento (Box Unique)
+                let boxMap = new Map();
+                let notFoundBoxes = [];
+
+                rawData.forEach(item => {
+                    // Cross Check
+                    if(baseData.size > 0 && !baseData.has(item.box)) {
+                        notFoundBoxes.push(item.box); // Log de erro
+                    } else {
+                        if(!boxMap.has(item.box)) {
+                            boxMap.set(item.box, {
+                                id: item.box,
+                                setores: new Set(),
+                                codigos: new Set(),
+                                docs: 0
+                            });
+                        }
+                        let entry = boxMap.get(item.box);
+                        entry.setores.add(item.setor);
+                        entry.codigos.add(item.cod);
+                        entry.docs++;
+                    }
+                });
+
+                let boxes = Array.from(boxMap.values());
+
+                // Ordenação (Clustering)
+                if(strategy === 'cluster') {
+                    boxes.sort((a, b) => {
+                        const sA = Array.from(a.setores)[0] || "";
+                        const sB = Array.from(b.setores)[0] || "";
+                        if(sA < sB) return -1;
+                        if(sA > sB) return 1;
+                        const cA = Array.from(a.codigos)[0] || "";
+                        const cB = Array.from(b.codigos)[0] || "";
+                        return cA.localeCompare(cB);
+                    });
+                }
+
+                // Bin Packing (First Fit)
+                let closedBlocks = [];
+                let currentBlock = createBlock(1);
+
+                for(let box of boxes) {
+                    if(checkFit(currentBlock, box, limitCode, limitSect)) {
+                        addToBlock(currentBlock, box);
+                    } else {
+                        // Fecha bloco e abre novo
+                        currentBlock.reason = analyzeSaturation(currentBlock, limitCode, limitSect);
+                        closedBlocks.push(currentBlock);
+                        
+                        currentBlock = createBlock(closedBlocks.length + 1);
+                        addToBlock(currentBlock, box);
+                    }
+                }
+                if(currentBlock.boxes.length > 0) {
+                    currentBlock.reason = "Finalizado";
+                    closedBlocks.push(currentBlock);
+                }
+                
+                finalBlocks = closedBlocks;
+                renderResults(notFoundBoxes, limitCode, limitSect);
+                document.getElementById('loadingOverlay').style.display = 'none';
+
+            }, 200); // Pequeno delay para renderizar loading
+        }
+
+        // Helpers Lógicos
+        function createBlock(id) {
+            return { id: id, boxes: [], codes: new Set(), sects: new Set(), reason: "" };
+        }
+
+        function checkFit(block, box, maxC, maxS) {
+            let tempC = new Set(block.codes);
+            box.codigos.forEach(c => tempC.add(c));
+            if(tempC.size > maxC) return false;
+
+            let tempS = new Set(block.sects);
+            box.setores.forEach(s => tempS.add(s));
+            if(tempS.size > maxS) return false;
+
+            return true;
+        }
+
+        function addToBlock(block, box) {
+            block.boxes.push(box);
+            box.codigos.forEach(c => block.codes.add(c));
+            box.setores.forEach(s => block.sects.add(s));
+        }
+
+        function analyzeSaturation(block, maxC, maxS) {
+            if(maxC !== Infinity && block.codes.size >= maxC) return "Limite de Códigos";
+            if(maxS !== Infinity && block.sects.size >= maxS) return "Limite de Setores";
+            return "Otimizado";
+        }
+
+        // --- RENDERIZAÇÃO ---
+        function renderResults(errors, limitCode, limitSect) {
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('valBoxes').innerText = new Set(rawData.map(r=>r.box)).size;
+            document.getElementById('valBlocks').innerText = finalBlocks.length;
+
+            // Maior Bloco
+            let max = 0;
+            finalBlocks.forEach(b => { if(b.boxes.length > max) max = b.boxes.length; });
+            document.getElementById('valMaxBlock').innerText = max;
+
+            // Logs
+            const logContainer = document.getElementById('logContainer');
+            const errorList = document.getElementById('errorList');
+            if(errors.length > 0) {
+                logContainer.classList.remove('hidden');
+                // Unique errors
+                const uniqueErrors = [...new Set(errors)];
+                errorList.innerHTML = uniqueErrors.map(e => `<li>Box ${e}</li>`).join('');
             } else {
-                dbg.style.display = 'none';
+                logContainer.classList.add('hidden');
             }
 
-            document.getElementById('loading').style.display = 'none';
+            // Grid
+            const grid = document.getElementById('gridBlocks');
+            grid.innerHTML = '';
 
-        }, 100);
-    }
+            finalBlocks.forEach(b => {
+                const tags = b.boxes.map(bx => `<span class="box-tag">${bx.id}</span>`).join('');
+                
+                // Diagnóstico Visual (Barras)
+                const pctCode = limitCode === Infinity ? 0 : Math.min(100, (b.codes.size / limitCode) * 100);
+                const pctSect = limitSect === Infinity ? 0 : Math.min(100, (b.sects.size / limitSect) * 100);
 
-    function newBlock(id) {
-        return {
-            id: id,
-            boxes: [],
-            codes: new Set(),
-            sects: new Set(),
-            reason: ""
-        };
-    }
+                const colorCode = pctCode >= 100 ? 'danger' : (pctCode > 80 ? 'warn' : 'safe');
+                const colorSect = pctSect >= 100 ? 'danger' : (pctSect > 80 ? 'warn' : 'safe');
+                
+                const txtCode = limitCode === Infinity ? '∞' : limitCode;
+                const txtSect = limitSect === Infinity ? '∞' : limitSect;
 
-    function checkFit(block, box, maxC, maxS) {
-        // Simula união
-        let tempC = new Set(block.codes);
-        box.codigos.forEach(c => tempC.add(c));
-        if(tempC.size > maxC) return false;
-
-        let tempS = new Set(block.sects);
-        box.setores.forEach(s => tempS.add(s));
-        if(tempS.size > maxS) return false;
-
-        return true;
-    }
-
-    function addToBlock(block, box) {
-        block.boxes.push(box);
-        box.codigos.forEach(c => block.codes.add(c));
-        box.setores.forEach(s => block.sects.add(s));
-    }
-
-    function renderResults() {
-        document.getElementById('valBoxes').innerText = new Set(rawData.map(r=>r.box)).size;
-        document.getElementById('valBlocks').innerText = finalBlocks.length;
-        
-        let max = 0;
-        finalBlocks.forEach(b => { if(b.boxes.length > max) max = b.boxes.length; });
-        document.getElementById('valMaxBlock').innerText = max;
-
-        const grid = document.getElementById('gridBlocks');
-        grid.innerHTML = '';
-        
-        finalBlocks.forEach(b => {
-            const tags = b.boxes.map(bx => `<span class="tag">${bx.id}</span>`).join('');
-            const html = `
-                <div class="block-card">
-                    <div class="block-head">
-                        <span>BLOCO ${b.id}</span>
-                        <span>${b.boxes.length} Cxs</span>
+                const html = `
+                    <div class="block-card">
+                        <div class="block-header">
+                            <span>BLOCO ${b.id}</span>
+                            <span>${b.boxes.length} Cxs</span>
+                        </div>
+                        <div class="block-metrics">
+                            <div class="diag-item">
+                                <div class="diag-info"><span>Códigos (${b.codes.size}/${txtCode})</span></div>
+                                <div class="progress-track"><div class="progress-fill ${colorCode}" style="width:${pctCode}%"></div></div>
+                            </div>
+                            <div class="diag-item">
+                                <div class="diag-info"><span>Setores (${b.sects.size}/${txtSect})</span></div>
+                                <div class="progress-track"><div class="progress-fill ${colorSect}" style="width:${pctSect}%"></div></div>
+                            </div>
+                        </div>
+                        <div class="block-content">${tags}</div>
+                        <div class="block-footer">${b.reason}</div>
                     </div>
-                    <div style="background:#f8fafc; padding:8px; font-size:10px; border-bottom:1px solid #eee;">
-                        <i class="fas fa-barcode"></i> ${b.codes.size} Cód | 
-                        <i class="fas fa-building"></i> ${b.sects.size} Set
-                    </div>
-                    <div class="block-body">${tags}</div>
-                    <div class="block-foot">${b.reason || "Finalizado"}</div>
-                </div>
-            `;
-            grid.innerHTML += html;
-        });
-    }
+                `;
+                grid.innerHTML += html;
+            });
+        }
 
-    function exportExcel() {
-        if(!finalBlocks.length) return;
-        let data = [];
-        finalBlocks.forEach(b => {
-            b.boxes.forEach(box => {
-                data.push({
-                    'Bloco': b.id,
-                    'Caixa': box.id,
-                    'Qtd Códigos Bloco': b.codes.size,
-                    'Qtd Setores Bloco': b.sects.size,
-                    'Códigos Caixa': Array.from(box.codigos).join(', '),
-                    'Setores Caixa': Array.from(box.setores).join(', ')
+        function exportExcel() {
+            if(!finalBlocks.length) return;
+            let data = [];
+            finalBlocks.forEach(b => {
+                b.boxes.forEach(box => {
+                    data.push({
+                        'Bloco': b.id,
+                        'Motivo': b.reason,
+                        'Caixa': box.id,
+                        'Qtd Códigos': box.codigos.size,
+                        'Qtd Setores': box.setores.size,
+                        'Lista Códigos': Array.from(box.codigos).join(', '),
+                        'Lista Setores': Array.from(box.setores).join(', ')
+                    });
                 });
             });
-        });
-        const ws = XLSX.utils.json_to_sheet(data);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Resultado");
-        XLSX.writeFile(wb, "Otimizacao_Turbo.xlsx");
-    }
-
-</script>
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Resultado");
+            XLSX.writeFile(wb, "Otimizacao_GOV.xlsx");
+        }
+    </script>
 </body>
 </html>
