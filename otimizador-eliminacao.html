@@ -1,22 +1,38 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Otimizador de Eliminação Seguro (Multi-Abas) | Hub de Serviços</title>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>Sistema – Página Padrão</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Fonte -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- CSS padrão -->
   <link rel="stylesheet" href="layout-padrao.css">
-
-
-    
-      
 </head>
 <body>
 
-    <div class="loading" id="loading">
+  <header class="app-header">
+    <div class="app-header-inner">
+      <h1 class="app-logo">Sistema Interno</h1>
+    </div>
+  </header>
+
+  <main class="app-main">
+
+    <!-- CARD PRINCIPAL -->
+    <section class="app-card">
+
+      <h2 class="app-title">Título da Página</h2>
+      <p class="app-subtitle">Descrição ou instrução ao usuário.</p>
+
+      <!-- 🔽 A PARTIR DAQUI, COLE SEU HTML ORIGINAL 🔽 -->
+      <!-- NÃO remova IDs, NÃO mude classes usadas pelo JS -->
+
+      <div class="loading" id="loading">
         <div class="spinner"></div>
         <h3 style="color:var(--text-main)">Processando...</h3>
         <p style="color:var(--text-sub)">1. Lendo TODAS as abas<br>2. Cross-Check de Totais<br>3. Algoritmo de Otimização</p>
@@ -458,5 +474,19 @@
             XLSX.writeFile(wb, "Resultado_Eliminacao_Otimizado.xlsx");
         }
     </script>
+
+      <!-- 🔼 FIM DO CONTEÚDO ORIGINAL 🔼 -->
+
+    </section>
+
+  </main>
+
+  <footer class="app-footer">
+    <span>Sistema Institucional • © 2026</span>
+  </footer>
+
+  <!-- Scripts originais -->
+  <!-- <script src="seu-script.js"></script> -->
+
 </body>
 </html>
