@@ -1,0 +1,208 @@
+/* ==================================================
+   RESET E BASE
+   ================================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: #f5f6f8;
+  color: #2e2e2e;
+  line-height: 1.6;
+}
+
+/* ==================================================
+   VARIÁVEIS DE COR (FÁCIL MANUTENÇÃO)
+   ================================================== */
+:root {
+  --cor-primaria: #1f3a5f;
+  --cor-secundaria: #4a90e2;
+  --cor-sucesso: #2e7d32;
+  --cor-alerta: #c62828;
+  --cor-cinza-claro: #e0e3e8;
+  --cor-cinza-medio: #9ea4ad;
+  --cor-branco: #ffffff;
+}
+
+/* ==================================================
+   HEADER
+   ================================================== */
+.app-header {
+  background-color: var(--cor-primaria);
+  color: var(--cor-branco);
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.app-logo {
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+/* ==================================================
+   CONTAINER PRINCIPAL
+   ================================================== */
+.app-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+/* ==================================================
+   CARD / ÁREA DE CONTEÚDO
+   ================================================== */
+.app-card {
+  background-color: var(--cor-branco);
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.app-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--cor-primaria);
+}
+
+.app-subtitle {
+  font-size: 0.95rem;
+  color: var(--cor-cinza-medio);
+  margin-bottom: 2rem;
+}
+
+/* ==================================================
+   FORMULÁRIOS
+   ================================================== */
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 0.6rem 0.7rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--cor-cinza-claro);
+  border-radius: 4px;
+  font-size: 0.95rem;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--cor-secundaria);
+}
+
+label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 0.3rem;
+  display: block;
+}
+
+/* ==================================================
+   BOTÕES
+   ================================================== */
+button,
+.btn {
+  padding: 0.55rem 1.1rem;
+  border-radius: 4px;
+  border: none;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-primario {
+  background-color: var(--cor-primaria);
+  color: var(--cor-branco);
+}
+
+.btn-primario:hover {
+  background-color: #162c49;
+}
+
+.btn-secundario {
+  background-color: var(--cor-secundaria);
+  color: var(--cor-branco);
+}
+
+.btn-secundario:hover {
+  background-color: #3b78c2;
+}
+
+/* ==================================================
+   TABELAS
+   ================================================== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1.5rem;
+}
+
+th,
+td {
+  padding: 0.7rem;
+  border-bottom: 1px solid var(--cor-cinza-claro);
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+th {
+  background-color: #f0f2f5;
+  font-weight: 600;
+}
+
+/* ==================================================
+   MENSAGENS E ALERTAS
+   ================================================== */
+.msg-sucesso {
+  background-color: #e8f5e9;
+  color: var(--cor-sucesso);
+  padding: 0.8rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.msg-erro {
+  background-color: #fdecea;
+  color: var(--cor-alerta);
+  padding: 0.8rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+/* ==================================================
+   FOOTER
+   ================================================== */
+.app-footer {
+  margin-top: auto;
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--cor-cinza-medio);
+}
+
+/* ==================================================
+   RESPONSIVIDADE
+   ================================================== */
+@media (max-width: 768px) {
+  .app-card {
+    padding: 1.5rem 1rem;
+  }
+
+  .app-title {
+    font-size: 1.3rem;
+  }
+}
