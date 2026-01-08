@@ -1,132 +1,128 @@
-/* ===========================
-   VARIÁVEIS VISUAIS
-=========================== */
 :root {
-  --cor-primaria: #1f3a5f;
-  --cor-secundaria: #3a6ea5;
-  --cor-fundo: #f4f6f8;
-  --cor-superficie: #ffffff;
-  --cor-texto: #1f2933;
-  --cor-texto-suave: #6b7280;
-  --cor-borda: #d1d5db;
+  --primary: #1f3a5f;
+  --primary-light: #eef4fa;
+  --primary-dark: #162d4a;
+
+  --text-main: #1f2933;
+  --text-sub: #6b7280;
+
+  --bg-body: #f4f6f8;
+  --bg-card: #ffffff;
+  --border: #d1d5db;
+
+  --success: #2f855a;
+  --danger: #c53030;
+  --warning: #b7791f;
+
+  --shadow: 0 8px 24px rgba(0,0,0,.08);
 }
 
-/* ===========================
-   RESET BÁSICO SEGURO
-=========================== */
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  margin: 0;
-  font-family: 'Inter', system-ui, sans-serif;
-  background: var(--cor-fundo);
-  color: var(--cor-texto);
-  line-height: 1.5;
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-body);
+  color: var(--text-main);
+  padding: 20px;
 }
 
-/* ===========================
-   HEADER
-=========================== */
-.app-header {
-  background: linear-gradient(135deg, var(--cor-primaria), var(--cor-secundaria));
-  color: #fff;
+/* container */
+.container {
+  max-width: 1400px;
+  margin: auto;
+  background: var(--bg-card);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  min-height: 90vh;
 }
 
-.app-header-inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1.25rem 2rem;
+/* header */
+.header {
+  padding: 30px 40px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.app-logo {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
+.header h1 {
+  font-size: 24px;
+  font-weight: 800;
 }
 
-/* ===========================
-   ÁREA PRINCIPAL
-=========================== */
-.app-main {
-  max-width: 1200px;
-  margin: 2rem auto;
-  padding: 0 1.5rem;
+.header h1 i {
+  color: var(--primary);
 }
 
-/* ===========================
-   CARD PADRÃO
-=========================== */
-.app-card {
-  background: var(--cor-superficie);
+/* content */
+.content {
+  padding: 40px;
+}
+
+/* upload */
+.upload-area {
+  border: 2px dashed var(--border);
+  background: #f9fafb;
   border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: .3s;
 }
 
-/* ===========================
-   TÍTULOS
-=========================== */
-.app-title {
-  margin-top: 0;
-  margin-bottom: 0.25rem;
-  font-size: 1.4rem;
+.upload-area:hover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+.upload-area.loaded {
+  border-color: var(--success);
+  background: #ecfdf5;
+}
+
+/* buttons */
+.btn {
+  border-radius: 8px;
+  padding: 14px 28px;
   font-weight: 600;
-}
-
-.app-subtitle {
-  margin-top: 0;
-  margin-bottom: 1.5rem;
-  color: var(--cor-texto-suave);
-  font-size: 0.95rem;
-}
-
-/* ===========================
-   CONTEÚDO NEUTRO
-=========================== */
-.content-area {
-  display: block;
-}
-
-/* ===========================
-   BOTÕES (SEM QUEBRAR JS)
-=========================== */
-button {
-  font-family: inherit;
-  font-size: 0.95rem;
-  padding: 0.55rem 1.1rem;
-  border-radius: 6px;
-  border: 1px solid var(--cor-primaria);
-  background: var(--cor-primaria);
-  color: #fff;
   cursor: pointer;
 }
 
-button:hover {
-  background: var(--cor-secundaria);
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
 }
 
-/* ===========================
-   INPUTS (SEM FORÇAR LAYOUT)
-=========================== */
-input,
-select,
-textarea {
-  font-family: inherit;
-  font-size: 0.95rem;
-  padding: 0.45rem 0.5rem;
-  border-radius: 5px;
-  border: 1px solid var(--cor-borda);
+.btn-primary:hover {
+  background: var(--primary-dark);
 }
 
-/* ===========================
-   FOOTER
-=========================== */
-.app-footer {
-  margin-top: 3rem;
-  padding: 1rem;
-  text-align: center;
-  font-size: 0.85rem;
-  color: var(--cor-texto-suave);
+.btn-secondary {
+  background: #fff;
+  border: 1px solid var(--border);
+}
+
+/* loading */
+.loading {
+  position: fixed;
+  inset: 0;
+  background: rgba(255,255,255,.95);
+  display: none;
+  z-index: 100;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #e5e7eb;
+  border-top: 4px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
