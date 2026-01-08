@@ -1,560 +1,435 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Otimizador de Eliminação | Padrão GOV.BR</title>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    
-    <style>
-        /* --- DESIGN SYSTEM GOV.BR --- */
-        :root {
-            --gov-blue: #1351b4;
-            --gov-blue-dark: #0c326f;
-            --gov-blue-light: #2670e8;
-            --bg-body: #f8f8f8;
-            --surface: #ffffff;
-            --border: #e5e5e5;
-            --text-primary: #131313;
-            --text-secondary: #555555;
-            --success: #168821;
-            --warning: #ffcd07;
-            --danger: #e60000;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Otimizador de Eliminação Seguro</title>
 
-        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
-        
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-primary);
-            display: flex; flex-direction: column; min-height: 100vh;
-        }
+  <!-- Fontes e ícones -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
-        /* --- HEADER --- */
-        .br-header {
-            background: linear-gradient(90deg, var(--gov-blue-dark) 0%, var(--gov-blue) 100%);
-            color: white; padding: 16px 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .header-content {
-            max-width: 1400px; margin: 0 auto; padding: 0 24px;
-            display: flex; align-items: center; gap: 12px;
-        }
-        .header-title { font-weight: 700; font-size: 18px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .header-subtitle { font-weight: 300; font-size: 14px; opacity: 0.9; border-left: 1px solid rgba(255,255,255,0.3); padding-left: 12px; }
+  <!-- CSS institucional unificado -->
+  <link rel="stylesheet" href="css/layout-padrao.css">
 
-        /* --- LAYOUT --- */
-        .main-container {
-            max-width: 1400px; margin: 30px auto; padding: 0 24px; width: 100%;
-            display: grid; grid-template-columns: 320px 1fr; gap: 24px; align-items: start;
-        }
-
-        /* --- SIDEBAR (CONTROLES) --- */
-        .control-panel {
-            background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 24px;
-            position: sticky; top: 24px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-
-        .section-title {
-            font-size: 14px; font-weight: 700; color: var(--gov-blue);
-            text-transform: uppercase; margin-bottom: 16px; padding-bottom: 8px;
-            border-bottom: 2px solid var(--gov-blue);
-        }
-
-        /* Inputs e Uploads */
-        .form-group { margin-bottom: 20px; }
-        .form-label { display: block; font-size: 12px; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; }
-        
-        .form-control {
-            width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;
-            font-size: 14px; transition: border-color 0.2s; color: var(--text-primary);
-        }
-        .form-control:focus { border-color: var(--gov-blue); box-shadow: 0 0 0 2px rgba(19, 81, 180, 0.2); }
-
-        .file-drop-zone {
-            border: 2px dashed #ccc; border-radius: 4px; padding: 20px;
-            text-align: center; cursor: pointer; transition: all 0.2s; background: #fafafa;
-        }
-        .file-drop-zone:hover { border-color: var(--gov-blue); background: #eef6ff; }
-        .file-drop-zone.active { border-color: var(--success); background: #f0fdf4; }
-        .file-icon { color: var(--gov-blue); font-size: 24px; margin-bottom: 8px; }
-        .file-text { font-size: 12px; color: #666; font-weight: 500; }
-        .file-subtext { font-size: 10px; color: #999; margin-top: 4px; }
-
-        /* Botões */
-        .btn {
-            width: 100%; padding: 12px; border: none; border-radius: 4px;
-            font-weight: 700; font-size: 13px; text-transform: uppercase; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-            transition: background 0.2s;
-        }
-        .btn-primary { background: var(--gov-blue); color: white; }
-        .btn-primary:hover { background: var(--gov-blue-dark); }
-        .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
-        
-        .btn-success { background: #f8f8f8; color: var(--success); border: 1px solid var(--success); margin-top: 10px; }
-        .btn-success:hover { background: #f0fdf4; }
-
-        /* --- RESULTADOS --- */
-        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
-        .stat-card {
-            background: var(--surface); padding: 16px; border-radius: 4px; border: 1px solid var(--border);
-            text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-        .stat-value { font-size: 28px; font-weight: 900; color: var(--gov-blue); line-height: 1.2; }
-        .stat-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; }
-
-        /* Cards dos Blocos */
-        .blocks-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
-        
-        .block-card {
-            background: var(--surface); border: 1px solid var(--border); border-radius: 4px;
-            overflow: hidden; display: flex; flex-direction: column;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: transform 0.2s;
-        }
-        .block-card:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-
-        .block-header {
-            background: var(--gov-blue); color: white; padding: 10px 14px;
-            font-size: 13px; font-weight: 700; display: flex; justify-content: space-between; align-items: center;
-        }
-        
-        .block-metrics { background: #f4f6f9; padding: 8px 14px; border-bottom: 1px solid #eee; }
-        
-        /* Barras de Diagnóstico Visual */
-        .diag-item { margin-bottom: 6px; }
-        .diag-info { display: flex; justify-content: space-between; font-size: 10px; color: #555; margin-bottom: 2px; }
-        .progress-track { height: 4px; background: #e5e5e5; border-radius: 2px; overflow: hidden; }
-        .progress-fill { height: 100%; border-radius: 2px; }
-        .progress-fill.safe { background: var(--success); }
-        .progress-fill.warn { background: var(--warning); }
-        .progress-fill.danger { background: var(--danger); }
-
-        .block-content { padding: 12px; flex: 1; display: flex; flex-wrap: wrap; gap: 4px; align-content: flex-start; max-height: 180px; overflow-y: auto; }
-        
-        .box-tag {
-            background: #eee; color: #333; padding: 4px 8px; border-radius: 4px;
-            font-size: 11px; font-weight: 700; border: 1px solid #ddd;
-        }
-
-        .block-footer {
-            padding: 8px 12px; background: #fff; border-top: 1px solid #eee;
-            font-size: 11px; color: #666; text-align: right; font-style: italic;
-        }
-
-        /* Utilitários */
-        .hidden { display: none; }
-        
-        /* Loading Overlay */
-        #loadingOverlay {
-            position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 9999;
-            display: none; justify-content: center; align-items: center; flex-direction: column;
-        }
-        .spinner {
-            width: 40px; height: 40px; border: 4px solid #eee; border-top-color: var(--gov-blue);
-            border-radius: 50%; animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        /* Logs */
-        .log-box { margin-bottom: 20px; border-radius: 4px; padding: 12px; font-size: 12px; }
-        .log-error { background: #fff5f5; border: 1px solid #feb2b2; color: #c53030; }
-        .log-title { font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
-        .log-list { list-style: none; margin: 0; padding: 0; max-height: 100px; overflow-y: auto; }
-        .log-list li { border-bottom: 1px solid rgba(0,0,0,0.05); padding: 2px 0; }
-
-        @media (max-width: 900px) {
-            .main-container { grid-template-columns: 1fr; }
-        }
-    </style>
+  <!-- XLSX -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
-    <div id="loadingOverlay">
-        <div class="spinner"></div>
-        <p style="margin-top: 15px; color: var(--gov-blue); font-weight: 700;">Processando Otimização...</p>
+<header class="app-header">
+  <div class="header-content">
+    <h1 class="app-logo">
+      <i class="fas fa-cubes"></i> Otimizador de Eliminação Seguro
+    </h1>
+  </div>
+</header>
+
+<main class="app-container">
+
+  <section class="app-card">
+
+    <h2 class="app-title">Processamento Inteligente de Eliminação</h2>
+    <p class="app-subtitle">
+      Leitura multi-abas, cross-check de totais e agrupamento automático de boxes.
+    </p>
+
+    <!-- LOADING -->
+    <div class="msg-sucesso" id="loading" style="display:none; text-align:center;">
+      <strong>Processando…</strong><br>
+      Lendo abas, validando totais e otimizando agrupamentos.
     </div>
 
-    <header class="br-header">
-        <div class="header-content">
-            <i class="fas fa-cubes fa-lg"></i>
-            <div>
-                <div class="header-title">Otimizador de Eliminação</div>
-                <div class="header-subtitle">Gestão Arquivística - Padrão GOV</div>
-            </div>
-        </div>
-    </header>
+    <!-- UPLOAD -->
+    <div id="uploadSection">
+      <label>Relatório de Elimináveis</label>
+      <input type="file" id="fileElim" accept=".xlsx,.xls,.csv">
 
-    <main class="main-container">
-        
-        <aside class="control-panel">
-            <div class="section-title">1. Entrada de Dados</div>
+      <label>Totais por Box</label>
+      <input type="file" id="fileTot" accept=".xlsx,.xls,.csv">
+    </div>
+
+    <!-- CONFIG -->
+    <div id="configSection" style="display:none; margin-top:2rem;">
+      <h3 class="app-title">Parâmetros do Algoritmo</h3>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+        <button class="btn btn-primario" onclick="selecionarObjetivo('documentos')">
+          📄 Maximizar Documentos
+        </button>
+        <button class="btn btn-secundario" onclick="selecionarObjetivo('boxes')">
+          📦 Maximizar Boxes
+        </button>
+      </div>
+
+      <div style="margin-top:1rem;">
+        <label>Limite de Códigos Únicos</label>
+        <input type="number" id="inputCod" value="30">
+
+        <label>Limite de Setores por Código</label>
+        <input type="number" id="inputSet" value="12">
+      </div>
+
+      <button class="btn btn-primario" style="margin-top:1rem;" onclick="iniciarOtimizacao()">
+        🚀 Iniciar Otimização
+      </button>
+    </div>
+
+    <!-- RESULTADOS -->
+    <div id="resultsSection" style="display:none; margin-top:2rem;">
+      <h3 class="app-title">Resultados</h3>
+
+      <div id="statsGrid"></div>
+      <div id="blocksWrapper"></div>
+
+      <button class="btn btn-secundario" style="margin-top:1rem;" onclick="exportarExcel()">
+        <i class="fas fa-download"></i> Baixar Excel
+      </button>
+
+      <div id="crossCheckLog" class="msg-erro" style="display:none;"></div>
+      <div id="complexLog" class="msg-erro" style="display:none;"></div>
+    </div>
+
+  </section>
+
+</main>
+
+<footer class="app-footer">
+  Sistema Institucional • © 2026
+</footer>
+
+<!-- 🔒 SCRIPT ORIGINAL — SEM ALTERAÇÕES -->
+<script>
+        // --- ESTADO ---
+        let state = {
+            fileElim: null, fileTot: null,
+            objective: 'documentos',
+            restrictions: {
+                Cod: { active: true, value: 30 },
+                Set: { active: true, value: 12 }
+            },
+            finalBlocks: []
+        };
+
+        // --- UPLOAD HANDLERS ---
+        setupUpload('fileElim', 'dropElim', 'iconElim', 'nameElim', 'fileElim');
+        setupUpload('fileTot', 'dropTot', 'iconTot', 'nameTot', 'fileTot');
+
+        function setupUpload(inputId, dropId, iconId, nameId, stateKey) {
+            const input = document.getElementById(inputId);
+            const drop = document.getElementById(dropId);
             
-            <div class="form-group">
-                <label class="form-label">Base de Dados (Opcional)</label>
-                <div class="file-drop-zone" id="dropBase" onclick="document.getElementById('fileBase').click()">
-                    <i class="fas fa-database file-icon"></i>
-                    <div class="file-text" id="nameBase">Clique para selecionar</div>
-                    <div class="file-subtext">Validação (A4)</div>
-                    <input type="file" id="fileBase" hidden accept=".xlsx, .xls" onchange="handleFile(this, 'base')">
-                </div>
-            </div>
+            input.addEventListener('change', (e) => processFile(e.target.files[0], drop, iconId, nameId, stateKey));
+            drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.style.borderColor = 'var(--primary)'; });
+            drop.addEventListener('dragleave', () => { drop.style.borderColor = 'var(--border)'; });
+            drop.addEventListener('drop', (e) => { e.preventDefault(); processFile(e.dataTransfer.files[0], drop, iconId, nameId, stateKey); });
+        }
 
-            <div class="form-group">
-                <label class="form-label">Lista de Eliminação</label>
-                <div class="file-drop-zone" id="dropInput" onclick="document.getElementById('fileInput').click()">
-                    <i class="fas fa-file-excel file-icon"></i>
-                    <div class="file-text" id="nameInput">Clique para selecionar</div>
-                    <div class="file-subtext">Input: Box(K), Setor(E), Cód(Q)</div>
-                    <input type="file" id="fileInput" hidden accept=".xlsx, .xls" onchange="handleFile(this, 'input')">
-                </div>
-            </div>
-
-            <div class="section-title">2. Parâmetros</div>
-
-            <div class="form-group">
-                <label class="form-label">Estratégia</label>
-                <select id="sortMethod" class="form-control">
-                    <option value="cluster">CLUSTER (Agrupar Iguais)</option>
-                    <option value="original">ORIGINAL (Ordem da Planilha)</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Max Códigos (0 = Infinito)</label>
-                <input type="number" id="limCode" class="form-control" value="30">
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Max Setores (0 = Infinito)</label>
-                <input type="number" id="limSector" class="form-control" value="12">
-            </div>
-
-            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-
-            <button class="btn btn-primary" id="btnRun" disabled onclick="runEngine()">
-                <i class="fas fa-play"></i> Processar
-            </button>
-            <button class="btn btn-success" onclick="exportExcel()">
-                <i class="fas fa-download"></i> Baixar Excel
-            </button>
-        </aside>
-
-        <section class="results-area">
-            
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <span class="stat-value" id="valRows">0</span>
-                    <span class="stat-label">Linhas Lidas</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-value" id="valBoxes">0</span>
-                    <span class="stat-label">Caixas Únicas</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-value" id="valBlocks">0</span>
-                    <span class="stat-label">Blocos Gerados</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-value" id="valMaxBlock">0</span>
-                    <span class="stat-label">Maior Bloco (Cxs)</span>
-                </div>
-            </div>
-
-            <div id="logContainer" class="hidden">
-                <div class="log-box log-error">
-                    <div class="log-title"><i class="fas fa-times-circle"></i> Caixas não encontradas na Base</div>
-                    <ul class="log-list" id="errorList"></ul>
-                </div>
-            </div>
-
-            <div class="section-title" style="border:none; margin-bottom: 10px;">Visualização dos Blocos</div>
-            
-            <div id="emptyState" style="text-align: center; padding: 60px; color: #999;">
-                <i class="fas fa-clipboard-list" style="font-size: 48px; margin-bottom: 15px; color: #ddd;"></i>
-                <p>Carregue os arquivos e clique em processar.</p>
-            </div>
-
-            <div class="blocks-container" id="gridBlocks"></div>
-
-        </section>
-
-    </main>
-
-    <script>
-        // --- LÓGICA PRESERVADA (Backend Logic) ---
-        let rawData = [];
-        let baseData = new Set();
-        let finalBlocks = [];
-
-        function handleFile(el, type) {
-            const file = el.files[0];
+        // --- LEITURA MULTI-ABAS ---
+        function processFile(file, dropEl, iconId, nameEl, stateKey) {
             if(!file) return;
-
-            // UI Feedback
-            const dropId = type === 'input' ? 'dropInput' : 'dropBase';
-            const nameId = type === 'input' ? 'nameInput' : 'nameBase';
-            document.getElementById(dropId).classList.add('active');
-            document.getElementById(nameId).innerText = file.name;
-
             const reader = new FileReader();
             reader.onload = (e) => {
                 const data = new Uint8Array(e.target.result);
-                const wb = XLSX.read(data, {type:'array'});
+                const workbook = XLSX.read(data, {type: 'array'});
                 
-                if(type === 'base') {
-                    // Lógica da Base: Lê coluna A a partir da linha 4
-                    const ws = wb.Sheets[wb.SheetNames[0]];
-                    const rows = XLSX.utils.sheet_to_json(ws, {header:1});
-                    baseData.clear();
-                    for(let i=3; i<rows.length; i++) { // A4
-                        if(rows[i] && rows[i][0]) baseData.add(String(rows[i][0]).trim().toUpperCase());
-                    }
-                    alert(`Base carregada com sucesso: ${baseData.size} registros.`);
-                } else {
-                    parseInput(wb);
+                // LÓGICA DE CONCATENAÇÃO DE ABAS
+                let allRows = [];
+                workbook.SheetNames.forEach(sheetName => {
+                    const sheet = workbook.Sheets[sheetName];
+                    const rows = XLSX.utils.sheet_to_json(sheet, {header: 1});
+                    allRows = allRows.concat(rows);
+                });
+
+                state[stateKey] = allRows;
+                
+                dropEl.classList.add('loaded');
+                document.getElementById(iconId).className = 'fas fa-check-circle upload-icon';
+                document.getElementById(nameEl).innerText = file.name + ` (${workbook.SheetNames.length} abas)`;
+                
+                if(state.fileElim && state.fileTot) {
+                    document.getElementById('configSection').classList.add('show');
+                    setTimeout(() => document.getElementById('configSection').scrollIntoView({behavior:'smooth'}), 200);
                 }
             };
             reader.readAsArrayBuffer(file);
         }
 
-        function parseInput(wb) {
-            rawData = [];
+        // --- UI ---
+        function selecionarObjetivo(obj) {
+            state.objective = obj;
+            document.querySelectorAll('.obj-card').forEach(c => c.classList.remove('active'));
+            document.getElementById(obj === 'documentos' ? 'objDocs' : 'objBoxes').classList.add('active');
+        }
+
+        function toggleInput(key) {
+            state.restrictions[key].active = !state.restrictions[key].active;
+            document.getElementById('toggle'+key).classList.toggle('active');
+            document.getElementById('input'+key).disabled = !state.restrictions[key].active;
+        }
+
+        // --- LÓGICA PRINCIPAL ---
+        function iniciarOtimizacao() {
+            state.restrictions.Cod.value = parseInt(document.getElementById('inputCod').value) || 30;
+            state.restrictions.Set.value = parseInt(document.getElementById('inputSet').value) || 12;
+
+            document.getElementById('loading').style.display = 'flex';
             
-            // Lógica Multi-Abas Preservada
-            wb.SheetNames.forEach((name, idx) => {
-                const ws = wb.Sheets[name];
-                const rows = XLSX.utils.sheet_to_json(ws, {header:1});
-                
-                // Regra: Aba 1 começa em K2 (Index 1), Outras em K1 (Index 0)
-                let start = (idx === 0) ? 1 : 0; 
-
-                for(let i=start; i<rows.length; i++) {
-                    const r = rows[i];
-                    // Índices Preservados: K=10, E=4, Q=16
-                    const valBox = r[10]; 
-                    const valSet = r[4];  
-                    const valCod = r[16]; 
-
-                    if(valBox) {
-                        const cleanBox = String(valBox).trim().toUpperCase();
-                        // Limpeza de espaços invisíveis
-                        const cleanSet = valSet ? String(valSet).trim().toUpperCase().replace(/\s+/g, ' ') : "N/D";
-                        const cleanCod = valCod ? String(valCod).trim().toUpperCase().replace(/\s+/g, ' ') : "N/D";
-
-                        rawData.push({
-                            box: cleanBox,
-                            setor: cleanSet,
-                            cod: cleanCod,
-                            rowIdx: i+1,
-                            sheet: name
-                        });
-                    }
-                }
-            });
-
-            document.getElementById('valRows').innerText = rawData.length;
-            document.getElementById('btnRun').disabled = false;
-        }
-
-        function runEngine() {
-            document.getElementById('loadingOverlay').style.display = 'flex';
-
             setTimeout(() => {
-                // Parâmetros
-                let limitCode = parseInt(document.getElementById('limCode').value) || Infinity;
-                let limitSect = parseInt(document.getElementById('limSector').value) || Infinity;
-                if(limitCode === 0) limitCode = Infinity; 
-                if(limitSect === 0) limitSect = Infinity;
+                try {
+                    // 1. EXTRAÇÃO
+                    const eliminaveisData = extrairDadosCompletos(state.fileElim);
+                    const totaisData = extrairTotais(state.fileTot);
 
-                const strategy = document.getElementById('sortMethod').value;
-
-                // Agrupamento (Box Unique)
-                let boxMap = new Map();
-                let notFoundBoxes = [];
-
-                rawData.forEach(item => {
-                    // Cross Check
-                    if(baseData.size > 0 && !baseData.has(item.box)) {
-                        notFoundBoxes.push(item.box); // Log de erro
-                    } else {
-                        if(!boxMap.has(item.box)) {
-                            boxMap.set(item.box, {
-                                id: item.box,
-                                setores: new Set(),
-                                codigos: new Set(),
-                                docs: 0
-                            });
-                        }
-                        let entry = boxMap.get(item.box);
-                        entry.setores.add(item.setor);
-                        entry.codigos.add(item.cod);
-                        entry.docs++;
-                    }
-                });
-
-                let boxes = Array.from(boxMap.values());
-
-                // Ordenação (Clustering)
-                if(strategy === 'cluster') {
-                    boxes.sort((a, b) => {
-                        const sA = Array.from(a.setores)[0] || "";
-                        const sB = Array.from(b.setores)[0] || "";
-                        if(sA < sB) return -1;
-                        if(sA > sB) return 1;
-                        const cA = Array.from(a.codigos)[0] || "";
-                        const cB = Array.from(b.codigos)[0] || "";
-                        return cA.localeCompare(cB);
-                    });
-                }
-
-                // Bin Packing (First Fit)
-                let closedBlocks = [];
-                let currentBlock = createBlock(1);
-
-                for(let box of boxes) {
-                    if(checkFit(currentBlock, box, limitCode, limitSect)) {
-                        addToBlock(currentBlock, box);
-                    } else {
-                        // Fecha bloco e abre novo
-                        currentBlock.reason = analyzeSaturation(currentBlock, limitCode, limitSect);
-                        closedBlocks.push(currentBlock);
+                    // 2. CROSS-CHECK
+                    const validBoxes = [];
+                    const rejectedBoxes = [];
+                    
+                    for(const [boxId, data] of Object.entries(eliminaveisData)) {
+                        const totalReal = totaisData[boxId];
                         
-                        currentBlock = createBlock(closedBlocks.length + 1);
-                        addToBlock(currentBlock, box);
+                        if(totalReal === undefined) {
+                            rejectedBoxes.push({ id: boxId, motivo: 'Não encontrado na planilha de Totais' });
+                        } else if(data.qtd === totalReal) {
+                            validBoxes.push(data);
+                        } else {
+                            rejectedBoxes.push({ id: boxId, motivo: `Divergência: ${data.qtd} elim. / ${totalReal} total` });
+                        }
+                    }
+
+                    // 3. OTIMIZAÇÃO + COMPLEXIDADE
+                    const { blocos, complexBoxes } = executarOtimizacao(validBoxes);
+                    state.finalBlocks = blocos;
+
+                    // 4. RENDER
+                    renderizarResultados(Object.keys(eliminaveisData).length, validBoxes, rejectedBoxes, blocos, complexBoxes);
+                    
+                    document.getElementById('uploadSection').style.display = 'none';
+                    document.getElementById('configSection').style.display = 'none';
+                    document.getElementById('resultsSection').classList.add('show');
+
+                } catch(e) {
+                    console.error(e);
+                    alert("Erro: " + e.message);
+                } finally {
+                    document.getElementById('loading').style.display = 'none';
+                }
+            }, 500);
+        }
+
+        // --- EXTRAÇÃO ---
+        function extrairDadosCompletos(rows) {
+            const map = {};
+            // Índices: Box=K(10), Setor=D(3), Cod=Q(16) -> CORRIGIDO AQUI
+            for(let i=0; i < rows.length; i++) {
+                const row = rows[i];
+                // Verifica se parece uma linha de dados (Box na col 10)
+                if(row && row[10] !== undefined) {
+                    const box = String(row[10]).trim();
+                    // Ignora cabeçalhos repetidos de outras abas se houver
+                    if(box.toUpperCase() === 'BOX' || box === '') continue;
+
+                    const setor = row[3] ? String(row[3]).trim() : 'ND';
+                    const cod = row[16] ? String(row[16]).trim() : 'ND'; // Coluna Q = 16
+
+                    if(box) {
+                        if(!map[box]) {
+                            map[box] = { 
+                                id: box, qtd: 0, documentos: [],
+                                codigos: new Set(), setoresPorCod: {}
+                            };
+                        }
+                        map[box].qtd++;
+                        map[box].documentos.push({ SETOR: setor, COD: cod });
+                        
+                        map[box].codigos.add(cod);
+                        if(!map[box].setoresPorCod[cod]) map[box].setoresPorCod[cod] = new Set();
+                        map[box].setoresPorCod[cod].add(setor);
                     }
                 }
-                if(currentBlock.boxes.length > 0) {
-                    currentBlock.reason = "Finalizado";
-                    closedBlocks.push(currentBlock);
+            }
+            return map;
+        }
+
+        function extrairTotais(rows) {
+            const map = {};
+            // Box=A(0), Total=I(8)
+            for(let i=0; i < rows.length; i++) {
+                const row = rows[i];
+                if(row && row[0] !== undefined) {
+                     const box = String(row[0]).trim();
+                     if(box.toUpperCase() === 'BOX' || box === '') continue; // Ignora header
+
+                    const total = row[8];
+                    if(total !== undefined) {
+                        const key = box.replace(/\.0$/, '');
+                        map[key] = parseInt(total);
+                    }
                 }
-                
-                finalBlocks = closedBlocks;
-                renderResults(notFoundBoxes, limitCode, limitSect);
-                document.getElementById('loadingOverlay').style.display = 'none';
-
-            }, 200); // Pequeno delay para renderizar loading
+            }
+            return map;
         }
 
-        // Helpers Lógicos
-        function createBlock(id) {
-            return { id: id, boxes: [], codes: new Set(), sects: new Set(), reason: "" };
-        }
-
-        function checkFit(block, box, maxC, maxS) {
-            let tempC = new Set(block.codes);
-            box.codigos.forEach(c => tempC.add(c));
-            if(tempC.size > maxC) return false;
-
-            let tempS = new Set(block.sects);
-            box.setores.forEach(s => tempS.add(s));
-            if(tempS.size > maxS) return false;
-
-            return true;
-        }
-
-        function addToBlock(block, box) {
-            block.boxes.push(box);
-            box.codigos.forEach(c => block.codes.add(c));
-            box.setores.forEach(s => block.sects.add(s));
-        }
-
-        function analyzeSaturation(block, maxC, maxS) {
-            if(maxC !== Infinity && block.codes.size >= maxC) return "Limite de Códigos";
-            if(maxS !== Infinity && block.sects.size >= maxS) return "Limite de Setores";
-            return "Otimizado";
-        }
-
-        // --- RENDERIZAÇÃO ---
-        function renderResults(errors, limitCode, limitSect) {
-            document.getElementById('emptyState').style.display = 'none';
-            document.getElementById('valBoxes').innerText = new Set(rawData.map(r=>r.box)).size;
-            document.getElementById('valBlocks').innerText = finalBlocks.length;
-
-            // Maior Bloco
-            let max = 0;
-            finalBlocks.forEach(b => { if(b.boxes.length > max) max = b.boxes.length; });
-            document.getElementById('valMaxBlock').innerText = max;
-
-            // Logs
-            const logContainer = document.getElementById('logContainer');
-            const errorList = document.getElementById('errorList');
-            if(errors.length > 0) {
-                logContainer.classList.remove('hidden');
-                // Unique errors
-                const uniqueErrors = [...new Set(errors)];
-                errorList.innerHTML = uniqueErrors.map(e => `<li>Box ${e}</li>`).join('');
+        // --- ALGORITMO ---
+        function executarOtimizacao(boxes) {
+            if(state.objective === 'documentos') {
+                boxes.sort((a, b) => b.qtd - a.qtd);
             } else {
-                logContainer.classList.add('hidden');
+                boxes.sort((a, b) => a.qtd - b.qtd);
             }
 
-            // Grid
-            const grid = document.getElementById('gridBlocks');
-            grid.innerHTML = '';
+            const blocos = [];
+            const complexBoxes = [];
 
-            finalBlocks.forEach(b => {
-                const tags = b.boxes.map(bx => `<span class="box-tag">${bx.id}</span>`).join('');
+            for (const box of boxes) {
+                // VERIFICAÇÃO INICIAL: Box complexo demais sozinho?
+                let boxComplexo = false;
+                if (state.restrictions.Cod.active && box.codigos.size > state.restrictions.Cod.value) boxComplexo = true;
+                if (!boxComplexo && state.restrictions.Set.active) {
+                    for(const cod of box.codigos) {
+                        if(box.setoresPorCod[cod].size > state.restrictions.Set.value) {
+                            boxComplexo = true;
+                            break;
+                        }
+                    }
+                }
                 
-                // Diagnóstico Visual (Barras)
-                const pctCode = limitCode === Infinity ? 0 : Math.min(100, (b.codes.size / limitCode) * 100);
-                const pctSect = limitSect === Infinity ? 0 : Math.min(100, (b.sects.size / limitSect) * 100);
+                if(boxComplexo) {
+                    complexBoxes.push(box);
+                    continue;
+                }
 
-                const colorCode = pctCode >= 100 ? 'danger' : (pctCode > 80 ? 'warn' : 'safe');
-                const colorSect = pctSect >= 100 ? 'danger' : (pctSect > 80 ? 'warn' : 'safe');
-                
-                const txtCode = limitCode === Infinity ? '∞' : limitCode;
-                const txtSect = limitSect === Infinity ? '∞' : limitSect;
+                // TENTA AGRUPAR
+                let blocoCandidato = null;
+                for (const bloco of blocos) {
+                    let valido = true;
 
-                const html = `
-                    <div class="block-card">
-                        <div class="block-header">
-                            <span>BLOCO ${b.id}</span>
-                            <span>${b.boxes.length} Cxs</span>
-                        </div>
-                        <div class="block-metrics">
-                            <div class="diag-item">
-                                <div class="diag-info"><span>Códigos (${b.codes.size}/${txtCode})</span></div>
-                                <div class="progress-track"><div class="progress-fill ${colorCode}" style="width:${pctCode}%"></div></div>
-                            </div>
-                            <div class="diag-item">
-                                <div class="diag-info"><span>Setores (${b.sects.size}/${txtSect})</span></div>
-                                <div class="progress-track"><div class="progress-fill ${colorSect}" style="width:${pctSect}%"></div></div>
-                            </div>
-                        </div>
-                        <div class="block-content">${tags}</div>
-                        <div class="block-footer">${b.reason}</div>
-                    </div>
-                `;
-                grid.innerHTML += html;
-            });
+                    if (state.restrictions.Cod.active) {
+                        const uniaoCodigos = new Set([...bloco.codigos, ...box.codigos]);
+                        if (uniaoCodigos.size > state.restrictions.Cod.value) valido = false;
+                    }
+
+                    if (valido && state.restrictions.Set.active) {
+                        for (const cod of box.codigos) {
+                            const setoresAtuais = bloco.setoresPorCod[cod] || new Set();
+                            const setoresNovos = box.setoresPorCod[cod];
+                            const uniaoSetores = new Set([...setoresAtuais, ...setoresNovos]);
+                            if (uniaoSetores.size > state.restrictions.Set.value) {
+                                valido = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (valido) {
+                        blocoCandidato = bloco;
+                        break;
+                    }
+                }
+
+                if (blocoCandidato) {
+                    adicionarBoxAoBloco(blocoCandidato, box);
+                } else {
+                    const novo = criarBloco(blocos.length + 1);
+                    adicionarBoxAoBloco(novo, box);
+                    blocos.push(novo);
+                }
+            }
+
+            return { blocos, complexBoxes };
         }
 
-        function exportExcel() {
-            if(!finalBlocks.length) return;
-            let data = [];
-            finalBlocks.forEach(b => {
+        function criarBloco(id) {
+            return { id: id, boxes: [], totalDocs: 0, codigos: new Set(), setoresPorCod: {} };
+        }
+
+        function adicionarBoxAoBloco(bloco, box) {
+            bloco.boxes.push(box);
+            bloco.totalDocs += box.qtd;
+            
+            box.codigos.forEach(c => bloco.codigos.add(c));
+            for(const [cod, setSetores] of Object.entries(box.setoresPorCod)) {
+                if(!bloco.setoresPorCod[cod]) bloco.setoresPorCod[cod] = new Set();
+                setSetores.forEach(s => bloco.setoresPorCod[cod].add(s));
+            }
+        }
+
+        // --- RENDER ---
+        function renderizarResultados(totalInput, validos, rejeitados, blocos, complexos) {
+            const totalDocs = validos.reduce((a,b) => a + b.qtd, 0);
+            
+            document.getElementById('statsGrid').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-lbl">Boxes Lidos</div>
+                    <div class="stat-val">${totalInput}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-lbl">Boxes Seguros</div>
+                    <div class="stat-val" style="color:var(--success)">${validos.length}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-lbl">Docs Elimináveis</div>
+                    <div class="stat-val" style="color:var(--primary)">${totalDocs}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-lbl">Blocos Gerados</div>
+                    <div class="stat-val">${blocos.length}</div>
+                </div>
+            `;
+
+            const wrapper = document.getElementById('blocksWrapper');
+            wrapper.innerHTML = '';
+            blocos.forEach(b => {
+                const lista = b.boxes.map(i => i.id).join(', ');
+                wrapper.innerHTML += `
+                    <div class="block-card">
+                        <div class="block-header">
+                            <span>Bloco #${b.id}</span>
+                            <span style="background:var(--primary-light); color:var(--primary-dark); padding:2px 8px; border-radius:10px; font-size:11px;">${b.boxes.length} Boxes</span>
+                        </div>
+                        <div class="block-body">
+                            <div class="info-row"><span>Documentos:</span> <strong>${b.totalDocs}</strong></div>
+                            <div class="info-row"><span>Códigos Únicos:</span> <strong>${b.codigos.size}</strong></div>
+                            <div class="box-list">${lista}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            if(rejeitados.length > 0) {
+                document.getElementById('crossCheckLog').style.display = 'block';
+                document.getElementById('errorList').innerHTML = rejeitados.map(r => `<li><strong>Box ${r.id}:</strong> ${r.motivo}</li>`).join('');
+            }
+
+            if(complexos.length > 0) {
+                document.getElementById('complexLog').style.display = 'block';
+                document.getElementById('complexList').innerHTML = complexos.map(b => `<li><strong>Box ${b.id}:</strong> Excede limites sozinho (${b.codigos.size} Códigos / Máx Setores atingido)</li>`).join('');
+            }
+        }
+
+        function exportarExcel() {
+            if(!state.finalBlocks.length) return;
+            const data = [];
+            state.finalBlocks.forEach(b => {
                 b.boxes.forEach(box => {
-                    data.push({
-                        'Bloco': b.id,
-                        'Motivo': b.reason,
-                        'Caixa': box.id,
-                        'Qtd Códigos': box.codigos.size,
-                        'Qtd Setores': box.setores.size,
-                        'Lista Códigos': Array.from(box.codigos).join(', '),
-                        'Lista Setores': Array.from(box.setores).join(', ')
+                    box.documentos.forEach(doc => {
+                        data.push({
+                            'Bloco': b.id,
+                            'Box': box.id,
+                            'Setor': doc.SETOR,
+                            'Código': doc.COD
+                        });
                     });
                 });
             });
             const ws = XLSX.utils.json_to_sheet(data);
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Resultado");
-            XLSX.writeFile(wb, "Otimizacao_GOV.xlsx");
+            XLSX.utils.book_append_sheet(wb, ws, "Blocos");
+            XLSX.writeFile(wb, "Resultado_Eliminacao_Otimizado.xlsx");
         }
     </script>
+
 </body>
 </html>
