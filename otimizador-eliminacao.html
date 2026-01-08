@@ -1,107 +1,135 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Otimizador de Eliminação Seguro</title>
-
-  <!-- Fontes e ícones -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-
-  <!-- CSS institucional unificado -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Otimizador de Eliminação Seguro (Multi-Abas) | Hub de Serviços</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="layout-padrao.css">
 
-  <!-- XLSX -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    
+      
 </head>
 <body>
 
-<header class="app-header">
-  <div class="header-content">
-    <h1 class="app-logo">
-      <i class="fas fa-cubes"></i> Otimizador de Eliminação Seguro
-    </h1>
-  </div>
-</header>
-
-<main class="app-container">
-
-  <section class="app-card">
-
-    <h2 class="app-title">Processamento Inteligente de Eliminação</h2>
-    <p class="app-subtitle">
-      Leitura multi-abas, cross-check de totais e agrupamento automático de boxes.
-    </p>
-
-    <!-- LOADING -->
-    <div class="msg-sucesso" id="loading" style="display:none; text-align:center;">
-      <strong>Processando…</strong><br>
-      Lendo abas, validando totais e otimizando agrupamentos.
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <h3 style="color:var(--text-main)">Processando...</h3>
+        <p style="color:var(--text-sub)">1. Lendo TODAS as abas<br>2. Cross-Check de Totais<br>3. Algoritmo de Otimização</p>
     </div>
 
-    <!-- UPLOAD -->
-    <div id="uploadSection">
-      <label>Relatório de Elimináveis</label>
-      <input type="file" id="fileElim" accept=".xlsx,.xls,.csv">
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1><i class="fas fa-cubes"></i> Otimizador de Eliminação Seguro</h1>
+                <p>Leitura Multi-Abas + Cross-Check + Agrupamento Inteligente</p>
+            </div>
+            <button class="btn-secondary" onclick="location.reload()" style="padding: 8px 16px; border-radius: 6px;">
+                <i class="fas fa-undo"></i> Reiniciar
+            </button>
+        </div>
 
-      <label>Totais por Box</label>
-      <input type="file" id="fileTot" accept=".xlsx,.xls,.csv">
+        <div class="content">
+            
+            <div class="upload-grid" id="uploadSection">
+                <div class="upload-area" id="dropElim" onclick="document.getElementById('fileElim').click()">
+                    <span class="step-badge">Passo 1</span>
+                    <input type="file" id="fileElim" accept=".xlsx,.xls,.csv" hidden>
+                    <i class="fas fa-file-alt upload-icon" id="iconElim"></i>
+                    <h3 style="font-size:16px; font-weight:700;">Relatório de Elimináveis</h3>
+                    <p style="font-size:13px; color:var(--text-sub)">Docs a eliminar (Lê todas as abas)</p>
+                    <div id="nameElim" style="margin-top:10px; font-weight:600; color:var(--primary); font-size:12px;"></div>
+                </div>
+
+                <div class="upload-area" id="dropTot" onclick="document.getElementById('fileTot').click()">
+                    <span class="step-badge">Passo 2</span>
+                    <input type="file" id="fileTot" accept=".xlsx,.xls,.csv" hidden>
+                    <i class="fas fa-chart-pie upload-icon" id="iconTot"></i>
+                    <h3 style="font-size:16px; font-weight:700;">Totais por Box</h3>
+                    <p style="font-size:13px; color:var(--text-sub)">Validação (Box na Col A, Total na Col I)</p>
+                    <div id="nameTot" style="margin-top:10px; font-weight:600; color:var(--primary); font-size:12px;"></div>
+                </div>
+            </div>
+
+            <div class="config-section" id="configSection">
+                <h3 class="config-title"><i class="fas fa-sliders-h"></i> Parâmetros do Algoritmo</h3>
+                
+                <div class="objective-grid">
+                    <div class="obj-card active" id="objDocs" onclick="selecionarObjetivo('documentos')">
+                        <div class="obj-icon">📄</div>
+                        <div>
+                            <div style="font-weight:700;">Maximizar Documentos</div>
+                            <div style="font-size:12px; color:var(--text-sub);">Prioriza boxes mais cheios.</div>
+                        </div>
+                    </div>
+                    <div class="obj-card" id="objBoxes" onclick="selecionarObjetivo('boxes')">
+                        <div class="obj-icon">📦</div>
+                        <div>
+                            <div style="font-weight:700;">Maximizar Boxes</div>
+                            <div style="font-size:12px; color:var(--text-sub);">Prioriza agrupar mais caixas.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="params-grid">
+                    <div class="input-group">
+                        <div class="toggle-wrapper">
+                            <label>Limite Códigos Únicos</label>
+                            <div class="toggle-switch active" id="toggleCod" onclick="toggleInput('Cod')"><div class="toggle-slider"></div></div>
+                        </div>
+                        <input type="number" id="inputCod" class="input-control" value="30">
+                    </div>
+
+                    <div class="input-group">
+                        <div class="toggle-wrapper">
+                            <label>Limite Setores / Cód</label>
+                            <div class="toggle-switch active" id="toggleSet" onclick="toggleInput('Set')"><div class="toggle-slider"></div></div>
+                        </div>
+                        <input type="number" id="inputSet" class="input-control" value="12">
+                    </div>
+
+                    <div class="input-group">
+                        <label>&nbsp;</label>
+                        <button class="btn btn-primary" onclick="iniciarOtimizacao()">🚀 Iniciar Otimização</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-section" id="resultsSection">
+                
+                <div style="display:flex; justify-content:flex-end; margin-bottom:20px;">
+                    <button class="btn btn-secondary" onclick="exportarExcel()"><i class="fas fa-download"></i> Baixar Excel</button>
+                </div>
+
+                <div class="stats-grid" id="statsGrid"></div>
+                <div class="blocks-container" id="blocksWrapper"></div>
+
+                <div class="log-section" id="crossCheckLog">
+                    <div class="log-box log-danger">
+                        <div class="log-title"><i class="fas fa-ban"></i> Boxes Bloqueados pelo Cross-Check (Divergência de Totais)</div>
+                        <p style="margin-bottom:10px;">Estes boxes foram removidos pois o total eliminável é diferente do total físico.</p>
+                        <ul id="errorList" style="padding-left:20px; margin:0;"></ul>
+                    </div>
+                </div>
+
+                <div class="log-section" id="complexLog">
+                    <div class="log-box log-warning">
+                        <div class="log-title"><i class="fas fa-exclamation-triangle"></i> Boxes Muito Complexos (Isolados)</div>
+                        <p style="margin-bottom:10px;">Estes boxes excedem os limites (Setores/Códigos) mesmo sozinhos.</p>
+                        <ul id="complexList" style="padding-left:20px; margin:0;"></ul>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
     </div>
 
-    <!-- CONFIG -->
-    <div id="configSection" style="display:none; margin-top:2rem;">
-      <h3 class="app-title">Parâmetros do Algoritmo</h3>
-
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-        <button class="btn btn-primario" onclick="selecionarObjetivo('documentos')">
-          📄 Maximizar Documentos
-        </button>
-        <button class="btn btn-secundario" onclick="selecionarObjetivo('boxes')">
-          📦 Maximizar Boxes
-        </button>
-      </div>
-
-      <div style="margin-top:1rem;">
-        <label>Limite de Códigos Únicos</label>
-        <input type="number" id="inputCod" value="30">
-
-        <label>Limite de Setores por Código</label>
-        <input type="number" id="inputSet" value="12">
-      </div>
-
-      <button class="btn btn-primario" style="margin-top:1rem;" onclick="iniciarOtimizacao()">
-        🚀 Iniciar Otimização
-      </button>
-    </div>
-
-    <!-- RESULTADOS -->
-    <div id="resultsSection" style="display:none; margin-top:2rem;">
-      <h3 class="app-title">Resultados</h3>
-
-      <div id="statsGrid"></div>
-      <div id="blocksWrapper"></div>
-
-      <button class="btn btn-secundario" style="margin-top:1rem;" onclick="exportarExcel()">
-        <i class="fas fa-download"></i> Baixar Excel
-      </button>
-
-      <div id="crossCheckLog" class="msg-erro" style="display:none;"></div>
-      <div id="complexLog" class="msg-erro" style="display:none;"></div>
-    </div>
-
-  </section>
-
-</main>
-
-<footer class="app-footer">
-  Sistema Institucional • © 2026
-</footer>
-
-<!-- 🔒 SCRIPT ORIGINAL — SEM ALTERAÇÕES -->
-<script>
+    <script>
         // --- ESTADO ---
         let state = {
             fileElim: null, fileTot: null,
@@ -430,6 +458,5 @@
             XLSX.writeFile(wb, "Resultado_Eliminacao_Otimizado.xlsx");
         }
     </script>
-
 </body>
 </html>
