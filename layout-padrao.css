@@ -1,171 +1,132 @@
-/* layout-padrao.css — versão compatível com HTML e JS originais */
-
+/* ===========================
+   VARIÁVEIS VISUAIS
+=========================== */
 :root {
   --cor-primaria: #1f3a5f;
   --cor-secundaria: #3a6ea5;
-  --cor-destaque: #5fa8d3;
   --cor-fundo: #f4f6f8;
   --cor-superficie: #ffffff;
   --cor-texto: #1f2933;
   --cor-texto-suave: #6b7280;
   --cor-borda: #d1d5db;
-  --cor-sucesso: #2f855a;
-  --cor-erro: #c53030;
 }
 
+/* ===========================
+   RESET BÁSICO SEGURO
+=========================== */
 * {
   box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   background: var(--cor-fundo);
   color: var(--cor-texto);
+  line-height: 1.5;
 }
 
-/* Container principal original */
-.container {
-  max-width: 1200px;
-  margin: 2rem auto;
-  background: var(--cor-superficie);
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-  overflow: hidden;
-}
-
-/* Header original */
-.header {
-  padding: 1.5rem 2rem;
+/* ===========================
+   HEADER
+=========================== */
+.app-header {
   background: linear-gradient(135deg, var(--cor-primaria), var(--cor-secundaria));
   color: #fff;
 }
 
-.header h1,
-.header h2,
-.header h3 {
+.app-header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.25rem 2rem;
+}
+
+.app-logo {
   margin: 0;
+  font-size: 1.25rem;
   font-weight: 600;
 }
 
-/* Área de conteúdo */
-.content {
+/* ===========================
+   ÁREA PRINCIPAL
+=========================== */
+.app-main {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
+}
+
+/* ===========================
+   CARD PADRÃO
+=========================== */
+.app-card {
+  background: var(--cor-superficie);
+  border-radius: 12px;
   padding: 2rem;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
 }
 
-section {
-  margin-bottom: 2rem;
+/* ===========================
+   TÍTULOS
+=========================== */
+.app-title {
+  margin-top: 0;
+  margin-bottom: 0.25rem;
+  font-size: 1.4rem;
+  font-weight: 600;
 }
 
-/* Upload / cards existentes */
-.upload-area,
-.obj-card,
-.block-card,
-.card {
-  background: #f9fafb;
-  border: 1px solid var(--cor-borda);
-  border-radius: 10px;
-  padding: 1.25rem;
-  transition: box-shadow .2s ease, transform .2s ease;
+.app-subtitle {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: var(--cor-texto-suave);
+  font-size: 0.95rem;
 }
 
-.upload-area:hover,
-.obj-card:hover,
-.block-card:hover {
-  box-shadow: 0 6px 18px rgba(0,0,0,.08);
-  transform: translateY(-2px);
+/* ===========================
+   CONTEÚDO NEUTRO
+=========================== */
+.content-area {
+  display: block;
 }
 
-/* Grids originais */
-.upload-grid,
-.grid {
-  display: grid;
-  gap: 1rem;
-}
-
-/* Botões originais */
-button,
-.btn {
-  appearance: none;
-  border: none;
-  border-radius: 8px;
-  padding: 0.6rem 1.1rem;
-  font-weight: 500;
-  cursor: pointer;
+/* ===========================
+   BOTÕES (SEM QUEBRAR JS)
+=========================== */
+button {
+  font-family: inherit;
+  font-size: 0.95rem;
+  padding: 0.55rem 1.1rem;
+  border-radius: 6px;
+  border: 1px solid var(--cor-primaria);
   background: var(--cor-primaria);
   color: #fff;
-  transition: background .2s ease, transform .1s ease;
+  cursor: pointer;
 }
 
-button:hover,
-.btn:hover {
+button:hover {
   background: var(--cor-secundaria);
 }
 
-button:active,
-.btn:active {
-  transform: scale(0.97);
-}
-
-button.secondary {
-  background: #e5e7eb;
-  color: var(--cor-texto);
-}
-
-/* Inputs e selects */
+/* ===========================
+   INPUTS (SEM FORÇAR LAYOUT)
+=========================== */
 input,
 select,
 textarea {
-  width: 100%;
-  padding: 0.55rem 0.6rem;
-  border-radius: 6px;
-  border: 1px solid var(--cor-borda);
   font-family: inherit;
+  font-size: 0.95rem;
+  padding: 0.45rem 0.5rem;
+  border-radius: 5px;
+  border: 1px solid var(--cor-borda);
 }
 
-input:focus,
-select:focus,
-textarea:focus {
-  outline: none;
-  border-color: var(--cor-secundaria);
-}
-
-/* Estados controlados pelo JS */
-.hidden {
-  display: none !important;
-}
-
-.show {
-  display: block !important;
-}
-
-.active {
-  border-color: var(--cor-destaque);
-  background: #eef6fb;
-}
-
-.loaded {
-  border-color: var(--cor-sucesso);
-}
-
-.error {
-  border-color: var(--cor-erro);
-  color: var(--cor-erro);
-}
-
-/* Resultados */
-.results-section {
-  background: #f8fafc;
-  border: 1px dashed var(--cor-borda);
-  border-radius: 10px;
-  padding: 1.5rem;
-}
-
-/* Rodapé */
-.footer {
-  padding: 1rem 2rem;
-  background: #eef2f7;
+/* ===========================
+   FOOTER
+=========================== */
+.app-footer {
+  margin-top: 3rem;
+  padding: 1rem;
+  text-align: center;
   font-size: 0.85rem;
   color: var(--cor-texto-suave);
-  text-align: center;
 }
