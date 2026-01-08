@@ -1,100 +1,126 @@
-/* ==================================================
-   RESET E BASE
-   ================================================== */
+/* layout-padrao.css — versão compatível com HTML e JS originais */
+
+:root {
+  --cor-primaria: #1f3a5f;
+  --cor-secundaria: #3a6ea5;
+  --cor-destaque: #5fa8d3;
+  --cor-fundo: #f4f6f8;
+  --cor-superficie: #ffffff;
+  --cor-texto: #1f2933;
+  --cor-texto-suave: #6b7280;
+  --cor-borda: #d1d5db;
+  --cor-sucesso: #2f855a;
+  --cor-erro: #c53030;
+}
+
 * {
-  margin: 0;
-  padding: 0;
   box-sizing: border-box;
 }
 
-html, body {
-  height: 100%;
-}
-
 body {
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background-color: #f5f6f8;
-  color: #2e2e2e;
-  line-height: 1.6;
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
 }
 
-/* ==================================================
-   VARIÁVEIS DE COR (FÁCIL MANUTENÇÃO)
-   ================================================== */
-:root {
-  --cor-primaria: #1f3a5f;
-  --cor-secundaria: #4a90e2;
-  --cor-sucesso: #2e7d32;
-  --cor-alerta: #c62828;
-  --cor-cinza-claro: #e0e3e8;
-  --cor-cinza-medio: #9ea4ad;
-  --cor-branco: #ffffff;
-}
-
-/* ==================================================
-   HEADER
-   ================================================== */
-.app-header {
-  background-color: var(--cor-primaria);
-  color: var(--cor-branco);
-  padding: 1rem 2rem;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-}
-
-.header-content {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.app-logo {
-  font-size: 1.4rem;
-  font-weight: 600;
-}
-
-/* ==================================================
-   CONTAINER PRINCIPAL
-   ================================================== */
-.app-container {
+/* Container principal original */
+.container {
   max-width: 1200px;
   margin: 2rem auto;
-  padding: 0 1rem;
+  background: var(--cor-superficie);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  overflow: hidden;
 }
 
-/* ==================================================
-   CARD / ÁREA DE CONTEÚDO
-   ================================================== */
-.app-card {
-  background-color: var(--cor-branco);
-  border-radius: 8px;
-  padding: 2rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+/* Header original */
+.header {
+  padding: 1.5rem 2rem;
+  background: linear-gradient(135deg, var(--cor-primaria), var(--cor-secundaria));
+  color: #fff;
 }
 
-.app-title {
-  font-size: 1.5rem;
+.header h1,
+.header h2,
+.header h3 {
+  margin: 0;
   font-weight: 600;
-  margin-bottom: 0.5rem;
-  color: var(--cor-primaria);
 }
 
-.app-subtitle {
-  font-size: 0.95rem;
-  color: var(--cor-cinza-medio);
+/* Área de conteúdo */
+.content {
+  padding: 2rem;
+}
+
+section {
   margin-bottom: 2rem;
 }
 
-/* ==================================================
-   FORMULÁRIOS
-   ================================================== */
+/* Upload / cards existentes */
+.upload-area,
+.obj-card,
+.block-card,
+.card {
+  background: #f9fafb;
+  border: 1px solid var(--cor-borda);
+  border-radius: 10px;
+  padding: 1.25rem;
+  transition: box-shadow .2s ease, transform .2s ease;
+}
+
+.upload-area:hover,
+.obj-card:hover,
+.block-card:hover {
+  box-shadow: 0 6px 18px rgba(0,0,0,.08);
+  transform: translateY(-2px);
+}
+
+/* Grids originais */
+.upload-grid,
+.grid {
+  display: grid;
+  gap: 1rem;
+}
+
+/* Botões originais */
+button,
+.btn {
+  appearance: none;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.1rem;
+  font-weight: 500;
+  cursor: pointer;
+  background: var(--cor-primaria);
+  color: #fff;
+  transition: background .2s ease, transform .1s ease;
+}
+
+button:hover,
+.btn:hover {
+  background: var(--cor-secundaria);
+}
+
+button:active,
+.btn:active {
+  transform: scale(0.97);
+}
+
+button.secondary {
+  background: #e5e7eb;
+  color: var(--cor-texto);
+}
+
+/* Inputs e selects */
 input,
 select,
 textarea {
   width: 100%;
-  padding: 0.6rem 0.7rem;
-  margin-bottom: 1rem;
-  border: 1px solid var(--cor-cinza-claro);
-  border-radius: 4px;
-  font-size: 0.95rem;
+  padding: 0.55rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid var(--cor-borda);
+  font-family: inherit;
 }
 
 input:focus,
@@ -104,105 +130,42 @@ textarea:focus {
   border-color: var(--cor-secundaria);
 }
 
-label {
+/* Estados controlados pelo JS */
+.hidden {
+  display: none !important;
+}
+
+.show {
+  display: block !important;
+}
+
+.active {
+  border-color: var(--cor-destaque);
+  background: #eef6fb;
+}
+
+.loaded {
+  border-color: var(--cor-sucesso);
+}
+
+.error {
+  border-color: var(--cor-erro);
+  color: var(--cor-erro);
+}
+
+/* Resultados */
+.results-section {
+  background: #f8fafc;
+  border: 1px dashed var(--cor-borda);
+  border-radius: 10px;
+  padding: 1.5rem;
+}
+
+/* Rodapé */
+.footer {
+  padding: 1rem 2rem;
+  background: #eef2f7;
   font-size: 0.85rem;
-  font-weight: 500;
-  margin-bottom: 0.3rem;
-  display: block;
-}
-
-/* ==================================================
-   BOTÕES
-   ================================================== */
-button,
-.btn {
-  padding: 0.55rem 1.1rem;
-  border-radius: 4px;
-  border: none;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.btn-primario {
-  background-color: var(--cor-primaria);
-  color: var(--cor-branco);
-}
-
-.btn-primario:hover {
-  background-color: #162c49;
-}
-
-.btn-secundario {
-  background-color: var(--cor-secundaria);
-  color: var(--cor-branco);
-}
-
-.btn-secundario:hover {
-  background-color: #3b78c2;
-}
-
-/* ==================================================
-   TABELAS
-   ================================================== */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 1.5rem;
-}
-
-th,
-td {
-  padding: 0.7rem;
-  border-bottom: 1px solid var(--cor-cinza-claro);
-  text-align: left;
-  font-size: 0.9rem;
-}
-
-th {
-  background-color: #f0f2f5;
-  font-weight: 600;
-}
-
-/* ==================================================
-   MENSAGENS E ALERTAS
-   ================================================== */
-.msg-sucesso {
-  background-color: #e8f5e9;
-  color: var(--cor-sucesso);
-  padding: 0.8rem;
-  border-radius: 4px;
-  margin-bottom: 1rem;
-}
-
-.msg-erro {
-  background-color: #fdecea;
-  color: var(--cor-alerta);
-  padding: 0.8rem;
-  border-radius: 4px;
-  margin-bottom: 1rem;
-}
-
-/* ==================================================
-   FOOTER
-   ================================================== */
-.app-footer {
-  margin-top: auto;
-  padding: 1rem;
+  color: var(--cor-texto-suave);
   text-align: center;
-  font-size: 0.8rem;
-  color: var(--cor-cinza-medio);
-}
-
-/* ==================================================
-   RESPONSIVIDADE
-   ================================================== */
-@media (max-width: 768px) {
-  .app-card {
-    padding: 1.5rem 1rem;
-  }
-
-  .app-title {
-    font-size: 1.3rem;
-  }
 }
