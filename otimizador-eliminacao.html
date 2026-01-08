@@ -3,38 +3,193 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Otimizador de Eliminação Seguro</title>
+<title>Sistema Institucional</title>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<!-- Fontes -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-<!-- CSS externo -->
-<link rel="stylesheet" href="layout-padrao.css">
+<!-- Ícones (se seu sistema já usava) -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+<style>
+/* =========================
+   PALETA SÓBRIA INSTITUCIONAL
+   ========================= */
+:root {
+  --primary: #1f3a5f;
+  --primary-light: #eef4fa;
+  --primary-dark: #162d4a;
+
+  --bg-body: #f4f6f8;
+  --bg-card: #ffffff;
+
+  --text-main: #1f2933;
+  --text-sub: #6b7280;
+
+  --border: #d1d5db;
+
+  --success: #2f855a;
+  --danger: #c53030;
+  --warning: #b7791f;
+
+  --shadow: 0 8px 24px rgba(0,0,0,.08);
+}
+
+/* reset mínimo */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-body);
+  color: var(--text-main);
+  padding: 20px;
+}
+
+/* =========================
+   ESTRUTURA PADRÃO
+   ========================= */
+.app-wrapper {
+  max-width: 1400px;
+  margin: auto;
+  background: var(--bg-card);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  min-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  padding: 28px 36px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.app-header h1 {
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.app-header h1 i {
+  color: var(--primary);
+  margin-right: 8px;
+}
+
+.app-main {
+  padding: 40px;
+  flex: 1;
+}
+
+.app-footer {
+  padding: 16px 36px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-sub);
+  text-align: right;
+}
+
+/* =========================
+   COMPONENTES GENÉRICOS
+   (não interferem no JS)
+   ========================= */
+button {
+  font-family: inherit;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background: var(--primary-dark);
+}
+
+.btn-secondary {
+  background: #fff;
+  border: 1px solid var(--border);
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* loading genérico (compatível com display:none / JS) */
+.loading {
+  position: fixed;
+  inset: 0;
+  background: rgba(255,255,255,.95);
+  display: none;
+  z-index: 999;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e5e7eb;
+  border-top: 4px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+</style>
 </head>
 
 <body>
 
-<div class="loading" id="loading">
-  <div class="spinner"></div>
-  <h3>Processando...</h3>
-  <p>1. Lendo abas<br>2. Cross-check<br>3. Otimização</p>
-</div>
+<div class="app-wrapper">
 
-<div class="container">
-  <div class="header">
-    <div>
-      <h1><i class="fas fa-cubes"></i> Otimizador de Eliminação Seguro</h1>
-      <p>Leitura Multi-Abas + Cross-Check</p>
+  <header class="app-header">
+    <h1><i class="fas fa-layer-group"></i> Sistema Institucional</h1>
+    <button class="btn-secondary" onclick="location.reload()">Reiniciar</button>
+  </header>
+
+  <main class="app-main">
+
+    <!-- ==================================================
+         COLE AQUI O SEU HTML ORIGINAL COMPLETO
+         (todo o conteúdo que ficava dentro do <body>)
+         NÃO altere IDs, classes ou estrutura
+         ================================================== -->
+
+ <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <h3 style="color:var(--text-main)">Processando...</h3>
+        <p style="color:var(--text-sub)">1. Lendo TODAS as abas<br>2. Cross-Check de Totais<br>3. Algoritmo de Otimização</p>
     </div>
-    <button class="btn-secondary" onclick="location.reload()">
-      <i class="fas fa-undo"></i> Reiniciar
-    </button>
-  </div>
 
-  <div class="content">
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1><i class="fas fa-cubes"></i> Otimizador de Eliminação Seguro</h1>
+                <p>Leitura Multi-Abas + Cross-Check + Agrupamento Inteligente</p>
+            </div>
+            <button class="btn-secondary" onclick="location.reload()" style="padding: 8px 16px; border-radius: 6px;">
+                <i class="fas fa-undo"></i> Reiniciar
+            </button>
+        </div>
 
- <div class="upload-grid" id="uploadSection">
+        <div class="content">
+            
+            <div class="upload-grid" id="uploadSection">
                 <div class="upload-area" id="dropElim" onclick="document.getElementById('fileElim').click()">
                     <span class="step-badge">Passo 1</span>
                     <input type="file" id="fileElim" accept=".xlsx,.xls,.csv" hidden>
@@ -128,7 +283,21 @@
         </div>
     </div>
 
-    <script>
+    <!-- ================================================== -->
+
+  </main>
+
+  <footer class="app-footer">
+    © 2026 • Sistema Interno
+  </footer>
+
+</div>
+
+<!-- ==================================================
+     SEUS SCRIPTS ORIGINAIS (copiar sem alterar)
+     <script src="..."></script>
+     ================================================== -->
+ <script>
         // --- ESTADO ---
         let state = {
             fileElim: null, fileTot: null,
