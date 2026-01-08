@@ -1,57 +1,40 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Sistema – Página Padrão</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Otimizador de Eliminação Seguro</title>
 
-  <!-- Fonte -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- CSS padrão -->
-  <link rel="stylesheet" href="layout-padrao.css">
+<!-- CSS externo -->
+<link rel="stylesheet" href="layout-padrao.css">
 </head>
+
 <body>
 
-  <header class="app-header">
-    <div class="app-header-inner">
-      <h1 class="app-logo">Sistema Interno</h1>
+<div class="loading" id="loading">
+  <div class="spinner"></div>
+  <h3>Processando...</h3>
+  <p>1. Lendo abas<br>2. Cross-check<br>3. Otimização</p>
+</div>
+
+<div class="container">
+  <div class="header">
+    <div>
+      <h1><i class="fas fa-cubes"></i> Otimizador de Eliminação Seguro</h1>
+      <p>Leitura Multi-Abas + Cross-Check</p>
     </div>
-  </header>
+    <button class="btn-secondary" onclick="location.reload()">
+      <i class="fas fa-undo"></i> Reiniciar
+    </button>
+  </div>
 
-  <main class="app-main">
+  <div class="content">
 
-    <!-- CARD PRINCIPAL -->
-    <section class="app-card">
-
-      <h2 class="app-title">Título da Página</h2>
-      <p class="app-subtitle">Descrição ou instrução ao usuário.</p>
-
-      <!-- 🔽 A PARTIR DAQUI, COLE SEU HTML ORIGINAL 🔽 -->
-      <!-- NÃO remova IDs, NÃO mude classes usadas pelo JS -->
-
-      <div class="loading" id="loading">
-        <div class="spinner"></div>
-        <h3 style="color:var(--text-main)">Processando...</h3>
-        <p style="color:var(--text-sub)">1. Lendo TODAS as abas<br>2. Cross-Check de Totais<br>3. Algoritmo de Otimização</p>
-    </div>
-
-    <div class="container">
-        <div class="header">
-            <div>
-                <h1><i class="fas fa-cubes"></i> Otimizador de Eliminação Seguro</h1>
-                <p>Leitura Multi-Abas + Cross-Check + Agrupamento Inteligente</p>
-            </div>
-            <button class="btn-secondary" onclick="location.reload()" style="padding: 8px 16px; border-radius: 6px;">
-                <i class="fas fa-undo"></i> Reiniciar
-            </button>
-        </div>
-
-        <div class="content">
-            
-            <div class="upload-grid" id="uploadSection">
+ <div class="upload-grid" id="uploadSection">
                 <div class="upload-area" id="dropElim" onclick="document.getElementById('fileElim').click()">
                     <span class="step-badge">Passo 1</span>
                     <input type="file" id="fileElim" accept=".xlsx,.xls,.csv" hidden>
@@ -474,19 +457,5 @@
             XLSX.writeFile(wb, "Resultado_Eliminacao_Otimizado.xlsx");
         }
     </script>
-
-      <!-- 🔼 FIM DO CONTEÚDO ORIGINAL 🔼 -->
-
-    </section>
-
-  </main>
-
-  <footer class="app-footer">
-    <span>Sistema Institucional • © 2026</span>
-  </footer>
-
-  <!-- Scripts originais -->
-  <!-- <script src="seu-script.js"></script> -->
-
 </body>
 </html>
