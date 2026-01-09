@@ -266,38 +266,54 @@
 
     document.getElementById('searchBox').addEventListener('input', (e) => renderBoxes(e.target.value));
 
-    function renderBoxes(filter = '') {
+   function renderBoxes(filter = '') {
         const grid = document.getElementById('grid');
         grid.innerHTML = '';
         
-        const filtered = boxes.filter(b => b.id.toLowerCase().includes(filter.toLowerCase()));
+        // 1. Filtra baseado na pesquisa
+        let listaParaExibir = boxes.filter(b => b.id.toLowerCase().includes(filter.toLowerCase()));
 
-        if(filtered.length === 0) {
-             grid.innerHTML = '<p style="grid-column:1/-1; text-align:center">Nenhum box encontrado (ou carregando...)</p>';
+        // 2. ORDENAÇÃO NATURAL (A CORREÇÃO ESTÁ AQUI)
+        // Isso faz com que Box 2 venha antes de Box 10
+        listaParaExibir.sort((a, b) => {
+            return a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' });
+        });
+
+        // Verifica se a lista está vazia
+        if(listaParaExibir.length === 0) {
+             grid.innerHTML = '<p style="grid-column:1/-1; text-align:center">Nenhum box encontrado.</p>';
              return;
         }
 
-        filtered.forEach(box => {
+        // 3. Desenha os cards na tela
+        listaParaExibir.forEach(box => {
             const pct = (box.freeSpace / MAX_CAPACITY) * 100;
             let statusClass = '';
-            let color = 'var(--success)';
+            let color = 'var(--success)'; // Verde padrão
             
-            // Lógica visual
-            if (box.freeSpace <= 0.1) { statusClass = 'full'; color = 'var(--danger)'; }
-            else if (box.freeSpace < 5) { color = 'var(--warning)'; }
+            // Lógica visual de cores
+            if (box.freeSpace <= 0.1) { 
+                statusClass = 'full'; 
+                color = 'var(--danger)'; // Vermelho se cheio
+            } else if (box.freeSpace < 5) { 
+                color = 'var(--warning)'; // Amarelo se acabando
+            }
+            
             if (box.locked) statusClass += ' locked';
 
             const div = document.createElement('div');
             div.className = `card ${statusClass}`;
             
+            // Configurações de travamento visual
             const disabledAttr = box.locked ? 'disabled' : '';
             const lockIcon = box.locked ? '<i class="fas fa-lock"></i>' : '<i class="fas fa-lock-open" style="color:#ccc"></i>';
             const btnClass = box.locked ? 'opacity:0.5' : '';
 
+            // HTML do Card
             div.innerHTML = `
                 <div class="card-header">
                     <span>${box.id}</span>
-                    <span style="cursor:pointer" onclick="toggleLock('${box.id}')">${lockIcon}</span>
+                    <span style="cursor:pointer" onclick="toggleLock('${box.id}')" title="Travar/Destravar">${lockIcon}</span>
                 </div>
                 <div style="font-size:0.9em; color:#555;">
                     Livre: <strong>${parseFloat(box.freeSpace).toFixed(2)} cm</strong>
