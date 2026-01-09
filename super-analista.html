@@ -15,26 +15,22 @@
     <style>
         /* --- VARIÁVEIS E CORES --- */
         :root {
-    --primary: #2563eb;          /* Azul institucional */
-    --primary-light: #eff6ff;
-    --primary-dark: #1e40af;
-
-    --text-main: #111827;
-    --text-sub: #6b7280;
-
-    --bg-body: #f3f4f6;
-    --bg-card: #ffffff;
-
-    --border: #d1d5db;
-
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
-
-    --success: #10b981;
-    --warning: #f59e0b;
-    --danger: #ef4444;
-    --info: #2563eb;
-}
+            --primary: #f7931e;        
+            --primary-light: #fff7ed;
+            --primary-dark: #d67d12;
+            --text-main: #1f2937;      
+            --text-sub: #6b7280;       
+            --bg-body: #f3f4f6;        
+            --bg-card: #ffffff;        
+            --border: #e5e7eb;         
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+        }
 
         /* --- BASE --- */
         * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
@@ -144,7 +140,7 @@
         .freq-table td { 
             padding: 10px 15px; border-bottom: 1px solid var(--border); color: var(--text-main); 
         }
-        .freq-table tr:hover { background-color: #f3f4f6; } /* Highlight sutil */
+        .freq-table tr:hover { background-color: #ffffec; } /* Highlight sutil */
         .freq-table tr:last-child td { border-bottom: none; }
         
         .progress-mini { height: 4px; background: #e5e7eb; border-radius: 2px; width: 60px; display: inline-block; margin-right: 8px; vertical-align: middle; }
@@ -258,7 +254,7 @@
 
     <script>
         // --- CORES ---
-        const THEME_COLORS = ['#2563eb', '#1e40af', '#3b82f6', '#64748b', '#94a3b8'];
+        const THEME_COLORS = ['#f7931e', '#fcd34d', '#f97316', '#78350f', '#fbbf24', '#d97706'];
         
         // --- UPLOAD ---
         const uploadArea = document.getElementById('uploadArea');
@@ -530,7 +526,7 @@
                     
                     new Chart(document.getElementById(id), {
                         type: type,
-                        data: { labels: labels, datasets: [{ data: data, backgroundColor: '#2563eb' }] },
+                        data: { labels: labels, datasets: [{ data: data, backgroundColor: '#f7931e' }] },
                         options: { maintainAspectRatio:false, plugins:{legend:{display:false}} }
                     });
                 }, 100);
@@ -547,7 +543,7 @@
             setTimeout(() => {
                 new Chart(document.getElementById(id), {
                     type: type,
-                    data: { labels: labels, datasets: [{ label: 'Qtd', data: data, backgroundColor: type==='line'?'rgba(37,99,235,0.1)':'#2563eb', :'#f7931e', borderColor: '#2563eb', fill:true, tension:0.4 }] },
+                    data: { labels: labels, datasets: [{ label: 'Qtd', data: data, backgroundColor: type==='line'?'rgba(247,147,30,0.1)':'#f7931e', borderColor:'#f7931e', fill:true, tension:0.4 }] },
                     options: { maintainAspectRatio:false }
                 });
             }, 100);
