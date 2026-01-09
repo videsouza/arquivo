@@ -3,301 +3,263 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Gestão Documental | Portal Interno</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <title>Hub de Serviços | Gestão Documental</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
     <style>
-        /* --- VARIÁVEIS DO SISTEMA (Padrão GOV.BR / Corporativo) --- */
+        /* Variáveis de Cor – Paleta SÓBRIA (Azul + Cinza) */
         :root {
-            /* Cores Institucionais */
-            --gov-blue: #1351b4;
-            --gov-blue-dark: #0c326f;
-            --gov-blue-hover: #08204b;
-            
-            /* Tons de Cinza e Fundo */
-            --bg-body: #f8f8f8;
-            --bg-card: #ffffff;
-            --border-card: #e5e5e5;
-            --border-hover: #1351b4;
-            
-            /* Tipografia */
-            --text-primary: #131313;
-            --text-secondary: #555555;
-            --text-link: #1351b4;
-            
-            /* Espaçamentos e Formas */
-            --radius-gov: 4px;
-            --container-width: 1200px;
+            --primary-color: #2563eb;        /* Azul institucional */
+            --text-dark: #111827;            /* Cinza quase preto */
+            --text-light: #6b7280;           /* Cinza médio */
+            --bg-light: #f3f4f6;              /* Cinza muito claro */
+            --bg-white: #ffffff;
+            --border-color: #d1d5db;          /* Cinza neutro */
+            --shadow-subtle: 0 2px 4px rgba(0, 0, 0, 0.04);
+            --shadow-hover: 0 12px 24px rgba(0, 0, 0, 0.08);
         }
 
-        /* --- RESET & BASE --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Rawline', 'Roboto', 'Segoe UI', Arial, sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-primary);
-            line-height: 1.5;
-            -webkit-font-smoothing: antialiased;
-            display: flex;
-            flex-direction: column;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
             min-height: 100vh;
+            padding: 40px 20px;
+            line-height: 1.6;
+            color: var(--text-light);
         }
 
-        a { text-decoration: none; color: inherit; }
-
-        /* --- BARRA DE GOVERNO / INSTITUCIONAL --- */
-        .br-header {
-            background-color: var(--gov-blue);
-            color: white;
-            padding: 8px 0; 
-            border-bottom: 4px solid var(--gov-blue-dark);
-        }
-
-        .header-container {
-            max-width: var(--container-width);
+        .container {
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 0 20px;
+        }
+
+        .hero {
+            text-align: center;
+            color: var(--text-dark);
+            margin-bottom: 60px;
+            padding: 20px 0;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .hero h1 {
+            font-size: 44px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+        }
+
+        .hero p {
+            font-size: 18px;
+            max-width: 700px;
+            margin: 0 auto;
+            color: var(--text-light);
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            padding: 20px 0;
+            margin-bottom: 60px;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .stat-item {
             display: flex;
             align-items: center;
-            height: 100%; 
+            gap: 12px;
+            color: var(--text-dark);
         }
 
-        .header-brand {
+        .stat-icon {
+            color: var(--primary-color);
+            font-size: 20px;
+        }
+
+        .stat-value {
             font-weight: 700;
-            font-size: 16px;
-            letter-spacing: 0.5px;
+            font-size: 20px;
+            color: var(--text-dark);
+        }
+
+        .stat-label {
+            font-size: 12px;
             text-transform: uppercase;
+            font-weight: 600;
+            color: var(--text-light);
         }
 
-        /* --- CONTEÚDO PRINCIPAL --- */
-        .main-container {
-            max-width: var(--container-width);
-            margin: 40px auto;
-            padding: 0 20px;
-            flex: 1;
-        }
-
-        /* --- GRID DE SERVIÇOS --- */
         .services-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
         }
 
-        @media (max-width: 992px) {
-            .services-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-
-        @media (max-width: 600px) {
-            .services-grid { grid-template-columns: 1fr; }
-        }
-
-        /* --- CARD INSTITUCIONAL --- */
         .service-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-card);
-            border-radius: var(--radius-gov);
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-            position: relative;
-            height: 100%;
+            background: var(--bg-white);
+            border-radius: 12px;
+            padding: 30px;
+            transition: all 0.3s ease-in-out;
+            box-shadow: var(--shadow-subtle);
+            border: 1px solid var(--border-color);
+            text-decoration: none;
+            color: inherit;
         }
 
         .service-card:hover {
-            border-color: var(--border-hover);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            z-index: 1;
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--primary-color);
         }
 
-        .card-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 15px;
+        .badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: white;
         }
+
+        .badge-new { background-color: #10b981; }      /* Verde frio */
+        .badge-breve { background-color: #64748b; }   /* Cinza azulado */
+        .badge-popular { background-color: var(--primary-color); }
 
         .card-icon {
-            width: 42px;
-            height: 42px;
-            background-color: #f2f7fd;
-            color: var(--gov-blue);
-            border-radius: var(--radius-gov);
+            width: 50px;
+            height: 50px;
+            background: rgba(37, 99, 235, 0.12);
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
-            flex-shrink: 0;
+            font-size: 22px;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            transition: all 0.3s;
         }
 
         .service-card:hover .card-icon {
-            background-color: var(--gov-blue);
+            background: var(--primary-color);
             color: white;
-            transition: 0.2s;
         }
 
         .card-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 700;
-            color: var(--text-primary);
-            line-height: 1.2;
+            margin-bottom: 8px;
+            color: var(--text-dark);
         }
 
         .card-desc {
             font-size: 14px;
-            color: var(--text-secondary);
-            margin-bottom: 24px;
-            flex-grow: 1;
-            line-height: 1.6;
+            color: var(--text-light);
+            margin-bottom: 20px;
         }
 
-        .card-footer {
-            border-top: 1px solid #f0f0f0;
-            padding-top: 15px;
-            font-size: 13px;
+        .card-action {
+            margin-top: 15px;
             font-weight: 600;
-            color: var(--text-link);
+            color: var(--primary-color);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 5px;
+            font-size: 14px;
         }
 
-        .service-card:hover .card-footer {
-            text-decoration: underline;
+        .footer {
+            margin-top: 80px;
+            text-align: center;
+            color: var(--text-light);
+            font-size: 14px;
         }
 
-        .status-dev {
-            color: #777;
-            cursor: not-allowed;
-            background: #f9f9f9;
-            opacity: 0.8;
-        }
-        
-        .status-dev:hover {
-            border-color: #e5e5e5;
-            box-shadow: none;
+        .footer a {
+            color: var(--primary-color);
             text-decoration: none;
         }
-        
-        .status-dev .card-footer {
-            color: #999;
-            text-decoration: none !important;
-        }
 
-        /* --- FOOTER --- */
-        .br-footer {
-            background-color: var(--gov-blue-dark);
-            color: white;
-            padding: 15px 0;
-            font-size: 12px;
-            margin-top: auto;
-            text-align: center;
-        }
-
-        .footer-container {
-            max-width: var(--container-width);
-            margin: 0 auto;
-            padding: 0 20px;
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         @media (max-width: 768px) {
-            .header-container { justify-content: center; }
+            .hero h1 { font-size: 32px; }
+            .stats-bar { flex-direction: column; gap: 20px; }
         }
     </style>
 </head>
 <body>
-
-    <header class="br-header">
-        <div class="header-container">
-            <div class="header-brand">
-                ARQUIVO / SEC
-            </div>
-        </div>
-    </header>
-
-    <main class="main-container">
+<!-- HTML original mantido integralmente -->
+    <div class="container">
         
         <section class="services-grid">
 
             <a href="super-analista.html" class="service-card">
-                <div class="card-header">
-                    <div class="card-icon"><i class="fas fa-chart-bar"></i></div>
-                    <h3 class="card-title">Painel Analítico</h3>
-                </div>
-                <p class="card-desc">Geração de dashboards e extração de métricas quantitativas a partir das planilhas de controle de acervo.</p>
-                <div class="card-footer">
-                    Acessar Módulo <i class="fas fa-arrow-right"></i>
-                </div>
+                <div class="badge badge-popular">Popular</div>
+                <div class="card-icon"><i class="fas fa-chart-pie"></i></div>
+                <h3 class="card-title">Análise de Dados</h3>
+                <p class="card-desc">Dashboard completo com gráficos e insights automáticos a partir de planilhas de acervo.</p>
+                <div class="card-action">Acessar Ferramenta <i class="fas fa-arrow-right"></i></div>
             </a>
 
             <a href="otimizador-eliminacao.html" class="service-card">
-                <div class="card-header">
-                    <div class="card-icon"><i class="fas fa-check-double"></i></div>
-                    <h3 class="card-title">Otimizador de Eliminação</h3>
-                </div>
-                <p class="card-desc">Algoritmo para seleção de boxes de eliminação, visando a maximização do espaço físico liberado.</p>
-                <div class="card-footer">
-                    Iniciar Seleção <i class="fas fa-arrow-right"></i>
-                </div>
+                 <div class="badge badge-new">Novo</div>
+                <div class="card-icon"><i class="fas fa-recycle"></i></div>
+                <h3 class="card-title">Otimizador de Eliminação</h3>
+                <p class="card-desc">Algoritmo inteligente para criar blocos de eliminação maximizando o nº de caixas.</p>
+                <div class="card-action">Otimizar Seleção de Boxes <i class="fas fa-arrow-right"></i></div>
             </a>
 
             <a href="etiqueta-gemini.html" class="service-card">
-                <div class="card-header">
-                    <div class="card-icon"><i class="fas fa-tag"></i></div>
-                    <h3 class="card-title">Gerador de Etiquetas</h3>
-                </div>
-                <p class="card-desc">Emissão automática de etiquetas padronizadas (9x9cm) para identificação de caixas e processos.</p>
-                <div class="card-footer">
-                    Emitir Etiquetas <i class="fas fa-arrow-right"></i>
-                </div>
+                 <div class="badge badge-new">Novo</div>
+                <div class="card-icon"><i class="fas fa-print"></i></div>
+                <h3 class="card-title">Impressor de Etiquetas</h3>
+                <p class="card-desc">Geração automática de etiquetas padronizadas (9x9cm) prontas para impressão em A4.</p>
+               <div class="card-action">Criar Etiquetas <i class="fas fa-arrow-right"></i></div>
             </a>
 
             <a href="visualiza-boxes-gemini.html" class="service-card">
-                <div class="card-header">
-                    <div class="card-icon"><i class="fas fa-cubes"></i></div>
-                    <h3 class="card-title">Mapa de Ocupação</h3>
-                </div>
-                <p class="card-desc">Visualização interativa da disposição física do acervo (visão topográfica 7x7) para gestão de espaço.</p>
-                <div class="card-footer">
-                    Visualizar Mapa <i class="fas fa-arrow-right"></i>
-                </div>
+                 <div class="badge badge-popular">Popular</div>
+                <div class="card-icon"><i class="fas fa-boxes"></i></div>
+                <h3 class="card-title">Visualizador de Boxes</h3>
+                <p class="card-desc">Mapa visual interativo para gestão da ocupação do arquivo físico (visão 7x7).</p>
+                <div class="card-action">Gerar Visualização <i class="fas fa-arrow-right"></i></div>
             </a>
 
              <a href="https://corretor-datas.onrender.com/" class="service-card">
-                <div class="card-header">
-                    <div class="card-icon"><i class="fas fa-calendar-alt"></i></div>
-                    <h3 class="card-title">Validador Temporal</h3>
-                </div>
-                <p class="card-desc">Auditoria automática de datas prováveis de eliminação para garantir conformidade com a TTD.</p>
-                <div class="card-footer">
-                    Validar Datas <i class="fas fa-arrow-right"></i>
-                </div>
+               <div class="badge badge-new">Novo</div>
+                <div class="card-icon"><i class="fas fa-calendar-check"></i></div>
+                <h3 class="card-title">Corretor de Datas</h3>
+                <p class="card-desc">Verifica se as datas prováveis de eliminação da planilha estão corretas.</p>
+                <div class="card-action">Corrigir Planilha <i class="fas fa-arrow-right"></i></div>
             </a>
 
-            <div class="service-card status-dev">
-                <div class="card-header">
-                    <div class="card-icon"><i class="fas fa-project-diagram"></i></div>
-                    <h3 class="card-title">Controle de Fluxos</h3>
-                </div>
-                <p class="card-desc">Gestão dos trâmites de eliminação e guarda permanente de documentos.</p>
-                <div class="card-footer">
-                    <i class="fas fa-tools"></i> Módulo em Desenvolvimento
-                </div>
-            </div>
+            <a href="#" class="service-card">
+                 <div class="badge badge-breve">Em Breve</div>
+                <div class="card-icon"><i class="fas fa-sitemap"></i></div>
+                <h3 class="card-title">Fluxo de Trabalho</h3>
+                <p class="card-desc">Controle os fluxos de eliminação e guarda permanente de documentos.</p>
+                <div class="card-action">Em Desenvolvimento <i class="fas fa-arrow-right"></i></div>
+            </a>
 
         </section>
 
-    </main>
+        <footer class="footer">
+            <p>&copy; 2026 Sistema de Apoio à Gestão Documental.</p>
+            <p>
+                Desenvolvido por Vinicius A. de Souza com Claude.ai, Gemini e ChatGPT.
+            </p>
+        </footer>
 
-    <footer class="br-footer">
-        <div class="footer-container">
-            <p>© 2026 Desenvolvido por Vinicius A. de Souza com Claude.ai, Gemini e ChatGPT</p>
-        </div>
-    </footer>
-
+    </div>
 </body>
 </html>
