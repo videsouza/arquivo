@@ -106,14 +106,14 @@
 
     async function carregarDoGitHub() {
         mostrarLoader(true, "Sincronizando...");
-        // Adicionamos ?t=Date.now() para evitar que o navegador use cache antigo
+        // Mantemos o timestamp para evitar cache
         const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${FILE_PATH}?t=${Date.now()}`;
         
         try {
             const response = await fetch(url, { headers: getHeaders() });
 
             if (response.status === 404) {
-                // Arquivo não existe, inicia vazio
+                // Se o arquivo não existe, inicia vazio sem erro
                 boxes = [];
                 renderBoxes();
                 mostrarLoader(false);
@@ -122,8 +122,18 @@
 
             const data = await response.json();
             
-            // Decodifica conteúdo
-            const content = decodeURIComponent(escape(window.atob(data.content)));
+            if (!data.content) {
+                throw new Error("O GitHub não retornou conteúdo. O arquivo pode estar vazio.");
+            }
+
+            // --- A CORREÇÃO ESTÁ AQUI ---
+            // O comando .replace(/\s/g, '') remove todos os espaços e quebras de linha (\n)
+            // que o GitHub insere automaticamente em arquivos grandes.
+            const cleanContent = data.content.replace(/\s/g, '');
+            
+            // Agora o atob consegue ler o código limpo
+            const content = decodeURIComponent(escape(window.atob(cleanContent)));
+            
             boxes = JSON.parse(content);
             renderBoxes();
             
