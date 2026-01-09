@@ -157,23 +157,26 @@
         }
     }
 
-    async function salvarNoGitHub() {
-        mostrarLoader(true, "Salvando alteração...");
+async function salvarNoGitHub() {
+        mostrarLoader(true, "Tentando salvar...");
         const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${FILE_PATH}`;
         
         try {
-            // FIX 2: Busca SHA atual para evitar conflito (Concurrency Control)
+            // 1. Busca o SHA atual (para permitir sobrescrever)
             let currentSha = null;
             try {
                 const getResponse = await fetch(`${url}?t=${Date.now()}`, { headers: getHeaders() });
                 if (getResponse.ok) {
                     const getData = await getResponse.json();
                     currentSha = getData.sha;
+                } else {
+                    console.log("Aviso: Não foi possível ler o arquivo atual (pode ser o primeiro salvamento ou erro de leitura). Status:", getResponse.status);
                 }
-            } catch (e) { console.log("Criando novo arquivo..."); }
+            } catch (e) { console.log("Erro de rede ao buscar SHA"); }
 
-            // Prepara conteúdo
+            // 2. Prepara os dados
             const contentJson = JSON.stringify(boxes, null, 2);
+            // Truque para suportar acentos no Base64
             const contentBase64 = window.btoa(unescape(encodeURIComponent(contentJson)));
 
             const payload = {
@@ -182,7 +185,7 @@
             };
             if (currentSha) payload.sha = currentSha;
 
-            // Envia (PUT)
+            // 3. Envia para o GitHub
             const response = await fetch(url, {
                 method: 'PUT',
                 headers: getHeaders(),
@@ -192,11 +195,17 @@
             if (response.ok) {
                 msg("Salvo com sucesso!", "green");
             } else {
-                throw new Error("Resposta não OK do GitHub");
+                // --- AQUI ESTÁ A MUDANÇA PARA TE MOSTRAR O ERRO REAL ---
+                const erroDetalhado = await response.json();
+                const msgErro = erroDetalhado.message || "Sem mensagem";
+                
+                alert(`ERRO DO GITHUB (Código ${response.status}):\n${msgErro}\n\nVeja a lista de causas abaixo:\n401 = Token inválido.\n403 = Token sem permissão (esqueceu de marcar 'repo'?)\n404 = Repositório não existe ou nome errado.`);
+                
+                console.error("Detalhes do erro:", erroDetalhado);
             }
 
         } catch (error) {
-            alert("Erro ao salvar: Verifique sua conexão ou token.\n" + error.message);
+            alert("Erro de Conexão/Código:\n" + error.message);
         } finally {
             mostrarLoader(false);
         }
