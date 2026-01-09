@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Otimizador de Eliminação Seguro (Multi-Abas) | Hub de Serviços</title>
+    <title>Otimizador de Eliminação</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -176,8 +176,8 @@
     <div class="container">
         <div class="header">
             <div>
-                <h1><i class="fas fa-cubes"></i> Otimizador de Eliminação Seguro</h1>
-                <p>Leitura Multi-Abas + Cross-Check + Agrupamento Inteligente</p>
+                <h1><i class="fas fa-cubes"></i> Otimizador de Eliminação</h1>
+                <p>Algoritmo de maximização de blocos de eliminação.</p>
             </div>
             <button class="btn-secondary" onclick="location.reload()" style="padding: 8px 16px; border-radius: 6px;">
                 <i class="fas fa-undo"></i> Reiniciar
@@ -191,8 +191,8 @@
                     <span class="step-badge">Passo 1</span>
                     <input type="file" id="fileElim" accept=".xlsx,.xls,.csv" hidden>
                     <i class="fas fa-file-alt upload-icon" id="iconElim"></i>
-                    <h3 style="font-size:16px; font-weight:700;">Relatório de Elimináveis</h3>
-                    <p style="font-size:13px; color:var(--text-sub)">Docs a eliminar (Lê todas as abas)</p>
+                    <h3 style="font-size:16px; font-weight:700;">Lista de Elimináveis</h3>
+                    <p style="font-size:13px; color:var(--text-sub)">Docs a eliminar (status "Aguardando Planilha")</p>
                     <div id="nameElim" style="margin-top:10px; font-weight:600; color:var(--primary); font-size:12px;"></div>
                 </div>
 
@@ -201,7 +201,7 @@
                     <input type="file" id="fileTot" accept=".xlsx,.xls,.csv" hidden>
                     <i class="fas fa-chart-pie upload-icon" id="iconTot"></i>
                     <h3 style="font-size:16px; font-weight:700;">Totais por Box</h3>
-                    <p style="font-size:13px; color:var(--text-sub)">Validação (Box na Col A, Total na Col I)</p>
+                    <p style="font-size:13px; color:var(--text-sub)">Planilha de totais de docs por status.</p>
                     <div id="nameTot" style="margin-top:10px; font-weight:600; color:var(--primary); font-size:12px;"></div>
                 </div>
             </div>
