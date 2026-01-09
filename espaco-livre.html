@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Capacidade de Box</title>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: var(--dark);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+            color: white;
+        }
+
+        .btn-upload { background-color: var(--accent); }
+        .btn-clear { background-color: var(--danger); }
+        .btn:hover { opacity: 0.9; }
+
+        input[type="file"] { display: none; }
+        .file-label {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: var(--accent);
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #searchBox {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 250px;
+            font-size: 16px;
+        }
+
+        /* Grid de Boxes */
+        .box-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .box-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--success);
+            transition: transform 0.2s;
+            position: relative;
+        }
+
+        .box-card.full { border-left-color: var(--danger); }
+        .box-card.locked { border-left-color: var(--warning); background-color: #fcf8e3; }
+
+        .box-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .box-title { font-size: 1.2em; font-weight: bold; }
+        
+        .capacity-bar {
+            height: 10px;
+            background: #eee;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .capacity-fill {
+            height: 100%;
+            background: var(--success);
+            width: 100%;
+            transition: width 0.3s, background-color 0.3s;
+        }
+
+        .info-text { font-size: 0.9em; color: #666; margin-bottom: 15px; }
+        .highlight { font-weight: bold; font-size: 1.1em; color: var(--dark); }
+
+        .actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .input-cm {
+            width: 60px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .btn-icon {
+            padding: 5px 10px;
+            font-size: 0.9em;
+        }
+
+        .btn-add { background-color: var(--primary); }
+        .btn-reset { background-color: var(--light); color: #333; border: 1px solid #ccc; }
+        .btn-lock { background-color: var(--warning); }
+        
+        /* Estado travado */
+        .box-card.locked .actions input,
+        .box-card.locked .actions .btn-add,
+        .box-card.locked .actions .btn-reset {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Gestão de Espaço em Box (Max 14cm)</h1>
+        <p>Importe sua planilha ou gerencie os boxes existentes.</p>
+    </header>
+
+    <div class="controls">
+        <div>
+            <label for="excelInput" class="file-label"><i class="fas fa-file-excel"></i> Importar Excel</label>
+            <input type="file" id="excelInput" accept=".xlsx, .xls" />
+            <span id="fileName" style="margin-left: 10px; font-size: 0.9em; color: #666;"></span>
+        </div>
+        
+        <input type="text" id="searchBox" placeholder="Pesquisar Box (ex: BOX01)...">
+        
+        <button class="btn btn-clear" onclick="limparTudo()"><i class="fas fa-trash"></i> Resetar Sistema</button>
+    </div>
+
+    <div id="grid" class="box-grid">
+        </div>
+</div>
+
+<script>
+    // --- Configuração ---
+    const MAX_CAPACITY = 14; // cm
+    const STORAGE_KEY = 'box_system_data';
+    
+    // --- Estado da Aplicação ---
+    let boxes = [];
+
+    // --- Inicialização ---
+    window.onload = () => {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            boxes = JSON.parse(saved);
+            renderBoxes();
+        }
+    };
+
+    // --- Importação de Excel ---
+    document.getElementById('excelInput').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        document.getElementById('fileName').innerText = file.name;
+
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            const data = new Uint8Array(evt.target.result);
+            const workbook = XLSX.read(data, {type: 'array'});
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            
+            // Converte para JSON (assumindo Col A = ID, Col B = Status)
+            // sheet_to_json por padrão usa a primeira linha como header.
+            // Vamos usar header: A para pegar por colunas diretamente.
+            const jsonData = XLSX.utils.sheet_to_json(firstSheet, {header: "A"});
+            
+            // Processar dados (pulando cabeçalho se necessário - aqui vamos assumir que a linha 1 tem dados ou header, vamos filtrar)
+            // Se a célula A1 for "Box" ou "ID", precisamos pular.
+            
+            let newBoxes = [];
+            
+            jsonData.forEach((row, index) => {
+                // Validação básica para ignorar cabeçalhos ou linhas vazias
+                if (!row.A || index === 0 && (row.A.toLowerCase().includes('box') || row.A.toLowerCase().includes('id'))) return;
+
+                const id = row.A; 
+                const status = row.B; // 0 ou 1
+                
+                // Lógica de Negócio:
+                // Status 0 (Vazio) -> Espaço Livre = 14
+                // Status 1 (Cheio) -> Espaço Livre = 0
+                const freeSpace = (status == 1) ? 0 : MAX_CAPACITY;
+
+                // Verifica se box já existe para não duplicar, ou atualiza
+                const existingIndex = newBoxes.findIndex(b => b.id === id);
+                if (existingIndex > -1) {
+                    newBoxes[existingIndex] = { id, freeSpace, locked: false };
+                } else {
+                    newBoxes.push({ id, freeSpace, locked: false });
+                }
+            });
+
+            // Mesclar ou substituir? Aqui vamos substituir para "Inicializar"
+            if(confirm("Deseja substituir a lista atual pela nova importação?")) {
+                boxes = newBoxes;
+                saveAndRender();
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    });
+
+    // --- Pesquisa ---
+    document.getElementById('searchBox').addEventListener('input', (e) => {
+        renderBoxes(e.target.value);
+    });
+
+    // --- Lógica de Renderização ---
+    function renderBoxes(filter = '') {
+        const grid = document.getElementById('grid');
+        grid.innerHTML = '';
+
+        const filtered = boxes.filter(b => b.id.toLowerCase().includes(filter.toLowerCase()));
+
+        if (filtered.length === 0) {
+            grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">Nenhum box encontrado.</p>';
+            return;
+        }
+
+        filtered.forEach(box => {
+            // Cálculos visuais
+            const percentageFree = (box.freeSpace / MAX_CAPACITY) * 100;
+            let colorClass = '';
+            let colorStyle = 'var(--success)';
+            
+            if (box.freeSpace === 0) {
+                colorClass = 'full';
+                colorStyle = 'var(--danger)';
+            } else if (box.freeSpace < 5) {
+                colorStyle = 'var(--warning)';
+            }
+
+            if (box.locked) colorClass += ' locked';
+
+            const card = document.createElement('div');
+            card.className = `box-card ${colorClass}`;
+            
+            card.innerHTML = `
+                <div class="box-header">
+                    <span class="box-title">${box.id}</span>
+                    ${box.locked ? '<i class="fas fa-lock"></i>' : '<i class="fas fa-lock-open" style="color:#ccc"></i>'}
+                </div>
+                
+                <div class="info-text">
+                    Espaço Livre: <span class="highlight">${parseFloat(box.freeSpace).toFixed(2)} cm</span>
+                </div>
+
+                <div class="capacity-bar">
+                    <div class="capacity-fill" style="width: ${percentageFree}%; background-color: ${colorStyle}"></div>
+                </div>
+
+                <div class="actions">
+                    <input type="number" id="input-${box.id}" class="input-cm" step="0.1" min="0" max="14" placeholder="cm">
+                    <button class="btn btn-icon btn-add" onclick="addSpace('${box.id}')" title="Ocupar espaço"><i class="fas fa-minus"></i> Ocupar</button>
+                    <button class="btn btn-icon btn-reset" onclick="resetBox('${box.id}')" title="Voltar para 14cm"><i class="fas fa-undo"></i></button>
+                    <button class="btn btn-icon btn-lock" onclick="toggleLock('${box.id}')" title="${box.locked ? 'Destravar' : 'Reservar/Travar'}">
+                        ${box.locked ? 'Destravar' : 'Reservar'}
+                    </button>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    // --- Ações do Usuário ---
+
+    function addSpace(id) {
+        const input = document.getElementById(`input-${id}`);
+        const val = parseFloat(input.value);
+        
+        if (isNaN(val) || val <= 0) {
+            alert("Digite um valor válido em cm.");
+            return;
+        }
+
+        const box = boxes.find(b => b.id === id);
+        if (box) {
+            if (box.freeSpace - val < 0) {
+                alert("Erro: O espaço livre não pode ser negativo.");
+                return;
+            }
+            box.freeSpace -= val;
+            input.value = ''; // Limpa input
+            saveAndRender();
+        }
+    }
+
+    function resetBox(id) {
+        if(!confirm("Tem certeza que deseja resetar este box para 14cm livres?")) return;
+        
+        const box = boxes.find(b => b.id === id);
+        if (box) {
+            box.freeSpace = MAX_CAPACITY;
+            saveAndRender();
+        }
+    }
+
+    function toggleLock(id) {
+        const box = boxes.find(b => b.id === id);
+        if (box) {
+            // Ao reservar (locked = true), nós travamos a edição.
+            // O valor atual de freeSpace é mantido (congelado).
+            // Ao destravar, ele volta a ser editável com o valor que estava.
+            box.locked = !box.locked;
+            saveAndRender();
+        }
+    }
+
+    function limparTudo() {
+        if(confirm("Isso apagará todos os dados salvos no navegador. Continuar?")) {
+            localStorage.removeItem(STORAGE_KEY);
+            boxes = [];
+            renderBoxes();
+        }
+    }
+
+    // --- Persistência ---
+    function saveAndRender() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(boxes));
+        const searchVal = document.getElementById('searchBox').value;
+        renderBoxes(searchVal);
+    }
+
+</script>
+
+</body>
+</html>
