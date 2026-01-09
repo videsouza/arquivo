@@ -254,7 +254,7 @@
 
     <script>
         // --- CORES ---
-        const THEME_COLORS = ['#f7931e', '#fcd34d', '#f97316', '#78350f', '#fbbf24', '#d97706'];
+        const THEME_COLORS = ['#2563eb', '#fcd34d', '#f97316', '#78350f', '#fbbf24', '#d97706'];
         
         // --- UPLOAD ---
         const uploadArea = document.getElementById('uploadArea');
@@ -543,7 +543,7 @@
             setTimeout(() => {
                 new Chart(document.getElementById(id), {
                     type: type,
-                    data: { labels: labels, datasets: [{ label: 'Qtd', data: data, backgroundColor: type==='line'?'rgba(247,147,30,0.1)':'#f7931e', borderColor:'#f7931e', fill:true, tension:0.4 }] },
+                    data: { labels: labels, datasets: [{ label: 'Qtd', data: data, backgroundColor: type==='line'?'rgba(37,99,235,0.1)':'#2563eb', borderColor:'#f7931e', fill:true, tension:0.4 }] },
                     options: { maintainAspectRatio:false }
                 });
             }, 100);
