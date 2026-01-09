@@ -89,93 +89,113 @@
 
     const MAX_CAPACITY = 14;
     let boxes = [];
-    let fileSHA = ""; // Necessário para atualizar o arquivo no GitHub
-
+    
     // Inicializa carregando dados
     window.onload = carregarDoGitHub;
 
-    // --- FUNÇÕES DE API GITHUB ---
+    // --- FUNÇÕES DE API GITHUB (CORRIGIDAS) ---
+
+    // Função auxiliar para montar os Headers
+    function getHeaders() {
+        return { 
+            'Authorization': `token ${GITHUB_TOKEN}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json'
+        };
+    }
 
     async function carregarDoGitHub() {
-        mostrarLoader(true, "Buscando dados no GitHub...");
-        const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${FILE_PATH}`;
+        mostrarLoader(true, "Sincronizando...");
+        // Adicionamos ?t=Date.now() para evitar que o navegador use cache antigo
+        const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${FILE_PATH}?t=${Date.now()}`;
         
         try {
-            const response = await fetch(url, {
-                headers: { 
-                    'Authorization': `token ${GITHUB_TOKEN}`,
-                    'Accept': 'application/vnd.github.v3+json'
-                }
-            });
+            const response = await fetch(url, { headers: getHeaders() });
 
             if (response.status === 404) {
-                alert("Arquivo dados.json não encontrado no repositório. Crie-o com conteúdo [] primeiro.");
+                // Arquivo não existe, inicia vazio
+                boxes = [];
+                renderBoxes();
+                mostrarLoader(false);
                 return;
             }
 
             const data = await response.json();
-            fileSHA = data.sha; // Guarda o SHA atual (essencial para fazer update)
             
-            // O conteúdo vem em Base64, precisamos decodificar
-            // decodeURIComponent(escape(window.atob(str))) resolve problemas de acentos utf-8
+            // Decodifica conteúdo
             const content = decodeURIComponent(escape(window.atob(data.content)));
-            
             boxes = JSON.parse(content);
             renderBoxes();
-            msg("Dados sincronizados com sucesso.");
+            
         } catch (error) {
             console.error(error);
-            alert("Erro ao carregar dados. Verifique o Console e suas configurações.");
+            alert("Erro ao ler dados: " + error.message);
         } finally {
             mostrarLoader(false);
         }
     }
 
     async function salvarNoGitHub() {
-        mostrarLoader(true, "Salvando alterações permanentemente...");
+        mostrarLoader(true, "Salvando...");
         const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${FILE_PATH}`;
         
-        // Codifica para Base64 lidando com caracteres especiais
-        const contentJson = JSON.stringify(boxes, null, 2);
-        const contentBase64 = window.btoa(unescape(encodeURIComponent(contentJson)));
-
-        const payload = {
-            message: "Atualização via Sistema Web",
-            content: contentBase64,
-            sha: fileSHA // Precisamos enviar o SHA do arquivo que estamos substituindo
-        };
-
         try {
+            // PASSO 1: Obter o SHA mais recente (Isso corrige o erro de conflito)
+            // Fazemos uma leitura leve (GET) apenas para pegar o SHA atual do arquivo no servidor
+            let currentSha = null;
+            try {
+                const getResponse = await fetch(`${url}?t=${Date.now()}`, { headers: getHeaders() });
+                if (getResponse.ok) {
+                    const getData = await getResponse.json();
+                    currentSha = getData.sha;
+                }
+            } catch (e) {
+                console.log("Arquivo ainda não existe, será criado.");
+            }
+
+            // PASSO 2: Preparar o conteúdo
+            const contentJson = JSON.stringify(boxes, null, 2);
+            const contentBase64 = window.btoa(unescape(encodeURIComponent(contentJson)));
+
+            const payload = {
+                message: "Update via Sistema Web",
+                content: contentBase64
+            };
+
+            // Se o arquivo já existe, TEMOS que mandar o SHA que acabamos de buscar
+            if (currentSha) {
+                payload.sha = currentSha;
+            }
+
+            // PASSO 3: Enviar a atualização (PUT)
             const response = await fetch(url, {
                 method: 'PUT',
-                headers: {
-                    'Authorization': `token ${GITHUB_TOKEN}`,
-                    'Content-Type': 'application/json'
-                },
+                headers: getHeaders(),
                 body: JSON.stringify(payload)
             });
 
             if (response.ok) {
-                const data = await response.json();
-                fileSHA = data.content.sha; // Atualiza o SHA para a próxima operação
-                msg("Salvo com sucesso no GitHub!");
+                msg("Salvo com sucesso!");
             } else {
-                throw new Error("Falha ao salvar");
+                const errData = await response.json();
+                throw new Error(`Erro ${response.status}: ${errData.message}`);
             }
+
         } catch (error) {
-            alert("Erro ao salvar. Alguém pode ter modificado o arquivo ao mesmo tempo. Atualize a página e tente novamente.");
+            console.error(error);
+            alert("FALHA AO SALVAR:\n" + error.message + "\n\nVerifique se o TOKEN está correto e tem permissão 'repo'.");
         } finally {
             mostrarLoader(false);
         }
     }
 
-    // --- LÓGICA DE EXCEL E INTERFACE ---
+    // --- LÓGICA DE EXCEL E INTERFACE (MANTIDA) ---
 
     document.getElementById('excelInput').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        if(!confirm("Isso vai SOBRESCREVER o banco de dados do GitHub com esta planilha. Continuar?")) return;
+        if(!confirm("CUIDADO: Isso vai substituir TODOS os dados do GitHub pela planilha. Continuar?")) return;
 
         const reader = new FileReader();
         reader.onload = (evt) => {
@@ -192,13 +212,15 @@
                 const status = row.B;
                 const freeSpace = (status == 1) ? 0 : MAX_CAPACITY;
                 
-                newBoxes.push({ id, freeSpace, locked: false });
+                // Evita duplicatas na importação
+                if(!newBoxes.find(b => b.id === id)) {
+                    newBoxes.push({ id, freeSpace, locked: false });
+                }
             });
 
-            // Ordena e Salva
-            boxes = newBoxes.sort((a,b) => a.id.localeCompare(b.id));
+            boxes = newBoxes.sort((a,b) => a.id.localeCompare(b.id, undefined, {numeric: true}));
             renderBoxes();
-            salvarNoGitHub(); // Dispara o salvamento automático após upload
+            salvarNoGitHub(); 
         };
         reader.readAsArrayBuffer(file);
     });
@@ -210,13 +232,14 @@
         const val = parseFloat(input.value);
         if (isNaN(val) || val <= 0) return;
 
+        // Atualizamos o array local primeiro para feedback visual rápido
         const box = boxes.find(b => b.id === id);
         if (box) {
             if (box.freeSpace - val < 0) return alert("Espaço insuficiente.");
             box.freeSpace -= val;
             input.value = '';
             renderBoxes();
-            salvarNoGitHub(); // Salva a cada alteração
+            salvarNoGitHub(); 
         }
     };
 
@@ -249,11 +272,17 @@
         
         const filtered = boxes.filter(b => b.id.toLowerCase().includes(filter.toLowerCase()));
 
+        if(filtered.length === 0) {
+             grid.innerHTML = '<p style="grid-column:1/-1; text-align:center">Nenhum box encontrado (ou carregando...)</p>';
+             return;
+        }
+
         filtered.forEach(box => {
             const pct = (box.freeSpace / MAX_CAPACITY) * 100;
             let statusClass = '';
             let color = 'var(--success)';
             
+            // Lógica visual
             if (box.freeSpace <= 0.1) { statusClass = 'full'; color = 'var(--danger)'; }
             else if (box.freeSpace < 5) { color = 'var(--warning)'; }
             if (box.locked) statusClass += ' locked';
@@ -261,14 +290,14 @@
             const div = document.createElement('div');
             div.className = `card ${statusClass}`;
             
-            // Só habilita inputs se não estiver travado
             const disabledAttr = box.locked ? 'disabled' : '';
             const lockIcon = box.locked ? '<i class="fas fa-lock"></i>' : '<i class="fas fa-lock-open" style="color:#ccc"></i>';
+            const btnClass = box.locked ? 'opacity:0.5' : '';
 
             div.innerHTML = `
                 <div class="card-header">
                     <span>${box.id}</span>
-                    <span>${lockIcon}</span>
+                    <span style="cursor:pointer" onclick="toggleLock('${box.id}')">${lockIcon}</span>
                 </div>
                 <div style="font-size:0.9em; color:#555;">
                     Livre: <strong>${parseFloat(box.freeSpace).toFixed(2)} cm</strong>
@@ -276,13 +305,10 @@
                 <div class="bar-bg">
                     <div class="bar-fill" style="width: ${pct}%; background-color: ${color}"></div>
                 </div>
-                <div class="card-actions">
+                <div class="card-actions" style="${btnClass}">
                     <input type="number" id="in-${box.id}" class="input-mini" placeholder="cm" ${disabledAttr}>
                     <button class="btn-mini btn-act" onclick="addSpace('${box.id}')" ${disabledAttr} title="Ocupar"><i class="fas fa-minus"></i></button>
                     <button class="btn-mini btn-res" onclick="resetBox('${box.id}')" ${disabledAttr} title="Resetar"><i class="fas fa-undo"></i></button>
-                    <button class="btn-mini btn-lck" onclick="toggleLock('${box.id}')" title="Travar/Destravar">
-                        ${box.locked ? 'Destravar' : 'Reservar'}
-                    </button>
                 </div>
             `;
             grid.appendChild(div);
@@ -295,8 +321,11 @@
     }
     
     function msg(texto) {
-        document.getElementById('msg-area').innerText = texto;
-        setTimeout(() => document.getElementById('msg-area').innerText = '', 5000);
+        const area = document.getElementById('msg-area');
+        area.innerText = texto;
+        area.style.color = "green";
+        area.style.fontWeight = "bold";
+        setTimeout(() => area.innerText = '', 4000);
     }
 </script>
 
