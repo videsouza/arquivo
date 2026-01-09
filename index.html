@@ -8,91 +8,198 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
     <style>
+        /* Variáveis de Cor – Paleta SÓBRIA (Azul + Cinza) */
+        :root {
+            --primary-color: #2563eb;        /* Azul institucional */
+            --text-dark: #111827;            /* Cinza quase preto */
+            --text-light: #6b7280;           /* Cinza médio */
+            --bg-light: #f3f4f6;              /* Cinza muito claro */
+            --bg-white: #ffffff;
+            --border-color: #d1d5db;          /* Cinza neutro */
+            --shadow-subtle: 0 2px 4px rgba(0, 0, 0, 0.04);
+            --shadow-hover: 0 12px 24px rgba(0, 0, 0, 0.08);
+        }
 
-        /* Variáveis de Cor – Padrão Governamental / Arquivo Público */
-:root {
-    --primary-color: #1f4f82;        /* Azul institucional */
-    --secondary-color: #3a6ea5;      /* Azul apoio */
-    --text-dark: #111827;            /* Preto administrativo */
-    --text-light: #4b5563;           /* Cinza texto */
-    --bg-light: #f1f3f5;              /* Fundo neutro */
-    --bg-white: #ffffff;
-    --border-color: #d1d5db;          /* Cinza administrativo */
-    --shadow-subtle: 0 2px 4px rgba(0, 0, 0, 0.04);
-    --shadow-hover: 0 10px 20px rgba(0, 0, 0, 0.08);
-}
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-/* --- GRID CENTRALIZADO --- */
-.services-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
-    justify-items: center; /* centraliza os cards */
-}
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+            min-height: 100vh;
+            padding: 40px 20px;
+            line-height: 1.6;
+            color: var(--text-light);
+        }
 
-/* Cards com largura controlada */
-.service-card {
-    width: 100%;
-    max-width: 360px;
-    background: var(--bg-white);
-    border-radius: 10px;
-    padding: 30px;
-    box-shadow: var(--shadow-subtle);
-    border: 1px solid var(--border-color);
-    transition: all 0.3s ease-in-out;
-    text-decoration: none;
-    color: inherit;
-}
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
 
-.service-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-hover);
-    border-color: var(--primary-color);
-}
+        .hero {
+            text-align: center;
+            color: var(--text-dark);
+            margin-bottom: 60px;
+            padding: 20px 0;
+            animation: fadeInDown 0.8s ease;
+        }
 
-/* Badges institucionais */
-.badge {
-    color: white;
-}
+        .hero h1 {
+            font-size: 44px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+        }
 
-.badge-new {
-    background-color: #2f855a; /* Verde funcional */
-}
+        .hero p {
+            font-size: 18px;
+            max-width: 700px;
+            margin: 0 auto;
+            color: var(--text-light);
+        }
 
-.badge-breve {
-    background-color: #6b7280; /* Cinza administrativo */
-}
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            padding: 20px 0;
+            margin-bottom: 60px;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
 
-.badge-popular {
-    background-color: var(--secondary-color);
-}
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-dark);
+        }
 
-/* Ícone do card */
-.card-icon {
-    background: rgba(31, 79, 130, 0.12);
-    color: var(--primary-color);
-}
+        .stat-icon {
+            color: var(--primary-color);
+            font-size: 20px;
+        }
 
-.service-card:hover .card-icon {
-    background: var(--primary-color);
-    color: #ffffff;
-}
+        .stat-value {
+            font-weight: 700;
+            font-size: 20px;
+            color: var(--text-dark);
+        }
 
-/* Ação */
-.card-action {
-    color: var(--primary-color);
-}
+        .stat-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--text-light);
+        }
 
-/* Footer */
-.footer a {
-    color: var(--primary-color);
-}
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
 
+        .service-card {
+            background: var(--bg-white);
+            border-radius: 12px;
+            padding: 30px;
+            transition: all 0.3s ease-in-out;
+            box-shadow: var(--shadow-subtle);
+            border: 1px solid var(--border-color);
+            text-decoration: none;
+            color: inherit;
+        }
 
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--primary-color);
+        }
+
+        .badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: white;
+        }
+
+        .badge-new { background-color: #10b981; }      /* Verde frio */
+        .badge-breve { background-color: #64748b; }   /* Cinza azulado */
+        .badge-popular { background-color: var(--primary-color); }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(37, 99, 235, 0.12);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .service-card:hover .card-icon {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+        }
+
+        .card-desc {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+
+        .card-action {
+            margin-top: 15px;
+            font-weight: 600;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+        }
+
+        .footer {
+            margin-top: 80px;
+            text-align: center;
+            color: var(--text-light);
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 32px; }
+            .stats-bar { flex-direction: column; gap: 20px; }
+        }
     </style>
 </head>
 <body>
 <!-- HTML original mantido integralmente -->
+
     <div class="container">
         
         <section class="services-grid">
@@ -155,5 +262,7 @@
         </footer>
 
     </div>
+
+    
 </body>
 </html>
