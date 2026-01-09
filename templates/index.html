@@ -8,31 +8,41 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
     <style>
-        /* CSS Mantido idêntico ao anterior */
         :root { --primary: #2c3e50; --accent: #3498db; --success: #27ae60; --danger: #c0392b; --warning: #f39c12; --bg: #f8f9fa; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); color: #333; margin: 0; padding: 20px; }
         .container { max-width: 1100px; margin: 0 auto; }
         header { text-align: center; margin-bottom: 25px; border-bottom: 1px solid #e0e0e0; padding-bottom: 20px; }
+        
         .controls { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
+        
         .btn { padding: 10px 18px; border: none; border-radius: 5px; cursor: pointer; color: white; font-size: 14px; font-weight: 600; }
         .btn-upload { background-color: var(--primary); }
+        
         input[type="file"] { display: none; }
         .file-label { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; background-color: var(--primary); color: white; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: 600; }
+        
         .search-input { padding: 10px 15px; border: 1px solid #ccc; border-radius: 5px; flex-grow: 1; outline: none; }
+        
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        
         .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); border-left: 5px solid var(--success); position: relative; }
         .card.full { border-left-color: var(--danger); }
         .card.locked { border-left-color: var(--warning); background-color: #fffdf5; }
+
         .card-header { display: flex; justify-content: space-between; align-items: center; font-weight: bold; margin-bottom: 12px; font-size: 1.15em; color: var(--primary); }
         .info-row { font-size: 0.95em; color: #666; display: flex; justify-content: space-between; margin-bottom: 8px; }
+        
         .bar-bg { height: 8px; background: #eee; border-radius: 4px; overflow: hidden; margin-bottom: 15px; }
         .bar-fill { height: 100%; background: var(--success); width: 100%; transition: width 0.4s ease-out; }
+        
         .card-actions { display: flex; gap: 8px; margin-top: auto; }
         .input-mini { width: 55px; padding: 6px; border: 1px solid #ddd; border-radius: 4px; text-align: center; }
+        
         .btn-mini { padding: 6px 12px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; color: white; display: flex; align-items: center; gap: 5px; flex: 1; justify-content: center; }
         .btn-act { background-color: var(--accent); }
         .btn-res { background-color: #7f8c8d; max-width: 40px; }
         .btn-lck { background-color: var(--warning); color: #fff; }
+        
         #loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 999; justify-content: center; align-items: center; }
     </style>
 </head>
@@ -48,7 +58,9 @@
     <div class="controls">
         <label for="excelInput" class="file-label"><i class="fas fa-file-excel"></i> Importar Excel</label>
         <input type="file" id="excelInput" accept=".xlsx, .xls" />
+        
         <input type="text" id="searchBox" class="search-input" placeholder="Pesquisar...">
+        
         <button class="btn btn-upload" onclick="loadBoxes()"><i class="fas fa-sync"></i> Atualizar</button>
     </div>
 
@@ -61,15 +73,16 @@
 
     window.onload = loadBoxes;
 
+    // --- COMUNICAÇÃO COM O PYTHON ---
     async function loadBoxes() {
         document.getElementById('loader').style.display = 'flex';
         try {
-            const res = await fetch('/api/boxes'); // Chama o Python
+            const res = await fetch('/api/boxes');
             boxes = await res.json();
             if(boxes.error) throw new Error(boxes.error);
             renderBoxes();
         } catch (e) {
-            alert("Erro ao carregar: " + e.message);
+            console.error(e); // Silencioso se for a primeira vez
         } finally {
             document.getElementById('loader').style.display = 'none';
         }
@@ -96,6 +109,7 @@
     document.getElementById('excelInput').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
+
         if(!confirm("Isso substituirá o banco de dados. Continuar?")) return;
 
         const reader = new FileReader();
@@ -107,17 +121,20 @@
             
             let newBoxes = [];
             jsonData.forEach((row, index) => {
+                // Pula cabeçalho
                 if (!row.A || (index === 0 && String(row.A).match(/box|id/i))) return;
+                
                 const id = String(row.A).trim();
                 const status = row.B;
                 const freeSpace = (status == 1) ? 0 : MAX_CAPACITY;
+                
                 if(!newBoxes.find(b => b.id === id)) {
                     newBoxes.push({ id, freeSpace, locked: false });
                 }
             });
             boxes = newBoxes;
             renderBoxes();
-            saveBoxes(); // Salva via Python
+            saveBoxes();
         };
         reader.readAsArrayBuffer(file);
     });
@@ -127,6 +144,7 @@
         const input = document.getElementById(`in-${id}`);
         const val = parseFloat(input.value);
         if (isNaN(val) || val <= 0) return;
+
         const box = boxes.find(b => b.id === id);
         if (box) {
             if (box.freeSpace - val < 0) return alert("Sem espaço.");
@@ -138,7 +156,7 @@
     };
 
     window.resetBox = (id) => {
-        if(!confirm("Resetar?")) return;
+        if(!confirm("Resetar este box?")) return;
         const box = boxes.find(b => b.id === id);
         if (box) {
             box.freeSpace = MAX_CAPACITY;
@@ -162,30 +180,57 @@
     function renderBoxes(filter = '') {
         const grid = document.getElementById('grid');
         grid.innerHTML = '';
+        
         let filtered = boxes.filter(b => b.id.toLowerCase().includes(filter.toLowerCase()));
         
+        // Ordenação Natural
         filtered.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' }));
 
         filtered.forEach(box => {
             const pct = (box.freeSpace / MAX_CAPACITY) * 100;
-            let statusClass = '', color = 'var(--success)';
+            let statusClass = '';
+            let color = 'var(--success)';
+            
             if (box.freeSpace <= 0.1) { statusClass = 'full'; color = 'var(--danger)'; }
             else if (box.freeSpace < 5) color = 'var(--warning)';
             if (box.locked) statusClass += ' locked';
 
             const disabledAttr = box.locked ? 'disabled' : '';
+            // Ícone de cadeado no topo
             const lockIcon = box.locked ? '<i class="fas fa-lock"></i>' : '<i class="fas fa-lock-open" style="color:#ccc"></i>';
 
             const div = document.createElement('div');
             div.className = `card ${statusClass}`;
+            
+            // AQUI ESTAVA FALTANDO O BOTÃO. Adicionei o botão "Reservar/Destravar" abaixo.
             div.innerHTML = `
-                <div class="card-header"><span>${box.id}</span><span onclick="toggleLock('${box.id}')" style="cursor:pointer">${lockIcon}</span></div>
-                <div class="info-row">Livre: <strong>${parseFloat(box.freeSpace).toFixed(2)} cm</strong></div>
-                <div class="bar-bg"><div class="bar-fill" style="width: ${pct}%; background-color: ${color}"></div></div>
+                <div class="card-header">
+                    <span>${box.id}</span>
+                    <span onclick="toggleLock('${box.id}')" style="cursor:pointer">${lockIcon}</span>
+                </div>
+                
+                <div class="info-row">
+                    Livre: <strong>${parseFloat(box.freeSpace).toFixed(2)} cm</strong>
+                </div>
+
+                <div class="bar-bg">
+                    <div class="bar-fill" style="width: ${pct}%; background-color: ${color}"></div>
+                </div>
+
                 <div class="card-actions" style="${box.locked ? 'opacity:0.6' : ''}">
                     <input type="number" id="in-${box.id}" class="input-mini" placeholder="cm" ${disabledAttr}>
-                    <button class="btn-mini btn-act" onclick="addSpace('${box.id}')" ${disabledAttr}><i class="fas fa-minus"></i></button>
-                    <button class="btn-mini btn-res" onclick="resetBox('${box.id}')" ${disabledAttr}><i class="fas fa-undo"></i></button>
+                    
+                    <button class="btn-mini btn-act" onclick="addSpace('${box.id}')" ${disabledAttr} title="Ocupar">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    
+                    <button class="btn-mini btn-res" onclick="resetBox('${box.id}')" ${disabledAttr} title="Resetar">
+                        <i class="fas fa-undo"></i>
+                    </button>
+                    
+                    <button class="btn-mini btn-lck" onclick="toggleLock('${box.id}')" title="Travar">
+                        ${box.locked ? 'Destravar' : 'Reservar'}
+                    </button>
                 </div>
             `;
             grid.appendChild(div);
