@@ -3,380 +3,301 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerenciador de Capacidade de Box</title>
+    <title>Sistema de Boxes (JSON GitHub)</title>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
     <style>
-        :root {
-            --primary: #2c3e50;
-            --accent: #3498db;
-            --success: #27ae60;
-            --danger: #e74c3c;
-            --warning: #f39c12;
-            --light: #ecf0f1;
-            --dark: #2c3e50;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
-            color: var(--dark);
-            margin: 0;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #ddd;
-        }
-
-        .controls {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.2s;
-            color: white;
-        }
-
-        .btn-upload { background-color: var(--accent); }
-        .btn-clear { background-color: var(--danger); }
+        /* Design Minimalista e Sóbrio */
+        :root { --primary: #2c3e50; --accent: #3498db; --success: #27ae60; --danger: #c0392b; --warning: #f39c12; --bg: #f8f9fa; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        
+        header { text-align: center; margin-bottom: 30px; border-bottom: 1px solid #ddd; padding-bottom: 20px; }
+        h1 { font-weight: 300; letter-spacing: 1px; color: var(--primary); }
+        
+        .controls { background: white; padding: 20px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        
+        .btn { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; color: white; font-size: 14px; transition: 0.2s; }
         .btn:hover { opacity: 0.9; }
-
+        .btn-upload { background-color: var(--primary); }
+        .btn-save { background-color: var(--success); }
+        
         input[type="file"] { display: none; }
-        .file-label {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: var(--accent);
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        #searchBox {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            width: 250px;
-            font-size: 16px;
-        }
-
-        /* Grid de Boxes */
-        .box-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .box-card {
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            border-left: 5px solid var(--success);
-            transition: transform 0.2s;
-            position: relative;
-        }
-
-        .box-card.full { border-left-color: var(--danger); }
-        .box-card.locked { border-left-color: var(--warning); background-color: #fcf8e3; }
-
-        .box-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .box-title { font-size: 1.2em; font-weight: bold; }
+        .file-label { display: inline-block; padding: 10px 15px; background-color: var(--primary); color: white; border-radius: 4px; cursor: pointer; font-size: 14px; }
         
-        .capacity-bar {
-            height: 10px;
-            background: #eee;
-            border-radius: 5px;
-            overflow: hidden;
-            margin: 10px 0;
-        }
-
-        .capacity-fill {
-            height: 100%;
-            background: var(--success);
-            width: 100%;
-            transition: width 0.3s, background-color 0.3s;
-        }
-
-        .info-text { font-size: 0.9em; color: #666; margin-bottom: 15px; }
-        .highlight { font-weight: bold; font-size: 1.1em; color: var(--dark); }
-
-        .actions {
-            display: flex;
-            gap: 5px;
-            margin-top: 10px;
-        }
-
-        .input-cm {
-            width: 60px;
-            padding: 5px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-
-        .btn-icon {
-            padding: 5px 10px;
-            font-size: 0.9em;
-        }
-
-        .btn-add { background-color: var(--primary); }
-        .btn-reset { background-color: var(--light); color: #333; border: 1px solid #ccc; }
-        .btn-lock { background-color: var(--warning); }
+        .search-input { padding: 10px; border: 1px solid #ccc; border-radius: 4px; flex-grow: 1; }
         
-        /* Estado travado */
-        .box-card.locked .actions input,
-        .box-card.locked .actions .btn-add,
-        .box-card.locked .actions .btn-reset {
-            opacity: 0.5;
-            pointer-events: none;
-        }
+        /* Loading Overlay */
+        #loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 999; justify-content: center; align-items: center; flex-direction: column; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        /* Grid */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+        .card { background: white; padding: 15px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border-left: 4px solid var(--success); position: relative; }
+        .card.full { border-left-color: var(--danger); }
+        .card.locked { border-left-color: var(--warning); background-color: #fffdf5; }
+
+        .card-header { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 10px; font-size: 1.1em; }
+        .bar-bg { height: 8px; background: #eee; border-radius: 4px; overflow: hidden; margin: 8px 0; }
+        .bar-fill { height: 100%; background: var(--success); width: 100%; transition: width 0.3s; }
+        
+        .card-actions { display: flex; gap: 5px; margin-top: 10px; }
+        .input-mini { width: 50px; padding: 5px; border: 1px solid #ddd; border-radius: 3px; }
+        .btn-mini { padding: 5px 10px; font-size: 12px; border: none; border-radius: 3px; cursor: pointer; color: white; }
+        .btn-act { background-color: var(--accent); }
+        .btn-res { background-color: #95a5a6; }
+        .btn-lck { background-color: var(--warning); }
+        
+        /* Status msg */
+        #msg-area { width: 100%; text-align: center; font-size: 0.9em; color: #666; margin-top: 5px; }
     </style>
 </head>
 <body>
 
+<div id="loader">
+    <div class="spinner"></div>
+    <p id="loader-text" style="margin-top:10px; color:#333;">Processando...</p>
+</div>
+
 <div class="container">
     <header>
-        <h1>Gestão de Espaço em Box (Max 14cm)</h1>
-        <p>Importe sua planilha ou gerencie os boxes existentes.</p>
+        <h1>Controle de Arquivo</h1>
+        <p>Sistema baseado em JSON Git</p>
     </header>
 
     <div class="controls">
-        <div>
-            <label for="excelInput" class="file-label"><i class="fas fa-file-excel"></i> Importar Excel</label>
-            <input type="file" id="excelInput" accept=".xlsx, .xls" />
-            <span id="fileName" style="margin-left: 10px; font-size: 0.9em; color: #666;"></span>
-        </div>
+        <label for="excelInput" class="file-label"><i class="fas fa-upload"></i> Importar Excel</label>
+        <input type="file" id="excelInput" accept=".xlsx, .xls" />
         
-        <input type="text" id="searchBox" placeholder="Pesquisar Box (ex: BOX01)...">
-        
-        <button class="btn btn-clear" onclick="limparTudo()"><i class="fas fa-trash"></i> Resetar Sistema</button>
+        <input type="text" id="searchBox" class="search-input" placeholder="Buscar box...">
+        <button class="btn btn-upload" onclick="carregarDoGitHub()"><i class="fas fa-sync"></i> Atualizar Dados</button>
     </div>
+    <div id="msg-area"></div>
 
-    <div id="grid" class="box-grid">
-        </div>
+    <div id="grid" class="grid"></div>
 </div>
 
 <script>
-    // --- Configuração ---
-    const MAX_CAPACITY = 14; // cm
-    const STORAGE_KEY = 'box_system_data';
-    
-    // --- Estado da Aplicação ---
+    // --- CONFIGURAÇÃO OBRIGATÓRIA ---
+    const GITHUB_USERNAME = "videsouza"; // Ex: vinicius-souza
+    const GITHUB_REPO = "arquivo";    // Ex: gestao-box
+    const GITHUB_TOKEN = "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";        // O token que começa com ghp_...
+    const FILE_PATH = "dados.json";               // Nome do arquivo no repo
+    // --------------------------------
+
+    const MAX_CAPACITY = 14;
     let boxes = [];
+    let fileSHA = ""; // Necessário para atualizar o arquivo no GitHub
 
-    // --- Inicialização ---
-    window.onload = () => {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-            boxes = JSON.parse(saved);
+    // Inicializa carregando dados
+    window.onload = carregarDoGitHub;
+
+    // --- FUNÇÕES DE API GITHUB ---
+
+    async function carregarDoGitHub() {
+        mostrarLoader(true, "Buscando dados no GitHub...");
+        const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${FILE_PATH}`;
+        
+        try {
+            const response = await fetch(url, {
+                headers: { 
+                    'Authorization': `token ${GITHUB_TOKEN}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+
+            if (response.status === 404) {
+                alert("Arquivo dados.json não encontrado no repositório. Crie-o com conteúdo [] primeiro.");
+                return;
+            }
+
+            const data = await response.json();
+            fileSHA = data.sha; // Guarda o SHA atual (essencial para fazer update)
+            
+            // O conteúdo vem em Base64, precisamos decodificar
+            // decodeURIComponent(escape(window.atob(str))) resolve problemas de acentos utf-8
+            const content = decodeURIComponent(escape(window.atob(data.content)));
+            
+            boxes = JSON.parse(content);
             renderBoxes();
+            msg("Dados sincronizados com sucesso.");
+        } catch (error) {
+            console.error(error);
+            alert("Erro ao carregar dados. Verifique o Console e suas configurações.");
+        } finally {
+            mostrarLoader(false);
         }
-    };
+    }
 
-    // --- Importação de Excel ---
+    async function salvarNoGitHub() {
+        mostrarLoader(true, "Salvando alterações permanentemente...");
+        const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${FILE_PATH}`;
+        
+        // Codifica para Base64 lidando com caracteres especiais
+        const contentJson = JSON.stringify(boxes, null, 2);
+        const contentBase64 = window.btoa(unescape(encodeURIComponent(contentJson)));
+
+        const payload = {
+            message: "Atualização via Sistema Web",
+            content: contentBase64,
+            sha: fileSHA // Precisamos enviar o SHA do arquivo que estamos substituindo
+        };
+
+        try {
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${GITHUB_TOKEN}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                fileSHA = data.content.sha; // Atualiza o SHA para a próxima operação
+                msg("Salvo com sucesso no GitHub!");
+            } else {
+                throw new Error("Falha ao salvar");
+            }
+        } catch (error) {
+            alert("Erro ao salvar. Alguém pode ter modificado o arquivo ao mesmo tempo. Atualize a página e tente novamente.");
+        } finally {
+            mostrarLoader(false);
+        }
+    }
+
+    // --- LÓGICA DE EXCEL E INTERFACE ---
+
     document.getElementById('excelInput').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        
-        document.getElementById('fileName').innerText = file.name;
+
+        if(!confirm("Isso vai SOBRESCREVER o banco de dados do GitHub com esta planilha. Continuar?")) return;
 
         const reader = new FileReader();
         reader.onload = (evt) => {
             const data = new Uint8Array(evt.target.result);
             const workbook = XLSX.read(data, {type: 'array'});
             const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-            
-            // Converte para JSON (assumindo Col A = ID, Col B = Status)
-            // sheet_to_json por padrão usa a primeira linha como header.
-            // Vamos usar header: A para pegar por colunas diretamente.
             const jsonData = XLSX.utils.sheet_to_json(firstSheet, {header: "A"});
             
-            // Processar dados (pulando cabeçalho se necessário - aqui vamos assumir que a linha 1 tem dados ou header, vamos filtrar)
-            // Se a célula A1 for "Box" ou "ID", precisamos pular.
-            
             let newBoxes = [];
-            
             jsonData.forEach((row, index) => {
-                // Validação básica para ignorar cabeçalhos ou linhas vazias
-                if (!row.A || index === 0 && (row.A.toLowerCase().includes('box') || row.A.toLowerCase().includes('id'))) return;
-
-                const id = row.A; 
-                const status = row.B; // 0 ou 1
+                if (!row.A || (index === 0 && String(row.A).match(/box|id/i))) return;
                 
-                // Lógica de Negócio:
-                // Status 0 (Vazio) -> Espaço Livre = 14
-                // Status 1 (Cheio) -> Espaço Livre = 0
+                const id = String(row.A).trim();
+                const status = row.B;
                 const freeSpace = (status == 1) ? 0 : MAX_CAPACITY;
-
-                // Verifica se box já existe para não duplicar, ou atualiza
-                const existingIndex = newBoxes.findIndex(b => b.id === id);
-                if (existingIndex > -1) {
-                    newBoxes[existingIndex] = { id, freeSpace, locked: false };
-                } else {
-                    newBoxes.push({ id, freeSpace, locked: false });
-                }
+                
+                newBoxes.push({ id, freeSpace, locked: false });
             });
 
-            // Mesclar ou substituir? Aqui vamos substituir para "Inicializar"
-            if(confirm("Deseja substituir a lista atual pela nova importação?")) {
-                boxes = newBoxes;
-                saveAndRender();
-            }
+            // Ordena e Salva
+            boxes = newBoxes.sort((a,b) => a.id.localeCompare(b.id));
+            renderBoxes();
+            salvarNoGitHub(); // Dispara o salvamento automático após upload
         };
         reader.readAsArrayBuffer(file);
     });
 
-    // --- Pesquisa ---
-    document.getElementById('searchBox').addEventListener('input', (e) => {
-        renderBoxes(e.target.value);
-    });
+    // --- AÇÕES ---
 
-    // --- Lógica de Renderização ---
+    window.addSpace = (id) => {
+        const input = document.getElementById(`in-${id}`);
+        const val = parseFloat(input.value);
+        if (isNaN(val) || val <= 0) return;
+
+        const box = boxes.find(b => b.id === id);
+        if (box) {
+            if (box.freeSpace - val < 0) return alert("Espaço insuficiente.");
+            box.freeSpace -= val;
+            input.value = '';
+            renderBoxes();
+            salvarNoGitHub(); // Salva a cada alteração
+        }
+    };
+
+    window.resetBox = (id) => {
+        if(!confirm("Resetar box para 14cm?")) return;
+        const box = boxes.find(b => b.id === id);
+        if (box) {
+            box.freeSpace = MAX_CAPACITY;
+            renderBoxes();
+            salvarNoGitHub();
+        }
+    };
+
+    window.toggleLock = (id) => {
+        const box = boxes.find(b => b.id === id);
+        if (box) {
+            box.locked = !box.locked;
+            renderBoxes();
+            salvarNoGitHub();
+        }
+    };
+
+    // --- RENDERIZAÇÃO ---
+
+    document.getElementById('searchBox').addEventListener('input', (e) => renderBoxes(e.target.value));
+
     function renderBoxes(filter = '') {
         const grid = document.getElementById('grid');
         grid.innerHTML = '';
-
+        
         const filtered = boxes.filter(b => b.id.toLowerCase().includes(filter.toLowerCase()));
 
-        if (filtered.length === 0) {
-            grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">Nenhum box encontrado.</p>';
-            return;
-        }
-
         filtered.forEach(box => {
-            // Cálculos visuais
-            const percentageFree = (box.freeSpace / MAX_CAPACITY) * 100;
-            let colorClass = '';
-            let colorStyle = 'var(--success)';
+            const pct = (box.freeSpace / MAX_CAPACITY) * 100;
+            let statusClass = '';
+            let color = 'var(--success)';
             
-            if (box.freeSpace === 0) {
-                colorClass = 'full';
-                colorStyle = 'var(--danger)';
-            } else if (box.freeSpace < 5) {
-                colorStyle = 'var(--warning)';
-            }
+            if (box.freeSpace <= 0.1) { statusClass = 'full'; color = 'var(--danger)'; }
+            else if (box.freeSpace < 5) { color = 'var(--warning)'; }
+            if (box.locked) statusClass += ' locked';
 
-            if (box.locked) colorClass += ' locked';
-
-            const card = document.createElement('div');
-            card.className = `box-card ${colorClass}`;
+            const div = document.createElement('div');
+            div.className = `card ${statusClass}`;
             
-            card.innerHTML = `
-                <div class="box-header">
-                    <span class="box-title">${box.id}</span>
-                    ${box.locked ? '<i class="fas fa-lock"></i>' : '<i class="fas fa-lock-open" style="color:#ccc"></i>'}
-                </div>
-                
-                <div class="info-text">
-                    Espaço Livre: <span class="highlight">${parseFloat(box.freeSpace).toFixed(2)} cm</span>
-                </div>
+            // Só habilita inputs se não estiver travado
+            const disabledAttr = box.locked ? 'disabled' : '';
+            const lockIcon = box.locked ? '<i class="fas fa-lock"></i>' : '<i class="fas fa-lock-open" style="color:#ccc"></i>';
 
-                <div class="capacity-bar">
-                    <div class="capacity-fill" style="width: ${percentageFree}%; background-color: ${colorStyle}"></div>
+            div.innerHTML = `
+                <div class="card-header">
+                    <span>${box.id}</span>
+                    <span>${lockIcon}</span>
                 </div>
-
-                <div class="actions">
-                    <input type="number" id="input-${box.id}" class="input-cm" step="0.1" min="0" max="14" placeholder="cm">
-                    <button class="btn btn-icon btn-add" onclick="addSpace('${box.id}')" title="Ocupar espaço"><i class="fas fa-minus"></i> Ocupar</button>
-                    <button class="btn btn-icon btn-reset" onclick="resetBox('${box.id}')" title="Voltar para 14cm"><i class="fas fa-undo"></i></button>
-                    <button class="btn btn-icon btn-lock" onclick="toggleLock('${box.id}')" title="${box.locked ? 'Destravar' : 'Reservar/Travar'}">
+                <div style="font-size:0.9em; color:#555;">
+                    Livre: <strong>${parseFloat(box.freeSpace).toFixed(2)} cm</strong>
+                </div>
+                <div class="bar-bg">
+                    <div class="bar-fill" style="width: ${pct}%; background-color: ${color}"></div>
+                </div>
+                <div class="card-actions">
+                    <input type="number" id="in-${box.id}" class="input-mini" placeholder="cm" ${disabledAttr}>
+                    <button class="btn-mini btn-act" onclick="addSpace('${box.id}')" ${disabledAttr} title="Ocupar"><i class="fas fa-minus"></i></button>
+                    <button class="btn-mini btn-res" onclick="resetBox('${box.id}')" ${disabledAttr} title="Resetar"><i class="fas fa-undo"></i></button>
+                    <button class="btn-mini btn-lck" onclick="toggleLock('${box.id}')" title="Travar/Destravar">
                         ${box.locked ? 'Destravar' : 'Reservar'}
                     </button>
                 </div>
             `;
-            grid.appendChild(card);
+            grid.appendChild(div);
         });
     }
 
-    // --- Ações do Usuário ---
-
-    function addSpace(id) {
-        const input = document.getElementById(`input-${id}`);
-        const val = parseFloat(input.value);
-        
-        if (isNaN(val) || val <= 0) {
-            alert("Digite um valor válido em cm.");
-            return;
-        }
-
-        const box = boxes.find(b => b.id === id);
-        if (box) {
-            if (box.freeSpace - val < 0) {
-                alert("Erro: O espaço livre não pode ser negativo.");
-                return;
-            }
-            box.freeSpace -= val;
-            input.value = ''; // Limpa input
-            saveAndRender();
-        }
+    function mostrarLoader(show, text) {
+        document.getElementById('loader').style.display = show ? 'flex' : 'none';
+        if(text) document.getElementById('loader-text').innerText = text;
     }
-
-    function resetBox(id) {
-        if(!confirm("Tem certeza que deseja resetar este box para 14cm livres?")) return;
-        
-        const box = boxes.find(b => b.id === id);
-        if (box) {
-            box.freeSpace = MAX_CAPACITY;
-            saveAndRender();
-        }
+    
+    function msg(texto) {
+        document.getElementById('msg-area').innerText = texto;
+        setTimeout(() => document.getElementById('msg-area').innerText = '', 5000);
     }
-
-    function toggleLock(id) {
-        const box = boxes.find(b => b.id === id);
-        if (box) {
-            // Ao reservar (locked = true), nós travamos a edição.
-            // O valor atual de freeSpace é mantido (congelado).
-            // Ao destravar, ele volta a ser editável com o valor que estava.
-            box.locked = !box.locked;
-            saveAndRender();
-        }
-    }
-
-    function limparTudo() {
-        if(confirm("Isso apagará todos os dados salvos no navegador. Continuar?")) {
-            localStorage.removeItem(STORAGE_KEY);
-            boxes = [];
-            renderBoxes();
-        }
-    }
-
-    // --- Persistência ---
-    function saveAndRender() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(boxes));
-        const searchVal = document.getElementById('searchBox').value;
-        renderBoxes(searchVal);
-    }
-
 </script>
 
 </body>
