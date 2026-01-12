@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ocupação de Boxes</title>
+    <title>Ocupação de Boxes (Render)</title>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
@@ -28,7 +28,6 @@
         
         .search-input { padding: 10px 15px; border: 1px solid #ccc; border-radius: 5px; flex-grow: 1; outline: none; }
 
-        /* Estilo do Checkbox de Filtro */
         .filter-toggle { display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--primary); background: #f1f2f6; padding: 8px 15px; border-radius: 5px; cursor: pointer; }
         .filter-toggle input { cursor: pointer; width: 16px; height: 16px; }
         
@@ -61,11 +60,11 @@
 
 <div class="container">
     <header>
-        <h1>Ocupação de Boxes (cm)</h1>
+        <h1>Sistema de Boxes (Online)</h1>
     </header>
 
     <div class="controls">
-        <label for="excelInput" class="file-label"><i class="fas fa-file-excel"></i> Importar</label>
+        <label for="excelInput" class="file-label"><i class="fas fa-file-excel"></i> Importar / Restaurar</label>
         <input type="file" id="excelInput" accept=".xlsx, .xls" />
         
         <input type="text" id="searchBox" class="search-input" placeholder="Pesquisar..." oninput="renderBoxes()">
@@ -76,7 +75,7 @@
         </label>
 
         <button class="btn btn-upload" onclick="loadBoxes()"><i class="fas fa-sync"></i> Atualizar</button>
-        <button class="btn btn-export" onclick="exportarRelatorio()"><i class="fas fa-file-download"></i> Relatório</button>
+        <button class="btn btn-export" onclick="exportarRelatorio()"><i class="fas fa-file-download"></i> Baixar Backup</button>
     </div>
 
     <div id="grid" class="grid"></div>
@@ -88,7 +87,7 @@
 
     window.onload = loadBoxes;
 
-    // --- COMUNICAÇÃO BACKEND ---
+    // --- COMUNICAÇÃO BACKEND (Render + GitHub) ---
     async function loadBoxes() {
         document.getElementById('loader').style.display = 'flex';
         try {
@@ -120,40 +119,73 @@
         }
     }
 
-    // --- IMPORTAÇÃO EXCEL ---
+    // --- IMPORTAÇÃO EXCEL (INTELIGENTE) ---
+    // Detecta se é Planilha Simples (0/1) ou Backup (Valor Real)
     document.getElementById('excelInput').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        if(!confirm("Isso substituirá o banco de dados. Continuar?")) return;
+        if(!confirm("Isso substituirá o banco de dados atual pelos dados do arquivo. Continuar?")) return;
 
         const reader = new FileReader();
         reader.onload = (evt) => {
             const data = new Uint8Array(evt.target.result);
             const workbook = XLSX.read(data, {type: 'array'});
             const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            
+            // Lemos com header: "A" para pegar colunas fixas
             const jsonData = XLSX.utils.sheet_to_json(firstSheet, {header: "A"});
             
+            if (jsonData.length === 0) return alert("Arquivo vazio");
+
+            // --- DETECÇÃO DE FORMATO ---
+            // Verifica se a célula B1 contem "Livre" ou "Espaço". Se sim, é Backup.
+            const headerCellB = jsonData[0].B ? String(jsonData[0].B).toLowerCase() : "";
+            const isBackupFormat = headerCellB.includes("livre") || headerCellB.includes("espaço") || headerCellB.includes("cm");
+            
             let newBoxes = [];
+            
             jsonData.forEach((row, index) => {
-                if (!row.A || (index === 0 && String(row.A).match(/box|id/i))) return;
+                // Ignora linhas de cabeçalho (se tiver texto "Box" ou "ID" na coluna A)
+                // E ignora linhas vazias
+                if (!row.A || (index === 0 && String(row.A).match(/box|id|código/i))) return;
                 
                 const id = String(row.A).trim();
-                const status = row.B;
-                const freeSpace = (status == 1) ? 0 : MAX_CAPACITY;
+                let freeSpace = 0;
+
+                if (isBackupFormat) {
+                    // MODO BACKUP: Lê o valor exato da Coluna B
+                    let val = parseFloat(row.B);
+                    // Validação de segurança
+                    if (isNaN(val)) val = 14; 
+                    if (val > MAX_CAPACITY) val = MAX_CAPACITY;
+                    if (val < 0) val = 0;
+                    freeSpace = val;
+                } else {
+                    // MODO SIMPLES (Carga Inicial): Lê 0 ou 1
+                    // 1 = Cheio (0cm), 0 = Vazio (14cm)
+                    const status = row.B; 
+                    freeSpace = (status == 1) ? 0 : MAX_CAPACITY;
+                }
                 
-                if(!newBoxes.find(b => b.id === id)) {
+                // Evita duplicatas (usa o último valor encontrado na planilha)
+                const existingIndex = newBoxes.findIndex(b => b.id === id);
+                if (existingIndex > -1) {
+                    newBoxes[existingIndex] = { id, freeSpace, locked: false };
+                } else {
                     newBoxes.push({ id, freeSpace, locked: false });
                 }
             });
+
             boxes = newBoxes;
             renderBoxes();
             saveBoxes();
+            alert(isBackupFormat ? "Backup restaurado com sucesso!" : "Carga inicial importada com sucesso!");
         };
         reader.readAsArrayBuffer(file);
     });
 
-    // --- EXPORTAÇÃO EXCEL ---
+    // --- EXPORTAÇÃO EXCEL (BACKUP) ---
     function exportarRelatorio() {
         if (boxes.length === 0) return alert("Não há dados para exportar.");
 
@@ -167,12 +199,14 @@
         }));
 
         const worksheet = XLSX.utils.json_to_sheet(dadosParaExportar);
-        const wscols = [{wch: 20}, {wch: 20}, {wch: 15}];
+        
+        // Formatação de largura
+        const wscols = [{wch: 15}, {wch: 20}, {wch: 15}];
         worksheet['!cols'] = wscols;
 
         const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Relatório");
-        XLSX.writeFile(workbook, "Relatorio_Boxes.xlsx");
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Dados_Box");
+        XLSX.writeFile(workbook, "Backup_Boxes.xlsx");
     }
 
     // --- AÇÕES ---
@@ -183,7 +217,7 @@
 
         const box = boxes.find(b => b.id === id);
         if (box) {
-            if (box.freeSpace - val < 0) return alert("Sem espaço.");
+            if (box.freeSpace - val < 0) return alert("Sem espaço suficiente.");
             box.freeSpace -= val;
             input.value = '';
             renderBoxes();
@@ -210,31 +244,23 @@
         }
     };
 
-    // --- RENDERIZAR COM FILTRO ---
-    
+    // --- RENDERIZAR ---
     function renderBoxes() {
         const searchText = document.getElementById('searchBox').value.toLowerCase();
-        // Verifica se o checkbox está marcado
         const hideFull = document.getElementById('filterFree').checked;
-
         const grid = document.getElementById('grid');
         grid.innerHTML = '';
         
         let filtered = boxes.filter(box => {
-            // Filtro 1: Texto da pesquisa
             const matchesSearch = box.id.toLowerCase().includes(searchText);
-            
-            // Filtro 2: Ocultar cheios? (Se marcado, espaço deve ser > 0.1)
             const matchesSpace = hideFull ? (box.freeSpace > 0.1) : true;
-
             return matchesSearch && matchesSpace;
         });
         
-        // Ordenação
         filtered.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' }));
 
         if(filtered.length === 0) {
-            grid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#666; margin-top:20px;">Nenhum box encontrado com esses filtros.</p>';
+            grid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#666; margin-top:20px;">Nenhum box encontrado.</p>';
             return;
         }
 
