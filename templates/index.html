@@ -3,32 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão de Boxes (Render)</title>
+    <title>Ocupação de Boxes</title>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
     <style>
-        :root {
-            --primary: #2563eb;     /* Azul institucional (mesmo do Hub) */
-            --accent: #3b82f6;      /* Azul de ação secundária */
-            --success: #10b981;     /* Verde funcional */
-            --danger: #ef4444;      /* Vermelho alerta */
-            --warning: #f59e0b;     /* Atenção */
-            --bg: #f3f4f6;          /* Cinza claro padrão */
-        }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); color: #111827; margin: 0; padding: 20px; }
+        :root { --primary: #2c3e50; --accent: #3498db; --success: #27ae60; --danger: #c0392b; --warning: #f39c12; --export: #8e44ad; --bg: #f8f9fa; }
+        
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); color: #333; margin: 0; padding: 20px; }
         .container { max-width: 1100px; margin: 0 auto; }
+        
         header { text-align: center; margin-bottom: 25px; border-bottom: 1px solid #e0e0e0; padding-bottom: 20px; }
         
         .controls { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
         
-        .btn { padding: 10px 18px; border: none; border-radius: 5px; cursor: pointer; color: white; font-size: 14px; font-weight: 600; }
+        .btn { padding: 10px 18px; border: none; border-radius: 5px; cursor: pointer; color: white; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
+        .btn:hover { opacity: 0.9; }
+        
         .btn-upload { background-color: var(--primary); }
+        .btn-export { background-color: var(--export); }
         
         input[type="file"] { display: none; }
         .file-label { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; background-color: var(--primary); color: white; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: 600; }
         
         .search-input { padding: 10px 15px; border: 1px solid #ccc; border-radius: 5px; flex-grow: 1; outline: none; }
+
+        /* Estilo do Checkbox de Filtro */
+        .filter-toggle { display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--primary); background: #f1f2f6; padding: 8px 15px; border-radius: 5px; cursor: pointer; }
+        .filter-toggle input { cursor: pointer; width: 16px; height: 16px; }
         
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
         
@@ -55,20 +57,26 @@
 </head>
 <body>
 
-<div id="loader"><p style="font-size:1.5em; color:#111827;">Processando...</p></div>
+<div id="loader"><p style="font-size:1.5em; color:#333;">Processando...</p></div>
 
 <div class="container">
     <header>
-        <h1>Ocupação dos boxes em cm</h1>
+        <h1>Sistema de Boxes (Online)</h1>
     </header>
 
     <div class="controls">
-        <label for="excelInput" class="file-label"><i class="fas fa-file-excel"></i> Importar Excel</label>
+        <label for="excelInput" class="file-label"><i class="fas fa-file-excel"></i> Importar</label>
         <input type="file" id="excelInput" accept=".xlsx, .xls" />
         
-        <input type="text" id="searchBox" class="search-input" placeholder="Pesquisar...">
+        <input type="text" id="searchBox" class="search-input" placeholder="Pesquisar..." oninput="renderBoxes()">
         
+        <label class="filter-toggle" title="Mostrar apenas boxes com espaço">
+            <input type="checkbox" id="filterFree" onchange="renderBoxes()">
+            <span>Ocultar Cheios</span>
+        </label>
+
         <button class="btn btn-upload" onclick="loadBoxes()"><i class="fas fa-sync"></i> Atualizar</button>
+        <button class="btn btn-export" onclick="exportarRelatorio()"><i class="fas fa-file-download"></i> Relatório</button>
     </div>
 
     <div id="grid" class="grid"></div>
@@ -80,7 +88,7 @@
 
     window.onload = loadBoxes;
 
-    // --- COMUNICAÇÃO COM O PYTHON ---
+    // --- COMUNICAÇÃO BACKEND ---
     async function loadBoxes() {
         document.getElementById('loader').style.display = 'flex';
         try {
@@ -89,7 +97,7 @@
             if(boxes.error) throw new Error(boxes.error);
             renderBoxes();
         } catch (e) {
-            console.error(e); // Silencioso se for a primeira vez
+            console.error(e); 
         } finally {
             document.getElementById('loader').style.display = 'none';
         }
@@ -128,7 +136,6 @@
             
             let newBoxes = [];
             jsonData.forEach((row, index) => {
-                // Pula cabeçalho
                 if (!row.A || (index === 0 && String(row.A).match(/box|id/i))) return;
                 
                 const id = String(row.A).trim();
@@ -145,6 +152,28 @@
         };
         reader.readAsArrayBuffer(file);
     });
+
+    // --- EXPORTAÇÃO EXCEL ---
+    function exportarRelatorio() {
+        if (boxes.length === 0) return alert("Não há dados para exportar.");
+
+        let dadosOrdenados = [...boxes];
+        dadosOrdenados.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' }));
+
+        const dadosParaExportar = dadosOrdenados.map(box => ({
+            "Box": box.id,
+            "Espaço Livre (cm)": parseFloat(box.freeSpace).toFixed(2),
+            "Status": box.locked ? "Reservado" : (box.freeSpace === 0 ? "Cheio" : "Disponível")
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(dadosParaExportar);
+        const wscols = [{wch: 20}, {wch: 20}, {wch: 15}];
+        worksheet['!cols'] = wscols;
+
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Relatório");
+        XLSX.writeFile(workbook, "Relatorio_Boxes.xlsx");
+    }
 
     // --- AÇÕES ---
     window.addSpace = (id) => {
@@ -181,17 +210,33 @@
         }
     };
 
-    // --- RENDER ---
-    document.getElementById('searchBox').addEventListener('input', (e) => renderBoxes(e.target.value));
+    // --- RENDERIZAR COM FILTRO ---
+    
+    function renderBoxes() {
+        const searchText = document.getElementById('searchBox').value.toLowerCase();
+        // Verifica se o checkbox está marcado
+        const hideFull = document.getElementById('filterFree').checked;
 
-    function renderBoxes(filter = '') {
         const grid = document.getElementById('grid');
         grid.innerHTML = '';
         
-        let filtered = boxes.filter(b => b.id.toLowerCase().includes(filter.toLowerCase()));
+        let filtered = boxes.filter(box => {
+            // Filtro 1: Texto da pesquisa
+            const matchesSearch = box.id.toLowerCase().includes(searchText);
+            
+            // Filtro 2: Ocultar cheios? (Se marcado, espaço deve ser > 0.1)
+            const matchesSpace = hideFull ? (box.freeSpace > 0.1) : true;
+
+            return matchesSearch && matchesSpace;
+        });
         
-        // Ordenação Natural
+        // Ordenação
         filtered.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' }));
+
+        if(filtered.length === 0) {
+            grid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#666; margin-top:20px;">Nenhum box encontrado com esses filtros.</p>';
+            return;
+        }
 
         filtered.forEach(box => {
             const pct = (box.freeSpace / MAX_CAPACITY) * 100;
@@ -203,13 +248,11 @@
             if (box.locked) statusClass += ' locked';
 
             const disabledAttr = box.locked ? 'disabled' : '';
-            // Ícone de cadeado no topo
             const lockIcon = box.locked ? '<i class="fas fa-lock"></i>' : '<i class="fas fa-lock-open" style="color:#ccc"></i>';
 
             const div = document.createElement('div');
             div.className = `card ${statusClass}`;
             
-            // AQUI ESTAVA FALTANDO O BOTÃO. Adicionei o botão "Reservar/Destravar" abaixo.
             div.innerHTML = `
                 <div class="card-header">
                     <span>${box.id}</span>
