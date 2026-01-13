@@ -8,29 +8,42 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
     <style>
-        :root { --primary: #2c3e50; --accent: #3498db; --success: #27ae60; --danger: #c0392b; --warning: #f39c12; --export: #8e44ad; --bg: #f8f9fa; }
+        :root { 
+            --primary: #2c3e50; --accent: #3498db; --success: #27ae60; 
+            --danger: #c0392b; --warning: #f39c12; --export: #8e44ad; 
+            --filter: #7f8c8d; --bg: #f8f9fa; 
+        }
         
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); color: #333; margin: 0; padding: 20px; }
         .container { max-width: 1100px; margin: 0 auto; }
         
         header { text-align: center; margin-bottom: 25px; border-bottom: 1px solid #e0e0e0; padding-bottom: 20px; }
         
-        .controls { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
+        /* Painel Principal */
+        .controls { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 15px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
         
-        .btn { padding: 10px 18px; border: none; border-radius: 5px; cursor: pointer; color: white; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
+        /* Painel de Filtros Avançados */
+        .filter-panel { background: #eef2f3; padding: 15px 20px; border-radius: 8px; border: 1px solid #dee2e6; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
+        .filter-title { font-weight: bold; color: var(--primary); margin-right: 10px; font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .filter-group { display: flex; align-items: center; gap: 8px; background: white; padding: 5px 10px; border-radius: 5px; border: 1px solid #ccc; }
+        .filter-input { border: none; outline: none; padding: 5px; width: 80px; font-size: 14px; }
+        
+        .btn { padding: 10px 18px; border: none; border-radius: 5px; cursor: pointer; color: white; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: opacity 0.2s; }
         .btn:hover { opacity: 0.9; }
         
         .btn-upload { background-color: var(--primary); }
+        .btn-meta { background-color: var(--filter); } /* Cinza para metadados */
         .btn-export { background-color: var(--export); }
         
         input[type="file"] { display: none; }
-        .file-label { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; background-color: var(--primary); color: white; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: 600; }
-        
-        .search-input { padding: 10px 15px; border: 1px solid #ccc; border-radius: 5px; flex-grow: 1; outline: none; }
+        .file-label { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; color: white; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: 600; }
+        .lbl-primary { background-color: var(--primary); }
+        .lbl-meta { background-color: var(--filter); }
 
-        .filter-toggle { display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--primary); background: #f1f2f6; padding: 8px 15px; border-radius: 5px; cursor: pointer; }
-        .filter-toggle input { cursor: pointer; width: 16px; height: 16px; }
+        .search-input { padding: 10px 15px; border: 1px solid #ccc; border-radius: 5px; flex-grow: 1; outline: none; }
         
+        /* Grid */
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
         
         .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); border-left: 5px solid var(--success); position: relative; }
@@ -40,12 +53,15 @@
         .card-header { display: flex; justify-content: space-between; align-items: center; font-weight: bold; margin-bottom: 12px; font-size: 1.15em; color: var(--primary); }
         .info-row { font-size: 0.95em; color: #666; display: flex; justify-content: space-between; margin-bottom: 8px; }
         
+        /* Tags de metadados no card */
+        .meta-tags { display: flex; gap: 5px; font-size: 0.8em; margin-bottom: 10px; color: #555; }
+        .tag { background: #eee; padding: 2px 6px; border-radius: 3px; }
+
         .bar-bg { height: 8px; background: #eee; border-radius: 4px; overflow: hidden; margin-bottom: 15px; }
         .bar-fill { height: 100%; background: var(--success); width: 100%; transition: width 0.4s ease-out; }
         
         .card-actions { display: flex; gap: 8px; margin-top: auto; }
         .input-mini { width: 55px; padding: 6px; border: 1px solid #ddd; border-radius: 4px; text-align: center; }
-        
         .btn-mini { padding: 6px 12px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; color: white; display: flex; align-items: center; gap: 5px; flex: 1; justify-content: center; }
         .btn-act { background-color: var(--accent); }
         .btn-res { background-color: #7f8c8d; max-width: 40px; }
@@ -64,18 +80,46 @@
     </header>
 
     <div class="controls">
-        <label for="excelInput" class="file-label"><i class="fas fa-file-excel"></i> Importar / Restaurar</label>
+        <label for="excelInput" class="file-label lbl-primary" title="Carregar Backup ou Lista Inicial">
+            <i class="fas fa-database"></i> Importar/Restaurar
+        </label>
         <input type="file" id="excelInput" accept=".xlsx, .xls" />
         
-        <input type="text" id="searchBox" class="search-input" placeholder="Pesquisar..." oninput="renderBoxes()">
-        
-        <label class="filter-toggle" title="Mostrar apenas boxes com espaço">
-            <input type="checkbox" id="filterFree" onchange="renderBoxes()">
-            <span>Ocultar Cheios</span>
+        <label for="metaInput" class="file-label lbl-meta" title="Carregar planilha com Códigos e Datas (Colunas K, Q, W)">
+            <i class="fas fa-tags"></i> Carregar Dados de Filtro
         </label>
+        <input type="file" id="metaInput" accept=".xlsx, .xls" />
 
-        <button class="btn btn-upload" onclick="loadBoxes()"><i class="fas fa-sync"></i> Atualizar</button>
-        <button class="btn btn-export" onclick="exportarRelatorio()"><i class="fas fa-file-download"></i> Baixar Backup</button>
+        <button class="btn btn-export" onclick="exportarRelatorio()"><i class="fas fa-file-download"></i> Backup</button>
+        <div style="flex-grow:1"></div>
+        <button class="btn btn-upload" onclick="loadBoxes()"><i class="fas fa-sync"></i> Atualizar Tela</button>
+    </div>
+
+    <div class="filter-panel">
+        <span class="filter-title"><i class="fas fa-filter"></i> Filtros:</span>
+
+        <div class="filter-group" style="width: 200px;">
+            <i class="fas fa-search" style="color:#ccc"></i>
+            <input type="text" id="searchBox" class="filter-input" style="width:100%" placeholder="Buscar Box..." oninput="renderBoxes()">
+        </div>
+
+        <label style="display:flex; align-items:center; gap:5px; cursor:pointer; font-size:0.9em;">
+            <input type="checkbox" id="filterFree" onchange="renderBoxes()"> Ocultar Cheios
+        </label>
+        
+        <div style="width:1px; height:20px; background:#ccc; margin:0 10px;"></div>
+
+        <div class="filter-group">
+            <input type="checkbox" id="chkCode" onchange="renderBoxes()" title="Ativar filtro por Código">
+            <span style="font-size:0.9em; font-weight:bold;">Cód:</span>
+            <input type="text" id="valCode" class="filter-input" placeholder="Ex: 123" oninput="renderBoxes()">
+        </div>
+
+        <div class="filter-group">
+            <input type="checkbox" id="chkYear" onchange="renderBoxes()" title="Ativar filtro por Ano">
+            <span style="font-size:0.9em; font-weight:bold;">Ano:</span>
+            <input type="number" id="valYear" class="filter-input" placeholder="Ex: 2024" oninput="renderBoxes()">
+        </div>
     </div>
 
     <div id="grid" class="grid"></div>
@@ -87,7 +131,7 @@
 
     window.onload = loadBoxes;
 
-    // --- COMUNICAÇÃO BACKEND (Render + GitHub) ---
+    // --- API BACKEND ---
     async function loadBoxes() {
         document.getElementById('loader').style.display = 'flex';
         try {
@@ -95,11 +139,8 @@
             boxes = await res.json();
             if(boxes.error) throw new Error(boxes.error);
             renderBoxes();
-        } catch (e) {
-            console.error(e); 
-        } finally {
-            document.getElementById('loader').style.display = 'none';
-        }
+        } catch (e) { console.error(e); } 
+        finally { document.getElementById('loader').style.display = 'none'; }
     }
 
     async function saveBoxes() {
@@ -112,201 +153,258 @@
             });
             const result = await res.json();
             if(result.error) throw new Error(result.error);
-        } catch (e) {
-            alert("Erro ao salvar: " + e.message);
-        } finally {
-            document.getElementById('loader').style.display = 'none';
-        }
+        } catch (e) { alert("Erro ao salvar: " + e.message); } 
+        finally { document.getElementById('loader').style.display = 'none'; }
     }
 
-    // --- IMPORTAÇÃO EXCEL (INTELIGENTE) ---
-    // Detecta se é Planilha Simples (0/1) ou Backup (Valor Real)
+    // --- UPLOAD 1: DADOS DO SISTEMA (Espaço/Status) ---
     document.getElementById('excelInput').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
-
-        if(!confirm("Isso substituirá o banco de dados atual pelos dados do arquivo. Continuar?")) return;
+        if(!confirm("Substituir dados de capacidade?")) return;
 
         const reader = new FileReader();
         reader.onload = (evt) => {
             const data = new Uint8Array(evt.target.result);
             const workbook = XLSX.read(data, {type: 'array'});
-            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(sheet, {header: "A"});
             
-            // Lemos com header: "A" para pegar colunas fixas
-            const jsonData = XLSX.utils.sheet_to_json(firstSheet, {header: "A"});
-            
-            if (jsonData.length === 0) return alert("Arquivo vazio");
-
-            // --- DETECÇÃO DE FORMATO ---
-            // Verifica se a célula B1 contem "Livre" ou "Espaço". Se sim, é Backup.
+            // Detecta Backup
             const headerCellB = jsonData[0].B ? String(jsonData[0].B).toLowerCase() : "";
-            const isBackupFormat = headerCellB.includes("livre") || headerCellB.includes("espaço") || headerCellB.includes("cm");
+            const isBackup = headerCellB.includes("livre") || headerCellB.includes("espaço") || headerCellB.includes("cm");
             
             let newBoxes = [];
             
             jsonData.forEach((row, index) => {
-                // Ignora linhas de cabeçalho (se tiver texto "Box" ou "ID" na coluna A)
-                // E ignora linhas vazias
                 if (!row.A || (index === 0 && String(row.A).match(/box|id|código/i))) return;
-                
                 const id = String(row.A).trim();
                 let freeSpace = 0;
 
-                if (isBackupFormat) {
-                    // MODO BACKUP: Lê o valor exato da Coluna B
+                if (isBackup) {
                     let val = parseFloat(row.B);
-                    // Validação de segurança
                     if (isNaN(val)) val = 14; 
                     if (val > MAX_CAPACITY) val = MAX_CAPACITY;
                     if (val < 0) val = 0;
                     freeSpace = val;
                 } else {
-                    // MODO SIMPLES (Carga Inicial): Lê 0 ou 1
-                    // 1 = Cheio (0cm), 0 = Vazio (14cm)
-                    const status = row.B; 
-                    freeSpace = (status == 1) ? 0 : MAX_CAPACITY;
+                    freeSpace = (row.B == 1) ? 0 : MAX_CAPACITY;
                 }
                 
-                // Evita duplicatas (usa o último valor encontrado na planilha)
-                const existingIndex = newBoxes.findIndex(b => b.id === id);
-                if (existingIndex > -1) {
-                    newBoxes[existingIndex] = { id, freeSpace, locked: false };
-                } else {
-                    newBoxes.push({ id, freeSpace, locked: false });
+                // Tenta manter metadados antigos se o box já existia
+                const oldBox = boxes.find(b => b.id === id);
+                const code = oldBox ? oldBox.code : null;
+                const year = oldBox ? oldBox.year : null;
+
+                if(!newBoxes.find(b => b.id === id)) {
+                    newBoxes.push({ id, freeSpace, locked: false, code, year });
                 }
             });
 
             boxes = newBoxes;
             renderBoxes();
             saveBoxes();
-            alert(isBackupFormat ? "Backup restaurado com sucesso!" : "Carga inicial importada com sucesso!");
+            alert("Capacidades atualizadas!");
         };
         reader.readAsArrayBuffer(file);
     });
 
-    // --- EXPORTAÇÃO EXCEL (BACKUP) ---
-    function exportarRelatorio() {
-        if (boxes.length === 0) return alert("Não há dados para exportar.");
+    // --- UPLOAD 2: METADADOS DE FILTRO (Colunas K, Q, W) ---
+    document.getElementById('metaInput').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
 
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            const data = new Uint8Array(evt.target.result);
+            const workbook = XLSX.read(data, {type: 'array'});
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            
+            // Header A garante que pegamos pela letra da coluna
+            // K = Box, Q = Código, W = Data
+            const jsonData = XLSX.utils.sheet_to_json(sheet, {header: "A"});
+            
+            let updatedCount = 0;
+
+            // Começamos do index 1 para pular cabeçalho (assumindo linha 1 cabeçalho, dados começam na 2)
+            // O enunciado diz: K2, Q2, W2.
+            for (let i = 1; i < jsonData.length; i++) {
+                const row = jsonData[i];
+                if (!row.K) continue; // Sem ID do Box
+
+                const boxId = String(row.K).trim();
+                const codigo = row.Q ? String(row.Q).trim() : "";
+                
+                // Tratamento da Data (Coluna W)
+                let ano = "";
+                if (row.W) {
+                    // Se for número (Excel Serial Date)
+                    if (typeof row.W === 'number') {
+                        const dateObj = XLSX.SSF.parse_date_code(row.W);
+                        if (dateObj) ano = dateObj.y;
+                    } 
+                    // Se for String (dd/mm/aaaa)
+                    else if (typeof row.W === 'string') {
+                        const parts = row.W.split('/'); // dd/mm/aaaa
+                        if (parts.length === 3) ano = parts[2];
+                    }
+                }
+
+                // Atualiza o box na memória
+                const boxIndex = boxes.findIndex(b => b.id === boxId);
+                if (boxIndex > -1) {
+                    boxes[boxIndex].code = codigo;
+                    boxes[boxIndex].year = String(ano); // Guarda como string para facilitar filtro
+                    updatedCount++;
+                } else {
+                    // Opcional: Se o box existe na planilha de filtro mas não no sistema,
+                    // poderíamos criar. Por segurança, vamos apenas ignorar.
+                    console.log(`Box ${boxId} ignorado pois não existe no sistema.`);
+                }
+            }
+
+            renderBoxes();
+            saveBoxes(); // Salva metadados no JSON
+            alert(`${updatedCount} boxes atualizados com dados de filtro (Código/Ano)!`);
+            // Limpa o input para permitir subir o mesmo arquivo de novo se precisar
+            document.getElementById('metaInput').value = ''; 
+        };
+        reader.readAsArrayBuffer(file);
+    });
+
+    // --- EXPORTAR ---
+    function exportarRelatorio() {
+        if (boxes.length === 0) return alert("Sem dados.");
         let dadosOrdenados = [...boxes];
         dadosOrdenados.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' }));
 
         const dadosParaExportar = dadosOrdenados.map(box => ({
             "Box": box.id,
             "Espaço Livre (cm)": parseFloat(box.freeSpace).toFixed(2),
-            "Status": box.locked ? "Reservado" : (box.freeSpace === 0 ? "Cheio" : "Disponível")
+            "Status": box.locked ? "Reservado" : (box.freeSpace === 0 ? "Cheio" : "Disponível"),
+            "Código": box.code || "",
+            "Ano": box.year || ""
         }));
 
-        const worksheet = XLSX.utils.json_to_sheet(dadosParaExportar);
-        
-        // Formatação de largura
-        const wscols = [{wch: 15}, {wch: 20}, {wch: 15}];
-        worksheet['!cols'] = wscols;
-
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Dados_Box");
-        XLSX.writeFile(workbook, "Backup_Boxes.xlsx");
+        const ws = XLSX.utils.json_to_sheet(dadosParaExportar);
+        ws['!cols'] = [{wch:15}, {wch:15}, {wch:15}, {wch:15}, {wch:10}];
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Backup_Completo");
+        XLSX.writeFile(wb, "Backup_Boxes.xlsx");
     }
 
-    // --- AÇÕES ---
+    // --- AÇÕES DO CARD ---
     window.addSpace = (id) => {
         const input = document.getElementById(`in-${id}`);
         const val = parseFloat(input.value);
         if (isNaN(val) || val <= 0) return;
-
         const box = boxes.find(b => b.id === id);
         if (box) {
-            if (box.freeSpace - val < 0) return alert("Sem espaço suficiente.");
+            if (box.freeSpace - val < 0) return alert("Espaço insuficiente.");
             box.freeSpace -= val;
             input.value = '';
-            renderBoxes();
-            saveBoxes();
+            renderBoxes(); saveBoxes();
         }
     };
-
     window.resetBox = (id) => {
-        if(!confirm("Resetar este box?")) return;
+        if(!confirm("Resetar?")) return;
         const box = boxes.find(b => b.id === id);
-        if (box) {
-            box.freeSpace = MAX_CAPACITY;
-            renderBoxes();
-            saveBoxes();
-        }
+        if (box) { box.freeSpace = MAX_CAPACITY; renderBoxes(); saveBoxes(); }
     };
-
     window.toggleLock = (id) => {
         const box = boxes.find(b => b.id === id);
-        if (box) {
-            box.locked = !box.locked;
-            renderBoxes();
-            saveBoxes();
-        }
+        if (box) { box.locked = !box.locked; renderBoxes(); saveBoxes(); }
     };
 
-    // --- RENDERIZAR ---
+    // --- RENDERIZAR COM TODOS OS FILTROS ---
     function renderBoxes() {
+        // Inputs
         const searchText = document.getElementById('searchBox').value.toLowerCase();
         const hideFull = document.getElementById('filterFree').checked;
+        
+        // Inputs Filtro Avançado
+        const useCode = document.getElementById('chkCode').checked;
+        const inputCode = document.getElementById('valCode').value.trim().toLowerCase();
+        
+        const useYear = document.getElementById('chkYear').checked;
+        const inputYear = document.getElementById('valYear').value.trim();
+
         const grid = document.getElementById('grid');
         grid.innerHTML = '';
         
         let filtered = boxes.filter(box => {
-            const matchesSearch = box.id.toLowerCase().includes(searchText);
-            const matchesSpace = hideFull ? (box.freeSpace > 0.1) : true;
-            return matchesSearch && matchesSpace;
+            // 1. Filtro Texto (ID)
+            if (!box.id.toLowerCase().includes(searchText)) return false;
+            
+            // 2. Filtro Cheios
+            if (hideFull && box.freeSpace < 0.1) return false;
+            
+            // 3. Filtro Código (Se checkbox marcado)
+            if (useCode) {
+                // Se input vazio, mostra quem TEM código ou quem não tem?
+                // Assumimos: Se marcou, tem que bater com o texto. Se texto vazio, ignora.
+                if (inputCode !== "") {
+                    if (!box.code || String(box.code).toLowerCase() !== inputCode) return false;
+                }
+            }
+
+            // 4. Filtro Ano (Se checkbox marcado)
+            if (useYear) {
+                if (inputYear !== "") {
+                    if (!box.year || String(box.year) !== inputYear) return false;
+                }
+            }
+
+            return true;
         });
         
         filtered.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' }));
 
         if(filtered.length === 0) {
-            grid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#666; margin-top:20px;">Nenhum box encontrado.</p>';
+            grid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#666; margin-top:20px;">Nenhum box atende aos critérios.</p>';
             return;
         }
 
         filtered.forEach(box => {
             const pct = (box.freeSpace / MAX_CAPACITY) * 100;
-            let statusClass = '';
-            let color = 'var(--success)';
-            
+            let statusClass = '', color = 'var(--success)';
             if (box.freeSpace <= 0.1) { statusClass = 'full'; color = 'var(--danger)'; }
             else if (box.freeSpace < 5) color = 'var(--warning)';
             if (box.locked) statusClass += ' locked';
 
             const disabledAttr = box.locked ? 'disabled' : '';
             const lockIcon = box.locked ? '<i class="fas fa-lock"></i>' : '<i class="fas fa-lock-open" style="color:#ccc"></i>';
+            
+            // Exibir tags de código/ano se existirem
+            let metaHtml = '';
+            if (box.code || box.year) {
+                metaHtml = `<div class="meta-tags">`;
+                if(box.code) metaHtml += `<span class="tag"><i class="fas fa-tag"></i> ${box.code}</span>`;
+                if(box.year) metaHtml += `<span class="tag"><i class="far fa-calendar"></i> ${box.year}</span>`;
+                metaHtml += `</div>`;
+            }
 
             const div = document.createElement('div');
             div.className = `card ${statusClass}`;
-            
             div.innerHTML = `
                 <div class="card-header">
                     <span>${box.id}</span>
                     <span onclick="toggleLock('${box.id}')" style="cursor:pointer">${lockIcon}</span>
                 </div>
                 
+                ${metaHtml}
+
                 <div class="info-row">
                     Livre: <strong>${parseFloat(box.freeSpace).toFixed(2)} cm</strong>
                 </div>
 
-                <div class="bar-bg">
-                    <div class="bar-fill" style="width: ${pct}%; background-color: ${color}"></div>
-                </div>
+                <div class="bar-bg"><div class="bar-fill" style="width: ${pct}%; background-color: ${color}"></div></div>
 
                 <div class="card-actions" style="${box.locked ? 'opacity:0.6' : ''}">
                     <input type="number" id="in-${box.id}" class="input-mini" placeholder="cm" ${disabledAttr}>
-                    
-                    <button class="btn-mini btn-act" onclick="addSpace('${box.id}')" ${disabledAttr} title="Ocupar">
-                        <i class="fas fa-minus"></i>
-                    </button>
-                    
-                    <button class="btn-mini btn-res" onclick="resetBox('${box.id}')" ${disabledAttr} title="Resetar">
-                        <i class="fas fa-undo"></i>
-                    </button>
-                    
-                    <button class="btn-mini btn-lck" onclick="toggleLock('${box.id}')" title="Travar">
-                        ${box.locked ? 'Destravar' : 'Reservar'}
-                    </button>
+                    <button class="btn-mini btn-act" onclick="addSpace('${box.id}')" ${disabledAttr}><i class="fas fa-minus"></i></button>
+                    <button class="btn-mini btn-res" onclick="resetBox('${box.id}')" ${disabledAttr}><i class="fas fa-undo"></i></button>
+                    <button class="btn-mini btn-lck" onclick="toggleLock('${box.id}')">${box.locked ? 'Destravar' : 'Reservar'}</button>
                 </div>
             `;
             grid.appendChild(div);
