@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ocupação de Boxes (Render)</title>
+    <title>Gestão de Boxes (Render)</title>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
@@ -19,21 +19,20 @@
         
         header { text-align: center; margin-bottom: 25px; border-bottom: 1px solid #e0e0e0; padding-bottom: 20px; }
         
-        /* Painel Principal */
+        /* Controles */
         .controls { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 15px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
         
-        /* Painel de Filtros Avançados */
+        /* Painel de Filtros */
         .filter-panel { background: #eef2f3; padding: 15px 20px; border-radius: 8px; border: 1px solid #dee2e6; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
-        .filter-title { font-weight: bold; color: var(--primary); margin-right: 10px; font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px; }
+        .filter-title { font-weight: bold; color: var(--primary); margin-right: 10px; font-size: 0.9em; text-transform: uppercase; }
         
         .filter-group { display: flex; align-items: center; gap: 8px; background: white; padding: 5px 10px; border-radius: 5px; border: 1px solid #ccc; }
         .filter-input { border: none; outline: none; padding: 5px; width: 80px; font-size: 14px; }
         
-        .btn { padding: 10px 18px; border: none; border-radius: 5px; cursor: pointer; color: white; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: opacity 0.2s; }
+        .btn { padding: 10px 18px; border: none; border-radius: 5px; cursor: pointer; color: white; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
         .btn:hover { opacity: 0.9; }
         
         .btn-upload { background-color: var(--primary); }
-        .btn-meta { background-color: var(--filter); } /* Cinza para metadados */
         .btn-export { background-color: var(--export); }
         
         input[type="file"] { display: none; }
@@ -41,8 +40,6 @@
         .lbl-primary { background-color: var(--primary); }
         .lbl-meta { background-color: var(--filter); }
 
-        .search-input { padding: 10px 15px; border: 1px solid #ccc; border-radius: 5px; flex-grow: 1; outline: none; }
-        
         /* Grid */
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
         
@@ -51,12 +48,12 @@
         .card.locked { border-left-color: var(--warning); background-color: #fffdf5; }
 
         .card-header { display: flex; justify-content: space-between; align-items: center; font-weight: bold; margin-bottom: 12px; font-size: 1.15em; color: var(--primary); }
-        .info-row { font-size: 0.95em; color: #666; display: flex; justify-content: space-between; margin-bottom: 8px; }
         
-        /* Tags de metadados no card */
+        /* Tags de metadados */
         .meta-tags { display: flex; gap: 5px; font-size: 0.8em; margin-bottom: 10px; color: #555; }
-        .tag { background: #eee; padding: 2px 6px; border-radius: 3px; }
+        .tag { background: #eee; padding: 2px 6px; border-radius: 3px; font-weight: 600; }
 
+        .info-row { font-size: 0.95em; color: #666; margin-bottom: 8px; }
         .bar-bg { height: 8px; background: #eee; border-radius: 4px; overflow: hidden; margin-bottom: 15px; }
         .bar-fill { height: 100%; background: var(--success); width: 100%; transition: width 0.4s ease-out; }
         
@@ -76,7 +73,7 @@
 
 <div class="container">
     <header>
-        <h1>Ocupação de Boxes (cm)</h1>
+        <h1>Ocupação de Boxes</h1>
     </header>
 
     <div class="controls">
@@ -85,7 +82,7 @@
         </label>
         <input type="file" id="excelInput" accept=".xlsx, .xls" />
         
-        <label for="metaInput" class="file-label lbl-meta" title="Carregar planilha com Códigos e Datas (Colunas K, Q, W)">
+        <label for="metaInput" class="file-label lbl-meta" title="Colunas: K(Box), Q(Cód), W(Data)">
             <i class="fas fa-tags"></i> Carregar Dados de Filtro
         </label>
         <input type="file" id="metaInput" accept=".xlsx, .xls" />
@@ -110,13 +107,13 @@
         <div style="width:1px; height:20px; background:#ccc; margin:0 10px;"></div>
 
         <div class="filter-group">
-            <input type="checkbox" id="chkCode" onchange="renderBoxes()" title="Ativar filtro por Código">
+            <input type="checkbox" id="chkCode" onchange="renderBoxes()" title="Filtrar por Código">
             <span style="font-size:0.9em; font-weight:bold;">Cód:</span>
             <input type="text" id="valCode" class="filter-input" placeholder="Ex: 123" oninput="renderBoxes()">
         </div>
 
         <div class="filter-group">
-            <input type="checkbox" id="chkYear" onchange="renderBoxes()" title="Ativar filtro por Ano">
+            <input type="checkbox" id="chkYear" onchange="renderBoxes()" title="Filtrar por Ano">
             <span style="font-size:0.9em; font-weight:bold;">Ano:</span>
             <input type="number" id="valYear" class="filter-input" placeholder="Ex: 2024" oninput="renderBoxes()">
         </div>
@@ -131,7 +128,7 @@
 
     window.onload = loadBoxes;
 
-    // --- API BACKEND ---
+    // --- API ---
     async function loadBoxes() {
         document.getElementById('loader').style.display = 'flex';
         try {
@@ -157,11 +154,48 @@
         finally { document.getElementById('loader').style.display = 'none'; }
     }
 
-    // --- UPLOAD 1: DADOS DO SISTEMA (Espaço/Status) ---
+    // --- LÓGICA DE ANO (NOVA E ROBUSTA) ---
+    function getYearFromExcel(cellValue) {
+        if (!cellValue) return "";
+
+        // Caso 1: Número (Serial Date do Excel ou apenas o ano "2024")
+        if (typeof cellValue === 'number') {
+            // Se for um número entre 1900 e 2100, provavelmente é apenas o ano digitado
+            if (cellValue >= 1900 && cellValue <= 2100) return String(cellValue);
+            
+            // Se for maior, é data serial (ex: 45000)
+            const dateObj = XLSX.SSF.parse_date_code(cellValue);
+            if (dateObj && dateObj.y) return String(dateObj.y);
+        }
+
+        // Caso 2: Texto
+        const str = String(cellValue).trim();
+
+        // Padrão dd/mm/aaaa ou dd-mm-aaaa
+        if (str.match(/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}/)) {
+            const parts = str.split(/[\/\-]/);
+            return parts[2]; // Pega a última parte
+        }
+        
+        // Padrão aaaa-mm-dd (ISO)
+        if (str.match(/^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}/)) {
+            const parts = str.split(/[\/\-]/);
+            return parts[0]; // Pega a primeira parte
+        }
+
+        // Padrão apenas ano (4 dígitos)
+        if (str.match(/^\d{4}$/)) {
+            return str;
+        }
+
+        return ""; // Falha
+    }
+
+    // --- UPLOAD 1: DADOS DE CAPACIDADE ---
     document.getElementById('excelInput').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        if(!confirm("Substituir dados de capacidade?")) return;
+        if(!confirm("Substituir capacidades?")) return;
 
         const reader = new FileReader();
         reader.onload = (evt) => {
@@ -170,12 +204,10 @@
             const sheet = workbook.Sheets[workbook.SheetNames[0]];
             const jsonData = XLSX.utils.sheet_to_json(sheet, {header: "A"});
             
-            // Detecta Backup
             const headerCellB = jsonData[0].B ? String(jsonData[0].B).toLowerCase() : "";
             const isBackup = headerCellB.includes("livre") || headerCellB.includes("espaço") || headerCellB.includes("cm");
             
             let newBoxes = [];
-            
             jsonData.forEach((row, index) => {
                 if (!row.A || (index === 0 && String(row.A).match(/box|id|código/i))) return;
                 const id = String(row.A).trim();
@@ -191,7 +223,7 @@
                     freeSpace = (row.B == 1) ? 0 : MAX_CAPACITY;
                 }
                 
-                // Tenta manter metadados antigos se o box já existia
+                // Preserva metadados se existirem
                 const oldBox = boxes.find(b => b.id === id);
                 const code = oldBox ? oldBox.code : null;
                 const year = oldBox ? oldBox.year : null;
@@ -200,16 +232,13 @@
                     newBoxes.push({ id, freeSpace, locked: false, code, year });
                 }
             });
-
             boxes = newBoxes;
-            renderBoxes();
-            saveBoxes();
-            alert("Capacidades atualizadas!");
+            renderBoxes(); saveBoxes(); alert("Dados importados!");
         };
         reader.readAsArrayBuffer(file);
     });
 
-    // --- UPLOAD 2: METADADOS DE FILTRO (Colunas K, Q, W) ---
+    // --- UPLOAD 2: METADADOS (FILTRO) ---
     document.getElementById('metaInput').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -219,54 +248,30 @@
             const data = new Uint8Array(evt.target.result);
             const workbook = XLSX.read(data, {type: 'array'});
             const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            
-            // Header A garante que pegamos pela letra da coluna
-            // K = Box, Q = Código, W = Data
             const jsonData = XLSX.utils.sheet_to_json(sheet, {header: "A"});
             
-            let updatedCount = 0;
-
-            // Começamos do index 1 para pular cabeçalho (assumindo linha 1 cabeçalho, dados começam na 2)
-            // O enunciado diz: K2, Q2, W2.
+            let count = 0;
+            // Começa do index 1 assumindo que 0 é cabeçalho.
+            // O usuário disse: K2 (Box), Q2 (Code), W2 (Data)
             for (let i = 1; i < jsonData.length; i++) {
                 const row = jsonData[i];
-                if (!row.K) continue; // Sem ID do Box
+                if (!row.K) continue;
 
                 const boxId = String(row.K).trim();
                 const codigo = row.Q ? String(row.Q).trim() : "";
                 
-                // Tratamento da Data (Coluna W)
-                let ano = "";
-                if (row.W) {
-                    // Se for número (Excel Serial Date)
-                    if (typeof row.W === 'number') {
-                        const dateObj = XLSX.SSF.parse_date_code(row.W);
-                        if (dateObj) ano = dateObj.y;
-                    } 
-                    // Se for String (dd/mm/aaaa)
-                    else if (typeof row.W === 'string') {
-                        const parts = row.W.split('/'); // dd/mm/aaaa
-                        if (parts.length === 3) ano = parts[2];
-                    }
-                }
+                // USA A NOVA FUNÇÃO DE EXTRAÇÃO
+                const ano = getYearFromExcel(row.W);
 
-                // Atualiza o box na memória
                 const boxIndex = boxes.findIndex(b => b.id === boxId);
                 if (boxIndex > -1) {
                     boxes[boxIndex].code = codigo;
-                    boxes[boxIndex].year = String(ano); // Guarda como string para facilitar filtro
-                    updatedCount++;
-                } else {
-                    // Opcional: Se o box existe na planilha de filtro mas não no sistema,
-                    // poderíamos criar. Por segurança, vamos apenas ignorar.
-                    console.log(`Box ${boxId} ignorado pois não existe no sistema.`);
+                    boxes[boxIndex].year = ano;
+                    count++;
                 }
             }
-
-            renderBoxes();
-            saveBoxes(); // Salva metadados no JSON
-            alert(`${updatedCount} boxes atualizados com dados de filtro (Código/Ano)!`);
-            // Limpa o input para permitir subir o mesmo arquivo de novo se precisar
+            renderBoxes(); saveBoxes(); 
+            alert(`${count} registros atualizados com filtros!`);
             document.getElementById('metaInput').value = ''; 
         };
         reader.readAsArrayBuffer(file);
@@ -293,7 +298,7 @@
         XLSX.writeFile(wb, "Backup_Boxes.xlsx");
     }
 
-    // --- AÇÕES DO CARD ---
+    // --- AÇÕES ---
     window.addSpace = (id) => {
         const input = document.getElementById(`in-${id}`);
         const val = parseFloat(input.value);
@@ -316,13 +321,11 @@
         if (box) { box.locked = !box.locked; renderBoxes(); saveBoxes(); }
     };
 
-    // --- RENDERIZAR COM TODOS OS FILTROS ---
+    // --- RENDERIZAR COM FILTROS ---
     function renderBoxes() {
-        // Inputs
         const searchText = document.getElementById('searchBox').value.toLowerCase();
         const hideFull = document.getElementById('filterFree').checked;
         
-        // Inputs Filtro Avançado
         const useCode = document.getElementById('chkCode').checked;
         const inputCode = document.getElementById('valCode').value.trim().toLowerCase();
         
@@ -333,35 +336,23 @@
         grid.innerHTML = '';
         
         let filtered = boxes.filter(box => {
-            // 1. Filtro Texto (ID)
             if (!box.id.toLowerCase().includes(searchText)) return false;
-            
-            // 2. Filtro Cheios
             if (hideFull && box.freeSpace < 0.1) return false;
             
-            // 3. Filtro Código (Se checkbox marcado)
-            if (useCode) {
-                // Se input vazio, mostra quem TEM código ou quem não tem?
-                // Assumimos: Se marcou, tem que bater com o texto. Se texto vazio, ignora.
-                if (inputCode !== "") {
-                    if (!box.code || String(box.code).toLowerCase() !== inputCode) return false;
-                }
+            if (useCode && inputCode !== "") {
+                if (!box.code || String(box.code).toLowerCase() !== inputCode) return false;
             }
 
-            // 4. Filtro Ano (Se checkbox marcado)
-            if (useYear) {
-                if (inputYear !== "") {
-                    if (!box.year || String(box.year) !== inputYear) return false;
-                }
+            if (useYear && inputYear !== "") {
+                if (!box.year || String(box.year) !== inputYear) return false;
             }
-
             return true;
         });
         
         filtered.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' }));
 
         if(filtered.length === 0) {
-            grid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#666; margin-top:20px;">Nenhum box atende aos critérios.</p>';
+            grid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#666; margin-top:20px;">Nenhum box encontrado.</p>';
             return;
         }
 
@@ -375,7 +366,6 @@
             const disabledAttr = box.locked ? 'disabled' : '';
             const lockIcon = box.locked ? '<i class="fas fa-lock"></i>' : '<i class="fas fa-lock-open" style="color:#ccc"></i>';
             
-            // Exibir tags de código/ano se existirem
             let metaHtml = '';
             if (box.code || box.year) {
                 metaHtml = `<div class="meta-tags">`;
@@ -391,15 +381,9 @@
                     <span>${box.id}</span>
                     <span onclick="toggleLock('${box.id}')" style="cursor:pointer">${lockIcon}</span>
                 </div>
-                
                 ${metaHtml}
-
-                <div class="info-row">
-                    Livre: <strong>${parseFloat(box.freeSpace).toFixed(2)} cm</strong>
-                </div>
-
+                <div class="info-row">Livre: <strong>${parseFloat(box.freeSpace).toFixed(2)} cm</strong></div>
                 <div class="bar-bg"><div class="bar-fill" style="width: ${pct}%; background-color: ${color}"></div></div>
-
                 <div class="card-actions" style="${box.locked ? 'opacity:0.6' : ''}">
                     <input type="number" id="in-${box.id}" class="input-mini" placeholder="cm" ${disabledAttr}>
                     <button class="btn-mini btn-act" onclick="addSpace('${box.id}')" ${disabledAttr}><i class="fas fa-minus"></i></button>
