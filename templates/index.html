@@ -11,7 +11,7 @@
         :root { 
             --primary: #2c3e50; --accent: #3498db; --success: #27ae60; 
             --danger: #c0392b; --warning: #f39c12; --export: #8e44ad; 
-            --filter: #7f8c8d; --bg: #f8f9fa; 
+            --filter: #7f8c8d; --bg: #f8f9fa; --info-bg: #e8f4f8; --info-text: #2980b9;
         }
         
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); color: #333; margin: 0; padding: 20px; }
@@ -21,6 +21,11 @@
         
         /* Controles */
         .controls { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 15px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
+        
+        /* Painel de Informações do Arquivo (NOVO) */
+        #fileInfoPanel { display: none; background: var(--info-bg); padding: 15px; border-radius: 8px; border-left: 5px solid var(--info-text); margin-bottom: 20px; animation: fadeIn 0.5s; }
+        .file-info-title { color: var(--info-text); font-weight: bold; font-size: 1.1em; margin: 0 0 5px 0; }
+        .file-info-date { color: #555; font-size: 0.95em; margin: 0; font-style: italic; }
         
         /* Painel de Filtros */
         .filter-panel { background: #eef2f3; padding: 15px 20px; border-radius: 8px; border: 1px solid #dee2e6; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
@@ -49,7 +54,6 @@
 
         .card-header { display: flex; justify-content: space-between; align-items: center; font-weight: bold; margin-bottom: 12px; font-size: 1.15em; color: var(--primary); }
         
-        /* Tags de metadados */
         .meta-tags { display: flex; gap: 5px; font-size: 0.8em; margin-bottom: 10px; color: #555; }
         .tag { background: #eee; padding: 2px 6px; border-radius: 3px; font-weight: 600; }
 
@@ -65,6 +69,8 @@
         .btn-lck { background-color: var(--warning); color: #fff; }
         
         #loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 999; justify-content: center; align-items: center; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -73,7 +79,7 @@
 
 <div class="container">
     <header>
-        <h1>Ocupação de Boxes</h1>
+        <h1>Sistema de Boxes</h1>
     </header>
 
     <div class="controls">
@@ -90,6 +96,11 @@
         <button class="btn btn-export" onclick="exportarRelatorio()"><i class="fas fa-file-download"></i> Backup</button>
         <div style="flex-grow:1"></div>
         <button class="btn btn-upload" onclick="loadBoxes()"><i class="fas fa-sync"></i> Atualizar Tela</button>
+    </div>
+
+    <div id="fileInfoPanel">
+        <p class="file-info-title"><i class="fas fa-info-circle"></i> <span id="infoStatus">Status do Arquivo</span></p>
+        <p class="file-info-date"><i class="far fa-clock"></i> <span id="infoDate">Data de Extração</span></p>
     </div>
 
     <div class="filter-panel">
@@ -154,41 +165,19 @@
         finally { document.getElementById('loader').style.display = 'none'; }
     }
 
-    // --- LÓGICA DE ANO (NOVA E ROBUSTA) ---
+    // --- LÓGICA DE ANO ---
     function getYearFromExcel(cellValue) {
         if (!cellValue) return "";
-
-        // Caso 1: Número (Serial Date do Excel ou apenas o ano "2024")
         if (typeof cellValue === 'number') {
-            // Se for um número entre 1900 e 2100, provavelmente é apenas o ano digitado
             if (cellValue >= 1900 && cellValue <= 2100) return String(cellValue);
-            
-            // Se for maior, é data serial (ex: 45000)
             const dateObj = XLSX.SSF.parse_date_code(cellValue);
             if (dateObj && dateObj.y) return String(dateObj.y);
         }
-
-        // Caso 2: Texto
         const str = String(cellValue).trim();
-
-        // Padrão dd/mm/aaaa ou dd-mm-aaaa
-        if (str.match(/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}/)) {
-            const parts = str.split(/[\/\-]/);
-            return parts[2]; // Pega a última parte
-        }
-        
-        // Padrão aaaa-mm-dd (ISO)
-        if (str.match(/^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}/)) {
-            const parts = str.split(/[\/\-]/);
-            return parts[0]; // Pega a primeira parte
-        }
-
-        // Padrão apenas ano (4 dígitos)
-        if (str.match(/^\d{4}$/)) {
-            return str;
-        }
-
-        return ""; // Falha
+        if (str.match(/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}/)) return str.split(/[\/\-]/)[2];
+        if (str.match(/^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}/)) return str.split(/[\/\-]/)[0];
+        if (str.match(/^\d{4}$/)) return str;
+        return "";
     }
 
     // --- UPLOAD 1: DADOS DE CAPACIDADE ---
@@ -223,7 +212,6 @@
                     freeSpace = (row.B == 1) ? 0 : MAX_CAPACITY;
                 }
                 
-                // Preserva metadados se existirem
                 const oldBox = boxes.find(b => b.id === id);
                 const code = oldBox ? oldBox.code : null;
                 const year = oldBox ? oldBox.year : null;
@@ -238,7 +226,7 @@
         reader.readAsArrayBuffer(file);
     });
 
-    // --- UPLOAD 2: METADADOS (FILTRO) ---
+    // --- UPLOAD 2: METADADOS (FILTRO) COM VISUALIZAÇÃO A1 e ÚLTIMA LINHA ---
     document.getElementById('metaInput').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -248,19 +236,35 @@
             const data = new Uint8Array(evt.target.result);
             const workbook = XLSX.read(data, {type: 'array'});
             const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            
+            // Lemos com header "A" para pegar todas as colunas mapeadas por letra
             const jsonData = XLSX.utils.sheet_to_json(sheet, {header: "A"});
             
+            if (jsonData.length > 0) {
+                // 1. Pegar Célula A1 (Primeiro elemento do array)
+                let statusMsg = "Sem status informado";
+                if (jsonData[0].A) statusMsg = jsonData[0].A;
+                
+                // 2. Pegar Última Linha da Coluna A
+                let dateMsg = "Sem data de extração";
+                const lastRow = jsonData[jsonData.length - 1];
+                if (lastRow && lastRow.A) dateMsg = lastRow.A;
+
+                // 3. Exibir no Painel
+                document.getElementById('infoStatus').innerText = statusMsg;
+                document.getElementById('infoDate').innerText = dateMsg;
+                document.getElementById('fileInfoPanel').style.display = 'block';
+            }
+
+            // --- Processamento dos Filtros (Mantido) ---
             let count = 0;
-            // Começa do index 1 assumindo que 0 é cabeçalho.
-            // O usuário disse: K2 (Box), Q2 (Code), W2 (Data)
+            // Loop começa do 1 (pula A1/Cabeçalho)
             for (let i = 1; i < jsonData.length; i++) {
                 const row = jsonData[i];
-                if (!row.K) continue;
+                if (!row.K) continue; // Coluna K é o ID do Box
 
                 const boxId = String(row.K).trim();
                 const codigo = row.Q ? String(row.Q).trim() : "";
-                
-                // USA A NOVA FUNÇÃO DE EXTRAÇÃO
                 const ano = getYearFromExcel(row.W);
 
                 const boxIndex = boxes.findIndex(b => b.id === boxId);
@@ -271,7 +275,8 @@
                 }
             }
             renderBoxes(); saveBoxes(); 
-            alert(`${count} registros atualizados com filtros!`);
+            // alert(`${count} registros atualizados!`); 
+            // Opcional: removi o alert para não atrapalhar a leitura do painel azul
             document.getElementById('metaInput').value = ''; 
         };
         reader.readAsArrayBuffer(file);
@@ -321,14 +326,12 @@
         if (box) { box.locked = !box.locked; renderBoxes(); saveBoxes(); }
     };
 
-    // --- RENDERIZAR COM FILTROS ---
+    // --- RENDERIZAR ---
     function renderBoxes() {
         const searchText = document.getElementById('searchBox').value.toLowerCase();
         const hideFull = document.getElementById('filterFree').checked;
-        
         const useCode = document.getElementById('chkCode').checked;
         const inputCode = document.getElementById('valCode').value.trim().toLowerCase();
-        
         const useYear = document.getElementById('chkYear').checked;
         const inputYear = document.getElementById('valYear').value.trim();
 
@@ -342,7 +345,6 @@
             if (useCode && inputCode !== "") {
                 if (!box.code || String(box.code).toLowerCase() !== inputCode) return false;
             }
-
             if (useYear && inputYear !== "") {
                 if (!box.year || String(box.year) !== inputYear) return false;
             }
