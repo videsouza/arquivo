@@ -34863,5 +34863,10 @@
     "id": "6973",
     "freeSpace": 0,
     "locked": false
+  },
+  {
+    "id": "Total",
+    "freeSpace": 0,
+    "locked": false
   }
 ]
