@@ -19,15 +19,13 @@
         
         header { text-align: center; margin-bottom: 25px; border-bottom: 1px solid #e0e0e0; padding-bottom: 20px; }
         
-        /* Controles */
         .controls { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 15px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
         
-        /* Painel de Informações do Arquivo (NOVO) */
+        /* Painel de Informações */
         #fileInfoPanel { display: none; background: var(--info-bg); padding: 15px; border-radius: 8px; border-left: 5px solid var(--info-text); margin-bottom: 20px; animation: fadeIn 0.5s; }
         .file-info-title { color: var(--info-text); font-weight: bold; font-size: 1.1em; margin: 0 0 5px 0; }
         .file-info-date { color: #555; font-size: 0.95em; margin: 0; font-style: italic; }
         
-        /* Painel de Filtros */
         .filter-panel { background: #eef2f3; padding: 15px 20px; border-radius: 8px; border: 1px solid #dee2e6; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
         .filter-title { font-weight: bold; color: var(--primary); margin-right: 10px; font-size: 0.9em; text-transform: uppercase; }
         
@@ -45,7 +43,6 @@
         .lbl-primary { background-color: var(--primary); }
         .lbl-meta { background-color: var(--filter); }
 
-        /* Grid */
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
         
         .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); border-left: 5px solid var(--success); position: relative; }
@@ -79,7 +76,7 @@
 
 <div class="container">
     <header>
-        <h1>Sistema de Boxes</h1>
+        <h1>Ocupação de Boxes</h1>
     </header>
 
     <div class="controls">
@@ -99,8 +96,8 @@
     </div>
 
     <div id="fileInfoPanel">
-        <p class="file-info-title"><i class="fas fa-info-circle"></i> <span id="infoStatus">Status do Arquivo</span></p>
-        <p class="file-info-date"><i class="far fa-clock"></i> <span id="infoDate">Data de Extração</span></p>
+        <p class="file-info-title"><i class="fas fa-info-circle"></i> <span id="infoStatus">Status</span></p>
+        <p class="file-info-date"><i class="far fa-clock"></i> <span id="infoDate">Data</span></p>
     </div>
 
     <div class="filter-panel">
@@ -165,7 +162,7 @@
         finally { document.getElementById('loader').style.display = 'none'; }
     }
 
-    // --- LÓGICA DE ANO ---
+    // --- HELPER: EXTRAÇÃO DE ANO ---
     function getYearFromExcel(cellValue) {
         if (!cellValue) return "";
         if (typeof cellValue === 'number') {
@@ -180,7 +177,7 @@
         return "";
     }
 
-    // --- UPLOAD 1: DADOS DE CAPACIDADE ---
+    // --- UPLOAD 1: DADOS DE CAPACIDADE (Mantido) ---
     document.getElementById('excelInput').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -226,7 +223,7 @@
         reader.readAsArrayBuffer(file);
     });
 
-    // --- UPLOAD 2: METADADOS (FILTRO) COM VISUALIZAÇÃO A1 e ÚLTIMA LINHA ---
+    // --- UPLOAD 2: METADADOS (MULTI-SHEET ATUALIZADO) ---
     document.getElementById('metaInput').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -235,52 +232,74 @@
         reader.onload = (evt) => {
             const data = new Uint8Array(evt.target.result);
             const workbook = XLSX.read(data, {type: 'array'});
-            const sheet = workbook.Sheets[workbook.SheetNames[0]];
             
-            // Lemos com header "A" para pegar todas as colunas mapeadas por letra
-            const jsonData = XLSX.utils.sheet_to_json(sheet, {header: "A"});
+            let statusMsg = "Sem status informado";
+            let dateMsg = "Sem data de extração";
             
-            if (jsonData.length > 0) {
-                // 1. Pegar Célula A1 (Primeiro elemento do array)
-                let statusMsg = "Sem status informado";
-                if (jsonData[0].A) statusMsg = jsonData[0].A;
+            // --- 1. Ler Primeira Aba (Índice 0) ---
+            if (workbook.SheetNames.length > 0) {
+                const sheet1 = workbook.Sheets[workbook.SheetNames[0]];
+                const json1 = XLSX.utils.sheet_to_json(sheet1, {header: "A"});
                 
-                // 2. Pegar Última Linha da Coluna A
-                let dateMsg = "Sem data de extração";
-                const lastRow = jsonData[jsonData.length - 1];
-                if (lastRow && lastRow.A) dateMsg = lastRow.A;
-
-                // 3. Exibir no Painel
-                document.getElementById('infoStatus').innerText = statusMsg;
-                document.getElementById('infoDate').innerText = dateMsg;
-                document.getElementById('fileInfoPanel').style.display = 'block';
-            }
-
-            // --- Processamento dos Filtros (Mantido) ---
-            let count = 0;
-            // Loop começa do 1 (pula A1/Cabeçalho)
-            for (let i = 1; i < jsonData.length; i++) {
-                const row = jsonData[i];
-                if (!row.K) continue; // Coluna K é o ID do Box
-
-                const boxId = String(row.K).trim();
-                const codigo = row.Q ? String(row.Q).trim() : "";
-                const ano = getYearFromExcel(row.W);
-
-                const boxIndex = boxes.findIndex(b => b.id === boxId);
-                if (boxIndex > -1) {
-                    boxes[boxIndex].code = codigo;
-                    boxes[boxIndex].year = ano;
-                    count++;
+                // Pega Status em A1
+                if (json1.length > 0 && json1[0].A) statusMsg = json1[0].A;
+                
+                // Processa boxes da Aba 1
+                processarBoxesDaAba(json1);
+                
+                // Se SÓ tiver uma aba, tenta pegar a data da última linha dela
+                if (workbook.SheetNames.length === 1 && json1.length > 0) {
+                    const lastRow = json1[json1.length - 1];
+                    if (lastRow && lastRow.A) dateMsg = lastRow.A;
                 }
             }
-            renderBoxes(); saveBoxes(); 
-            // alert(`${count} registros atualizados!`); 
-            // Opcional: removi o alert para não atrapalhar a leitura do painel azul
+
+            // --- 2. Ler Segunda Aba (Índice 1), se existir ---
+            if (workbook.SheetNames.length > 1) {
+                const sheet2 = workbook.Sheets[workbook.SheetNames[1]];
+                const json2 = XLSX.utils.sheet_to_json(sheet2, {header: "A"});
+                
+                // Processa boxes da Aba 2
+                processarBoxesDaAba(json2);
+
+                // Pega Data da Última Linha da Aba 2 (Prioridade)
+                if (json2.length > 0) {
+                    const lastRow = json2[json2.length - 1];
+                    if (lastRow && lastRow.A) dateMsg = lastRow.A;
+                }
+            }
+
+            // Exibir Info
+            document.getElementById('infoStatus').innerText = statusMsg;
+            document.getElementById('infoDate').innerText = dateMsg;
+            document.getElementById('fileInfoPanel').style.display = 'block';
+
+            renderBoxes(); 
+            saveBoxes(); 
             document.getElementById('metaInput').value = ''; 
         };
         reader.readAsArrayBuffer(file);
     });
+
+    // Função auxiliar para evitar duplicar código de leitura
+    function processarBoxesDaAba(jsonData) {
+        // Começa do 1 (pula cabeçalho A1)
+        for (let i = 1; i < jsonData.length; i++) {
+            const row = jsonData[i];
+            if (!row.K) continue; // Coluna K = Box ID
+
+            const boxId = String(row.K).trim();
+            const codigo = row.Q ? String(row.Q).trim() : "";
+            const ano = getYearFromExcel(row.W);
+
+            const boxIndex = boxes.findIndex(b => b.id === boxId);
+            if (boxIndex > -1) {
+                // Atualiza se encontrar o box
+                boxes[boxIndex].code = codigo;
+                boxes[boxIndex].year = ano;
+            }
+        }
+    }
 
     // --- EXPORTAR ---
     function exportarRelatorio() {
