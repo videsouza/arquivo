@@ -50,8 +50,12 @@
 
         .card-header { display: flex; justify-content: space-between; align-items: center; font-weight: bold; margin-bottom: 12px; font-size: 1.15em; color: var(--primary); }
         
-        .meta-tags { display: flex; gap: 5px; font-size: 0.8em; margin-bottom: 10px; color: #555; }
-        .tag { background: #eee; padding: 2px 6px; border-radius: 3px; font-weight: 600; }
+        /* Tags de metadados */
+        .meta-container { margin-bottom: 10px; }
+        .meta-row { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 4px; }
+        .tag { padding: 2px 6px; border-radius: 3px; font-weight: 600; font-size: 0.75em; white-space: nowrap; }
+        .tag-code { background: #e8f6f3; color: #16a085; border: 1px solid #d0ece7; }
+        .tag-year { background: #fef9e7; color: #d35400; border: 1px solid #fdebd0; }
 
         .info-row { font-size: 0.95em; color: #666; margin-bottom: 8px; }
         .bar-bg { height: 8px; background: #eee; border-radius: 4px; overflow: hidden; margin-bottom: 15px; }
@@ -165,26 +169,39 @@
     function getYearFromExcel(cellValue) {
         if (!cellValue) return "";
         if (typeof cellValue === 'number') {
-            if (cellValue >= 1900 && cellValue <= 2100) return String(cellValue);
-            const dateObj = XLSX.SSF.parse_date_code(cellValue);
-            if (dateObj && dateObj.y) return String(dateObj.y);
+            if (cellValue > 2500) { 
+                const dateObj = XLSX.SSF.parse_date_code(cellValue);
+                if (dateObj && dateObj.y) return String(dateObj.y);
+            }
+            return String(Math.floor(cellValue));
         }
         const str = String(cellValue).trim();
-        if (str.match(/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}/)) return str.split(/[\/\-]/)[2];
-        if (str.match(/^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}/)) return str.split(/[\/\-]/)[0];
-        if (str.match(/^\d{4}$/)) return str;
+        const brDate = str.match(/(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})/);
+        if (brDate) return brDate[3];
+        const isoDate = str.match(/(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})/);
+        if (isoDate) return isoDate[1];
+        if (/^\d{4}$/.test(str)) return str;
         return "";
     }
 
-    // --- HELPER: PEGAR ÚLTIMA LINHA COM DADO ---
+    // --- HELPER: ÚLTIMA LINHA ---
     function getLastRowData(jsonData, columnKey) {
-        // Varre de trás pra frente
         for (let i = jsonData.length - 1; i >= 0; i--) {
-            if (jsonData[i] && jsonData[i][columnKey]) {
-                return jsonData[i][columnKey];
-            }
+            if (jsonData[i] && jsonData[i][columnKey]) return jsonData[i][columnKey];
         }
         return null;
+    }
+
+    // --- HELPER: ACUMULAR VALORES ÚNICOS ---
+    function appendUnique(currentStr, newVal) {
+        if (!newVal) return currentStr;
+        if (!currentStr) return newVal;
+        
+        const arr = String(currentStr).split(',').map(s => s.trim());
+        if (!arr.includes(newVal)) {
+            arr.push(newVal);
+        }
+        return arr.join(', ');
     }
 
     // --- UPLOAD 1: CAPACIDADES ---
@@ -211,14 +228,13 @@
 
                 if (isBackup) {
                     let val = parseFloat(row.B);
-                    if (isNaN(val)) val = 14; 
-                    if (val > MAX_CAPACITY) val = MAX_CAPACITY;
-                    if (val < 0) val = 0;
+                    if (isNaN(val)) val = 14; if (val > 14) val = 14; if (val < 0) val = 0;
                     freeSpace = val;
                 } else {
                     freeSpace = (row.B == 1) ? 0 : MAX_CAPACITY;
                 }
                 
+                // Mantém metadados existentes
                 const oldBox = boxes.find(b => b.id === id);
                 const code = oldBox ? oldBox.code : null;
                 const year = oldBox ? oldBox.year : null;
@@ -233,7 +249,7 @@
         reader.readAsArrayBuffer(file);
     });
 
-    // --- UPLOAD 2: METADADOS (CORRIGIDO) ---
+    // --- UPLOAD 2: METADADOS (ACUMULATIVO) ---
     document.getElementById('metaInput').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -247,43 +263,35 @@
                 let statusMsg = "Sem status informado";
                 let dateMsg = "Sem data de extração";
                 
-                // --- 1. Processar ABA 1 (Obrigatório) ---
+                // --- ABA 1 ---
                 if (workbook.SheetNames.length > 0) {
                     const sheet1 = workbook.Sheets[workbook.SheetNames[0]];
-                    // 'defval' ajuda a não pular células vazias, importante para estrutura
                     const json1 = XLSX.utils.sheet_to_json(sheet1, {header: "A", defval: ""});
                     
-                    // Status (A1)
                     if (json1.length > 0 && json1[0].A) statusMsg = json1[0].A;
-                    
                     processarBoxesDaAba(json1);
                     
-                    // Fallback de Data: Se só tiver 1 aba, pega data da Aba 1
                     if (workbook.SheetNames.length === 1) {
                         const lastData = getLastRowData(json1, "A");
                         if (lastData) dateMsg = lastData;
                     }
                 }
 
-                // --- 2. Processar ABA 2 (Opcional, mas prioritária para Data) ---
+                // --- ABA 2 ---
                 if (workbook.SheetNames.length > 1) {
                     const sheet2 = workbook.Sheets[workbook.SheetNames[1]];
                     const json2 = XLSX.utils.sheet_to_json(sheet2, {header: "A", defval: ""});
                     
                     processarBoxesDaAba(json2);
-
-                    // Pega Data da Última Linha da Aba 2 (Prioridade)
                     const lastData = getLastRowData(json2, "A");
                     if (lastData) dateMsg = lastData;
                 }
 
-                // Exibir Info
                 document.getElementById('infoStatus').innerText = statusMsg;
                 document.getElementById('infoDate').innerText = dateMsg;
                 document.getElementById('fileInfoPanel').style.display = 'block';
 
-                renderBoxes(); 
-                saveBoxes(); 
+                renderBoxes(); saveBoxes(); 
                 document.getElementById('metaInput').value = ''; 
 
             } catch (err) {
@@ -295,20 +303,25 @@
     });
 
     function processarBoxesDaAba(jsonData) {
-        // Começa do 1 (pula cabeçalho/status)
+        // Pula cabeçalho
         for (let i = 1; i < jsonData.length; i++) {
             const row = jsonData[i];
-            // Verifica se a linha tem o ID do Box (K)
             if (!row.K || String(row.K).trim() === "") continue;
 
             const boxId = String(row.K).trim();
-            const codigo = row.Q ? String(row.Q).trim() : "";
-            const ano = getYearFromExcel(row.W);
+            const novoCodigo = row.Q ? String(row.Q).trim() : "";
+            const novoAno = getYearFromExcel(row.W);
 
             const boxIndex = boxes.findIndex(b => b.id === boxId);
             if (boxIndex > -1) {
-                boxes[boxIndex].code = codigo;
-                boxes[boxIndex].year = ano;
+                // ACUMULA CÓDIGOS
+                if (novoCodigo) {
+                    boxes[boxIndex].code = appendUnique(boxes[boxIndex].code, novoCodigo);
+                }
+                // ACUMULA ANOS
+                if (novoAno) {
+                    boxes[boxIndex].year = appendUnique(boxes[boxIndex].year, novoAno);
+                }
             }
         }
     }
@@ -323,12 +336,12 @@
             "Box": box.id,
             "Espaço Livre (cm)": parseFloat(box.freeSpace).toFixed(2),
             "Status": box.locked ? "Reservado" : (box.freeSpace === 0 ? "Cheio" : "Disponível"),
-            "Código": box.code || "",
-            "Ano": box.year || ""
+            "Códigos": box.code || "",
+            "Anos": box.year || ""
         }));
 
         const ws = XLSX.utils.json_to_sheet(dadosParaExportar);
-        ws['!cols'] = [{wch:15}, {wch:15}, {wch:15}, {wch:15}, {wch:10}];
+        ws['!cols'] = [{wch:15}, {wch:15}, {wch:15}, {wch:25}, {wch:25}];
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Backup_Completo");
         XLSX.writeFile(wb, "Backup_Boxes.xlsx");
@@ -374,10 +387,10 @@
             if (hideFull && box.freeSpace < 0.1) return false;
             
             if (useCode && inputCode !== "") {
-                if (!box.code || String(box.code).toLowerCase() !== inputCode) return false;
+                if (!box.code || !String(box.code).toLowerCase().includes(inputCode)) return false;
             }
             if (useYear && inputYear !== "") {
-                if (!box.year || String(box.year) !== inputYear) return false;
+                if (!box.year || !String(box.year).includes(inputYear)) return false;
             }
             return true;
         });
@@ -399,11 +412,27 @@
             const disabledAttr = box.locked ? 'disabled' : '';
             const lockIcon = box.locked ? '<i class="fas fa-lock"></i>' : '<i class="fas fa-lock-open" style="color:#ccc"></i>';
             
+            // GERA TAGS VISUAIS
             let metaHtml = '';
             if (box.code || box.year) {
-                metaHtml = `<div class="meta-tags">`;
-                if(box.code) metaHtml += `<span class="tag"><i class="fas fa-tag"></i> ${box.code}</span>`;
-                if(box.year) metaHtml += `<span class="tag"><i class="far fa-calendar"></i> ${box.year}</span>`;
+                metaHtml = `<div class="meta-container">`;
+                
+                if(box.code) {
+                    metaHtml += `<div class="meta-row">`;
+                    box.code.split(',').forEach(c => {
+                        metaHtml += `<span class="tag tag-code"><i class="fas fa-tag"></i> ${c.trim()}</span>`;
+                    });
+                    metaHtml += `</div>`;
+                }
+                
+                if(box.year) {
+                    metaHtml += `<div class="meta-row">`;
+                    box.year.split(',').forEach(y => {
+                        metaHtml += `<span class="tag tag-year"><i class="far fa-calendar"></i> ${y.trim()}</span>`;
+                    });
+                    metaHtml += `</div>`;
+                }
+                
                 metaHtml += `</div>`;
             }
 
