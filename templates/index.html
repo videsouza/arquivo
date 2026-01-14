@@ -21,7 +21,6 @@
         
         .controls { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 15px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
         
-        /* Painel de Informações */
         #fileInfoPanel { display: none; background: var(--info-bg); padding: 15px; border-radius: 8px; border-left: 5px solid var(--info-text); margin-bottom: 20px; animation: fadeIn 0.5s; }
         .file-info-title { color: var(--info-text); font-weight: bold; font-size: 1.1em; margin: 0 0 5px 0; }
         .file-info-date { color: #555; font-size: 0.95em; margin: 0; font-style: italic; }
@@ -76,7 +75,7 @@
 
 <div class="container">
     <header>
-        <h1>Ocupação de Boxes</h1>
+        <h1>Sistema de Boxes</h1>
     </header>
 
     <div class="controls">
@@ -177,7 +176,18 @@
         return "";
     }
 
-    // --- UPLOAD 1: DADOS DE CAPACIDADE (Mantido) ---
+    // --- HELPER: PEGAR ÚLTIMA LINHA COM DADO ---
+    function getLastRowData(jsonData, columnKey) {
+        // Varre de trás pra frente
+        for (let i = jsonData.length - 1; i >= 0; i--) {
+            if (jsonData[i] && jsonData[i][columnKey]) {
+                return jsonData[i][columnKey];
+            }
+        }
+        return null;
+    }
+
+    // --- UPLOAD 1: CAPACIDADES ---
     document.getElementById('excelInput').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -190,7 +200,7 @@
             const sheet = workbook.Sheets[workbook.SheetNames[0]];
             const jsonData = XLSX.utils.sheet_to_json(sheet, {header: "A"});
             
-            const headerCellB = jsonData[0].B ? String(jsonData[0].B).toLowerCase() : "";
+            const headerCellB = jsonData[0]?.B ? String(jsonData[0].B).toLowerCase() : "";
             const isBackup = headerCellB.includes("livre") || headerCellB.includes("espaço") || headerCellB.includes("cm");
             
             let newBoxes = [];
@@ -223,70 +233,73 @@
         reader.readAsArrayBuffer(file);
     });
 
-    // --- UPLOAD 2: METADADOS (MULTI-SHEET ATUALIZADO) ---
+    // --- UPLOAD 2: METADADOS (CORRIGIDO) ---
     document.getElementById('metaInput').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
         const reader = new FileReader();
         reader.onload = (evt) => {
-            const data = new Uint8Array(evt.target.result);
-            const workbook = XLSX.read(data, {type: 'array'});
-            
-            let statusMsg = "Sem status informado";
-            let dateMsg = "Sem data de extração";
-            
-            // --- 1. Ler Primeira Aba (Índice 0) ---
-            if (workbook.SheetNames.length > 0) {
-                const sheet1 = workbook.Sheets[workbook.SheetNames[0]];
-                const json1 = XLSX.utils.sheet_to_json(sheet1, {header: "A"});
+            try {
+                const data = new Uint8Array(evt.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
                 
-                // Pega Status em A1
-                if (json1.length > 0 && json1[0].A) statusMsg = json1[0].A;
+                let statusMsg = "Sem status informado";
+                let dateMsg = "Sem data de extração";
                 
-                // Processa boxes da Aba 1
-                processarBoxesDaAba(json1);
-                
-                // Se SÓ tiver uma aba, tenta pegar a data da última linha dela
-                if (workbook.SheetNames.length === 1 && json1.length > 0) {
-                    const lastRow = json1[json1.length - 1];
-                    if (lastRow && lastRow.A) dateMsg = lastRow.A;
+                // --- 1. Processar ABA 1 (Obrigatório) ---
+                if (workbook.SheetNames.length > 0) {
+                    const sheet1 = workbook.Sheets[workbook.SheetNames[0]];
+                    // 'defval' ajuda a não pular células vazias, importante para estrutura
+                    const json1 = XLSX.utils.sheet_to_json(sheet1, {header: "A", defval: ""});
+                    
+                    // Status (A1)
+                    if (json1.length > 0 && json1[0].A) statusMsg = json1[0].A;
+                    
+                    processarBoxesDaAba(json1);
+                    
+                    // Fallback de Data: Se só tiver 1 aba, pega data da Aba 1
+                    if (workbook.SheetNames.length === 1) {
+                        const lastData = getLastRowData(json1, "A");
+                        if (lastData) dateMsg = lastData;
+                    }
                 }
-            }
 
-            // --- 2. Ler Segunda Aba (Índice 1), se existir ---
-            if (workbook.SheetNames.length > 1) {
-                const sheet2 = workbook.Sheets[workbook.SheetNames[1]];
-                const json2 = XLSX.utils.sheet_to_json(sheet2, {header: "A"});
-                
-                // Processa boxes da Aba 2
-                processarBoxesDaAba(json2);
+                // --- 2. Processar ABA 2 (Opcional, mas prioritária para Data) ---
+                if (workbook.SheetNames.length > 1) {
+                    const sheet2 = workbook.Sheets[workbook.SheetNames[1]];
+                    const json2 = XLSX.utils.sheet_to_json(sheet2, {header: "A", defval: ""});
+                    
+                    processarBoxesDaAba(json2);
 
-                // Pega Data da Última Linha da Aba 2 (Prioridade)
-                if (json2.length > 0) {
-                    const lastRow = json2[json2.length - 1];
-                    if (lastRow && lastRow.A) dateMsg = lastRow.A;
+                    // Pega Data da Última Linha da Aba 2 (Prioridade)
+                    const lastData = getLastRowData(json2, "A");
+                    if (lastData) dateMsg = lastData;
                 }
+
+                // Exibir Info
+                document.getElementById('infoStatus').innerText = statusMsg;
+                document.getElementById('infoDate').innerText = dateMsg;
+                document.getElementById('fileInfoPanel').style.display = 'block';
+
+                renderBoxes(); 
+                saveBoxes(); 
+                document.getElementById('metaInput').value = ''; 
+
+            } catch (err) {
+                console.error(err);
+                alert("Erro ao ler arquivo: " + err.message);
             }
-
-            // Exibir Info
-            document.getElementById('infoStatus').innerText = statusMsg;
-            document.getElementById('infoDate').innerText = dateMsg;
-            document.getElementById('fileInfoPanel').style.display = 'block';
-
-            renderBoxes(); 
-            saveBoxes(); 
-            document.getElementById('metaInput').value = ''; 
         };
         reader.readAsArrayBuffer(file);
     });
 
-    // Função auxiliar para evitar duplicar código de leitura
     function processarBoxesDaAba(jsonData) {
-        // Começa do 1 (pula cabeçalho A1)
+        // Começa do 1 (pula cabeçalho/status)
         for (let i = 1; i < jsonData.length; i++) {
             const row = jsonData[i];
-            if (!row.K) continue; // Coluna K = Box ID
+            // Verifica se a linha tem o ID do Box (K)
+            if (!row.K || String(row.K).trim() === "") continue;
 
             const boxId = String(row.K).trim();
             const codigo = row.Q ? String(row.Q).trim() : "";
@@ -294,7 +307,6 @@
 
             const boxIndex = boxes.findIndex(b => b.id === boxId);
             if (boxIndex > -1) {
-                // Atualiza se encontrar o box
                 boxes[boxIndex].code = codigo;
                 boxes[boxIndex].year = ano;
             }
