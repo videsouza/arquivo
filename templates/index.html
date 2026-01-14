@@ -50,7 +50,6 @@
 
         .card-header { display: flex; justify-content: space-between; align-items: center; font-weight: bold; margin-bottom: 12px; font-size: 1.15em; color: var(--primary); }
         
-        /* Tags de metadados */
         .meta-container { margin-bottom: 10px; }
         .meta-row { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 4px; }
         .tag { padding: 2px 6px; border-radius: 3px; font-weight: 600; font-size: 0.75em; white-space: nowrap; }
@@ -79,7 +78,7 @@
 
 <div class="container">
     <header>
-        <h1>Sistema de Ocupação de Boxes</h1>
+        <h1>Sistema de Boxes v3</h1>
     </header>
 
     <div class="controls">
@@ -196,11 +195,8 @@
     function appendUnique(currentStr, newVal) {
         if (!newVal) return currentStr;
         if (!currentStr) return newVal;
-        
         const arr = String(currentStr).split(',').map(s => s.trim());
-        if (!arr.includes(newVal)) {
-            arr.push(newVal);
-        }
+        if (!arr.includes(newVal)) arr.push(newVal);
         return arr.join(', ');
     }
 
@@ -234,7 +230,7 @@
                     freeSpace = (row.B == 1) ? 0 : MAX_CAPACITY;
                 }
                 
-                // Mantém metadados existentes
+                // Preserva metadados anteriores
                 const oldBox = boxes.find(b => b.id === id);
                 const code = oldBox ? oldBox.code : null;
                 const year = oldBox ? oldBox.year : null;
@@ -249,7 +245,7 @@
         reader.readAsArrayBuffer(file);
     });
 
-    // --- UPLOAD 2: METADADOS (ACUMULATIVO) ---
+    // --- UPLOAD 2: METADADOS (COM RESET) ---
     document.getElementById('metaInput').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -257,13 +253,20 @@
         const reader = new FileReader();
         reader.onload = (evt) => {
             try {
+                // *** PERGUNTA CRÍTICA PARA LIMPAR DADOS FANTASMAS ***
+                const shouldReset = confirm("Deseja LIMPAR os filtros (Códigos/Anos) antigos?\n\n[OK] = Sim, apagar antigos e carregar estes.\n[Cancelar] = Não, manter antigos e adicionar estes.");
+                
+                if (shouldReset) {
+                    boxes.forEach(b => { b.code = ""; b.year = ""; });
+                }
+
                 const data = new Uint8Array(evt.target.result);
                 const workbook = XLSX.read(data, {type: 'array'});
                 
                 let statusMsg = "Sem status informado";
                 let dateMsg = "Sem data de extração";
                 
-                // --- ABA 1 ---
+                // ABA 1
                 if (workbook.SheetNames.length > 0) {
                     const sheet1 = workbook.Sheets[workbook.SheetNames[0]];
                     const json1 = XLSX.utils.sheet_to_json(sheet1, {header: "A", defval: ""});
@@ -277,7 +280,7 @@
                     }
                 }
 
-                // --- ABA 2 ---
+                // ABA 2
                 if (workbook.SheetNames.length > 1) {
                     const sheet2 = workbook.Sheets[workbook.SheetNames[1]];
                     const json2 = XLSX.utils.sheet_to_json(sheet2, {header: "A", defval: ""});
@@ -303,7 +306,6 @@
     });
 
     function processarBoxesDaAba(jsonData) {
-        // Pula cabeçalho
         for (let i = 1; i < jsonData.length; i++) {
             const row = jsonData[i];
             if (!row.K || String(row.K).trim() === "") continue;
@@ -314,14 +316,8 @@
 
             const boxIndex = boxes.findIndex(b => b.id === boxId);
             if (boxIndex > -1) {
-                // ACUMULA CÓDIGOS
-                if (novoCodigo) {
-                    boxes[boxIndex].code = appendUnique(boxes[boxIndex].code, novoCodigo);
-                }
-                // ACUMULA ANOS
-                if (novoAno) {
-                    boxes[boxIndex].year = appendUnique(boxes[boxIndex].year, novoAno);
-                }
+                if (novoCodigo) boxes[boxIndex].code = appendUnique(boxes[boxIndex].code, novoCodigo);
+                if (novoAno) boxes[boxIndex].year = appendUnique(boxes[boxIndex].year, novoAno);
             }
         }
     }
@@ -412,11 +408,9 @@
             const disabledAttr = box.locked ? 'disabled' : '';
             const lockIcon = box.locked ? '<i class="fas fa-lock"></i>' : '<i class="fas fa-lock-open" style="color:#ccc"></i>';
             
-            // GERA TAGS VISUAIS
             let metaHtml = '';
             if (box.code || box.year) {
                 metaHtml = `<div class="meta-container">`;
-                
                 if(box.code) {
                     metaHtml += `<div class="meta-row">`;
                     box.code.split(',').forEach(c => {
@@ -424,7 +418,6 @@
                     });
                     metaHtml += `</div>`;
                 }
-                
                 if(box.year) {
                     metaHtml += `<div class="meta-row">`;
                     box.year.split(',').forEach(y => {
@@ -432,7 +425,6 @@
                     });
                     metaHtml += `</div>`;
                 }
-                
                 metaHtml += `</div>`;
             }
 
