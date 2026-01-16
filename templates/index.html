@@ -57,7 +57,7 @@
         
         .tag-code { background: #e8f6f3; color: #16a085; border: 1px solid #d0ece7; }
         .tag-year { background: #fef9e7; color: #d35400; border: 1px solid #fdebd0; }
-        .tag-sector { background: #eaf2f8; color: #2980b9; border: 1px solid #d4e6f1; } /* Azul para Setor */
+        .tag-sector { background: #eaf2f8; color: #2980b9; border: 1px solid #d4e6f1; } 
 
         .info-row { font-size: 0.95em; color: #666; margin-bottom: 8px; }
         .bar-bg { height: 8px; background: #eee; border-radius: 4px; overflow: hidden; margin-bottom: 15px; }
@@ -122,19 +122,19 @@
         <div class="filter-group">
             <input type="checkbox" id="chkCode" onchange="renderBoxes()" title="Filtrar por Código">
             <span style="font-size:0.9em; font-weight:bold;">Cód:</span>
-            <input type="text" id="valCode" class="filter-input" placeholder="Ex.: 2.0.10.00.23" oninput="renderBoxes()">
+            <input type="text" id="valCode" class="filter-input" placeholder="Ex: 93" oninput="renderBoxes()">
         </div>
 
         <div class="filter-group">
             <input type="checkbox" id="chkYear" onchange="renderBoxes()" title="Filtrar por Ano">
             <span style="font-size:0.9em; font-weight:bold;">Ano:</span>
-            <input type="number" id="valYear" class="filter-input" placeholder="Ex.: 2024" oninput="renderBoxes()">
+            <input type="number" id="valYear" class="filter-input" placeholder="Ex: 2024" oninput="renderBoxes()">
         </div>
 
         <div class="filter-group">
             <input type="checkbox" id="chkSector" onchange="renderBoxes()" title="Filtrar por Setor">
             <span style="font-size:0.9em; font-weight:bold;">Setor:</span>
-            <input type="text" id="valSector" class="filter-input" placeholder="Ex.: 1344" oninput="renderBoxes()">
+            <input type="text" id="valSector" class="filter-input" placeholder="Ex: ADM" oninput="renderBoxes()">
         </div>
     </div>
 
@@ -173,7 +173,7 @@
         finally { document.getElementById('loader').style.display = 'none'; }
     }
 
-    // --- HELPER: EXTRAÇÃO DE ANO ---
+    // --- HELPERS ---
     function getYearFromExcel(cellValue) {
         if (!cellValue) return "";
         if (typeof cellValue === 'number') {
@@ -240,7 +240,7 @@
                 const oldBox = boxes.find(b => b.id === id);
                 const code = oldBox ? oldBox.code : null;
                 const year = oldBox ? oldBox.year : null;
-                const sector = oldBox ? oldBox.sector : null; // Mantém setor
+                const sector = oldBox ? oldBox.sector : null;
 
                 if(!newBoxes.find(b => b.id === id)) {
                     newBoxes.push({ id, freeSpace, locked: false, code, year, sector });
@@ -252,7 +252,7 @@
         reader.readAsArrayBuffer(file);
     });
 
-    // --- UPLOAD 2: METADADOS (COM SETOR EM D) ---
+    // --- UPLOAD 2: METADADOS ---
     document.getElementById('metaInput').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -319,7 +319,7 @@
             const boxId = String(row.K).trim();
             const novoCodigo = row.Q ? String(row.Q).trim() : "";
             const novoAno = getYearFromExcel(row.W);
-            const novoSetor = row.D ? String(row.D).trim() : ""; // Coluna D = Setor
+            const novoSetor = row.D ? String(row.D).trim() : "";
 
             const boxIndex = boxes.findIndex(b => b.id === boxId);
             if (boxIndex > -1) {
@@ -375,7 +375,7 @@
         if (box) { box.locked = !box.locked; renderBoxes(); saveBoxes(); }
     };
 
-    // --- RENDERIZAR ---
+    // --- RENDERIZAR (COM LÓGICA DE FILTRO EXATO PARA TAGS) ---
     function renderBoxes() {
         const searchText = document.getElementById('searchBox').value.toLowerCase();
         const hideFull = document.getElementById('filterFree').checked;
@@ -384,7 +384,7 @@
         const inputCode = document.getElementById('valCode').value.trim().toLowerCase();
         
         const useYear = document.getElementById('chkYear').checked;
-        const inputYear = document.getElementById('valYear').value.trim();
+        const inputYear = document.getElementById('valYear').value.trim().toLowerCase();
 
         const useSector = document.getElementById('chkSector').checked;
         const inputSector = document.getElementById('valSector').value.trim().toLowerCase();
@@ -393,22 +393,25 @@
         grid.innerHTML = '';
         
         let filtered = boxes.filter(box => {
-            // Filtro Texto ID
+            // Filtro Texto (Box ID) - Mantém parcial
             if (!box.id.toLowerCase().includes(searchText)) return false;
             // Filtro Cheio
             if (hideFull && box.freeSpace < 0.1) return false;
             
-            // Filtro Código
+            // Filtro Código (EXATO na lista de itens)
             if (useCode && inputCode !== "") {
-                if (!box.code || !String(box.code).toLowerCase().includes(inputCode)) return false;
+                const tokens = box.code ? String(box.code).toLowerCase().split(',').map(t=>t.trim()) : [];
+                if (!tokens.includes(inputCode)) return false;
             }
-            // Filtro Ano
+            // Filtro Ano (EXATO na lista de itens)
             if (useYear && inputYear !== "") {
-                if (!box.year || !String(box.year).includes(inputYear)) return false;
+                const tokens = box.year ? String(box.year).toLowerCase().split(',').map(t=>t.trim()) : [];
+                if (!tokens.includes(inputYear)) return false;
             }
-            // Filtro Setor
+            // Filtro Setor (EXATO na lista de itens)
             if (useSector && inputSector !== "") {
-                if (!box.sector || !String(box.sector).toLowerCase().includes(inputSector)) return false;
+                const tokens = box.sector ? String(box.sector).toLowerCase().split(',').map(t=>t.trim()) : [];
+                if (!tokens.includes(inputSector)) return false;
             }
             return true;
         });
@@ -435,7 +438,6 @@
             if (box.code || box.year || box.sector) {
                 metaHtml = `<div class="meta-container">`;
                 
-                // Setor (Azul)
                 if(box.sector) {
                     metaHtml += `<div class="meta-row">`;
                     box.sector.split(',').forEach(s => {
@@ -444,7 +446,6 @@
                     metaHtml += `</div>`;
                 }
 
-                // Código (Verde)
                 if(box.code) {
                     metaHtml += `<div class="meta-row">`;
                     box.code.split(',').forEach(c => {
@@ -453,7 +454,6 @@
                     metaHtml += `</div>`;
                 }
                 
-                // Ano (Laranja)
                 if(box.year) {
                     metaHtml += `<div class="meta-row">`;
                     box.year.split(',').forEach(y => {
