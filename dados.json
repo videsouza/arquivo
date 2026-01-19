@@ -25842,7 +25842,7 @@
     "code": "5.3.02.01.28, 2.0.01.05.02, 2.0.10.00.01",
     "freeSpace": 9,
     "id": "2872",
-    "locked": false,
+    "locked": true,
     "sector": "93",
     "statusContext": "Situa\u00e7\u00e3o do Doc: 'GUARDA PERMANENTE'\r",
     "year": "1999"
