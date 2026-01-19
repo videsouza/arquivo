@@ -148,7 +148,7 @@
         <div class="filter-group">
             <input type="checkbox" id="chkSector" onchange="renderBoxes()" title="Ativar">
             <span style="font-size:0.9em; font-weight:bold;">Setor:</span>
-            <input type="text" id="valSector" class="filter-input" placeholder="Ex: 93M" oninput="renderBoxes()">
+            <input type="text" id="valSector" class="filter-input" placeholder="Ex: 93" oninput="renderBoxes()">
         </div>
     </div>
 
@@ -174,7 +174,7 @@
             renderBoxes();
         } catch (e) { 
             console.error(e);
-            alert("Erro ao carregar dados: " + e.message);
+            // Silencioso no onload para não assustar, mas loga erro
         } 
         finally { document.getElementById('loader').style.display = 'none'; }
     }
@@ -257,12 +257,12 @@
                     freeSpace = (row.B == 1) ? 0 : MAX_CAPACITY;
                 }
                 
-                // Mantém metadados
+                // Mantém metadados existentes, se houver
                 const oldBox = boxes.find(b => b.id === id);
-                const code = oldBox ? oldBox.code : null;
-                const year = oldBox ? oldBox.year : null;
-                const sector = oldBox ? oldBox.sector : null;
-                const statusContext = oldBox ? oldBox.statusContext : null;
+                const code = oldBox ? oldBox.code : "";
+                const year = oldBox ? oldBox.year : "";
+                const sector = oldBox ? oldBox.sector : "";
+                const statusContext = oldBox ? oldBox.statusContext : "";
 
                 if(!newBoxes.find(b => b.id === id)) {
                     newBoxes.push({ id, freeSpace, locked: false, code, year, sector, statusContext });
@@ -301,6 +301,7 @@
                     const sheet1 = workbook.Sheets[workbook.SheetNames[0]];
                     const json1 = XLSX.utils.sheet_to_json(sheet1, {header: "A", defval: ""});
                     
+                    // A1 contém o status
                     if (json1.length > 0 && json1[0].A) {
                         statusMsg = json1[0].A;
                         globalStatusFilter = statusMsg; 
@@ -328,7 +329,6 @@
                 document.getElementById('infoDate').innerText = dateMsg;
                 document.getElementById('fileInfoPanel').style.display = 'block';
 
-                // Atualiza Botão Status
                 const btnStatus = document.getElementById('statusFilterContainer');
                 const lblStatus = document.getElementById('lblFilterStatus');
                 lblStatus.innerText = `Exibir apenas "${statusMsg}"`;
@@ -412,7 +412,7 @@
         if (box) { box.locked = !box.locked; renderBoxes(); saveBoxes(); }
     };
 
-    // --- RENDERIZAR (PROTEGIDO) ---
+    // --- RENDERIZAR BLINDADO ---
     function renderBoxes() {
         try {
             const searchText = document.getElementById('searchBox').value.toLowerCase();
@@ -436,22 +436,20 @@
                 if (!box.id.toLowerCase().includes(searchText)) return false;
                 if (hideFull && box.freeSpace < 0.1) return false;
                 
-                // Filtro STATUS DO ARQUIVO (A1)
+                // Filtro STATUS (A1)
                 if (useStatus && globalStatusFilter) {
                     if (box.statusContext !== globalStatusFilter) return false;
                 }
 
-                // Códigos (Exato) - PROTEÇÃO COM STRING()
+                // Proteção String()
                 if (useCode && inputCode !== "") {
                     const tokens = box.code ? String(box.code).toLowerCase().split(',').map(t=>t.trim()) : [];
                     if (!tokens.includes(inputCode)) return false;
                 }
-                // Anos (Exato)
                 if (useYear && inputYear !== "") {
                     const tokens = box.year ? String(box.year).toLowerCase().split(',').map(t=>t.trim()) : [];
                     if (!tokens.includes(inputYear)) return false;
                 }
-                // Setores (Exato)
                 if (useSector && inputSector !== "") {
                     const tokens = box.sector ? String(box.sector).toLowerCase().split(',').map(t=>t.trim()) : [];
                     if (!tokens.includes(inputSector)) return false;
@@ -476,7 +474,7 @@
                 const disabledAttr = box.locked ? 'disabled' : '';
                 const lockIcon = box.locked ? '<i class="fas fa-lock"></i>' : '<i class="fas fa-lock-open" style="color:#ccc"></i>';
                 
-                // GERA TAGS VISUAIS (PROTEÇÃO COM STRING)
+                // GERA TAGS (Proteção String)
                 let metaHtml = '';
                 if (box.code || box.year || box.sector || box.statusContext) {
                     metaHtml = `<div class="meta-container">`;
@@ -484,31 +482,21 @@
                     if(box.statusContext) {
                         metaHtml += `<div class="meta-row"><span class="tag tag-status"><i class="fas fa-file-alt"></i> ${box.statusContext}</span></div>`;
                     }
-
                     if(box.sector) {
                         metaHtml += `<div class="meta-row">`;
-                        String(box.sector).split(',').forEach(s => {
-                            metaHtml += `<span class="tag tag-sector"><i class="fas fa-building"></i> ${s.trim()}</span>`;
-                        });
+                        String(box.sector).split(',').forEach(s => metaHtml += `<span class="tag tag-sector"><i class="fas fa-building"></i> ${s.trim()}</span>`);
                         metaHtml += `</div>`;
                     }
-
                     if(box.code) {
                         metaHtml += `<div class="meta-row">`;
-                        String(box.code).split(',').forEach(c => {
-                            metaHtml += `<span class="tag tag-code"><i class="fas fa-tag"></i> ${c.trim()}</span>`;
-                        });
+                        String(box.code).split(',').forEach(c => metaHtml += `<span class="tag tag-code"><i class="fas fa-tag"></i> ${c.trim()}</span>`);
                         metaHtml += `</div>`;
                     }
-                    
                     if(box.year) {
                         metaHtml += `<div class="meta-row">`;
-                        String(box.year).split(',').forEach(y => {
-                            metaHtml += `<span class="tag tag-year"><i class="far fa-calendar"></i> ${y.trim()}</span>`;
-                        });
+                        String(box.year).split(',').forEach(y => metaHtml += `<span class="tag tag-year"><i class="far fa-calendar"></i> ${y.trim()}</span>`);
                         metaHtml += `</div>`;
                     }
-                    
                     metaHtml += `</div>`;
                 }
 
@@ -533,7 +521,7 @@
             });
         } catch(err) {
             console.error("Erro na renderização:", err);
-            grid.innerHTML = '<p style="color:red">Erro ao exibir boxes. Verifique console.</p>';
+            grid.innerHTML = '<p style="color:red; text-align:center;">Erro ao exibir boxes. Verifique o console ou limpe o banco.</p>';
         }
     }
 </script>
