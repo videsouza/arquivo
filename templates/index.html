@@ -136,19 +136,19 @@
         <div class="filter-group">
             <input type="checkbox" id="chkCode" onchange="renderBoxes()" title="Ativar">
             <span style="font-size:0.9em; font-weight:bold;">Cód:</span>
-            <input type="text" id="valCode" class="filter-input" placeholder="Ex: 93" oninput="renderBoxes()">
+            <input type="text" id="valCode" class="filter-input" placeholder="Ex: 2.0.10..." oninput="renderBoxes()">
         </div>
 
         <div class="filter-group">
             <input type="checkbox" id="chkYear" onchange="renderBoxes()" title="Ativar">
-            <span style="font-size:0.9em; font-weight:bold;">Ano:</span>
+            <span style="font-size:0.9em; font-weight:bold;">Ano Elim.:</span>
             <input type="number" id="valYear" class="filter-input" placeholder="Ex: 2024" oninput="renderBoxes()">
         </div>
 
         <div class="filter-group">
             <input type="checkbox" id="chkSector" onchange="renderBoxes()" title="Ativar">
             <span style="font-size:0.9em; font-weight:bold;">Setor:</span>
-            <input type="text" id="valSector" class="filter-input" placeholder="Ex: ADM" oninput="renderBoxes()">
+            <input type="text" id="valSector" class="filter-input" placeholder="Ex: 93" oninput="renderBoxes()">
         </div>
     </div>
 
@@ -169,8 +169,13 @@
             const res = await fetch('/api/boxes');
             boxes = await res.json();
             if(boxes.error) throw new Error(boxes.error);
+            // Verifica se boxes é um array (proteção contra erro de backend)
+            if (!Array.isArray(boxes)) boxes = [];
             renderBoxes();
-        } catch (e) { console.error(e); } 
+        } catch (e) { 
+            console.error(e);
+            alert("Erro ao carregar dados: " + e.message);
+        } 
         finally { document.getElementById('loader').style.display = 'none'; }
     }
 
@@ -291,15 +296,14 @@
                 let statusMsg = "Sem status";
                 let dateMsg = "Sem data";
                 
-                // ABA 1 - Leitura Principal
+                // ABA 1
                 if (workbook.SheetNames.length > 0) {
                     const sheet1 = workbook.Sheets[workbook.SheetNames[0]];
                     const json1 = XLSX.utils.sheet_to_json(sheet1, {header: "A", defval: ""});
                     
-                    // A1 contém o status
                     if (json1.length > 0 && json1[0].A) {
                         statusMsg = json1[0].A;
-                        globalStatusFilter = statusMsg; // Salva para uso no filtro
+                        globalStatusFilter = statusMsg; 
                     }
                     
                     processarBoxesDaAba(json1, statusMsg);
@@ -320,16 +324,15 @@
                     if (lastData) dateMsg = lastData;
                 }
 
-                // ATUALIZA UI
                 document.getElementById('infoStatus').innerText = statusMsg;
                 document.getElementById('infoDate').innerText = dateMsg;
                 document.getElementById('fileInfoPanel').style.display = 'block';
 
-                // Configura o Checkbox Dinâmico
+                // Atualiza Botão Status
                 const btnStatus = document.getElementById('statusFilterContainer');
                 const lblStatus = document.getElementById('lblFilterStatus');
                 lblStatus.innerText = `Exibir apenas "${statusMsg}"`;
-                btnStatus.style.display = 'flex'; // Exibe o botão
+                btnStatus.style.display = 'flex';
 
                 renderBoxes(); saveBoxes(); 
                 document.getElementById('metaInput').value = ''; 
@@ -358,7 +361,6 @@
                 if (novoAno) boxes[boxIndex].year = appendUnique(boxes[boxIndex].year, novoAno);
                 if (novoSetor) boxes[boxIndex].sector = appendUnique(boxes[boxIndex].sector, novoSetor);
                 
-                // Marca o box com o status atual do arquivo carregado
                 boxes[boxIndex].statusContext = statusAtual;
             }
         }
@@ -410,117 +412,129 @@
         if (box) { box.locked = !box.locked; renderBoxes(); saveBoxes(); }
     };
 
-    // --- RENDERIZAR ---
+    // --- RENDERIZAR (PROTEGIDO) ---
     function renderBoxes() {
-        const searchText = document.getElementById('searchBox').value.toLowerCase();
-        const hideFull = document.getElementById('filterFree').checked;
-        const useStatus = document.getElementById('filterStatus').checked; // NOVO FILTRO
-        
-        const useCode = document.getElementById('chkCode').checked;
-        const inputCode = document.getElementById('valCode').value.trim().toLowerCase();
-        
-        const useYear = document.getElementById('chkYear').checked;
-        const inputYear = document.getElementById('valYear').value.trim().toLowerCase();
-
-        const useSector = document.getElementById('chkSector').checked;
-        const inputSector = document.getElementById('valSector').value.trim().toLowerCase();
-
-        const grid = document.getElementById('grid');
-        grid.innerHTML = '';
-        
-        let filtered = boxes.filter(box => {
-            // Texto Parcial ID
-            if (!box.id.toLowerCase().includes(searchText)) return false;
-            // Ocultar Cheios
-            if (hideFull && box.freeSpace < 0.1) return false;
+        try {
+            const searchText = document.getElementById('searchBox').value.toLowerCase();
+            const hideFull = document.getElementById('filterFree').checked;
+            const useStatus = document.getElementById('filterStatus').checked;
             
-            // Filtro STATUS DO ARQUIVO (A1)
-            // Se marcado, só exibe quem tem o statusContext igual ao carregado
-            if (useStatus && globalStatusFilter) {
-                if (box.statusContext !== globalStatusFilter) return false;
-            }
-
-            // Códigos (Exato)
-            if (useCode && inputCode !== "") {
-                const tokens = box.code ? String(box.code).toLowerCase().split(',').map(t=>t.trim()) : [];
-                if (!tokens.includes(inputCode)) return false;
-            }
-            // Anos (Exato)
-            if (useYear && inputYear !== "") {
-                const tokens = box.year ? String(box.year).toLowerCase().split(',').map(t=>t.trim()) : [];
-                if (!tokens.includes(inputYear)) return false;
-            }
-            // Setores (Exato)
-            if (useSector && inputSector !== "") {
-                const tokens = box.sector ? String(box.sector).toLowerCase().split(',').map(t=>t.trim()) : [];
-                if (!tokens.includes(inputSector)) return false;
-            }
-            return true;
-        });
-        
-        filtered.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' }));
-
-        if(filtered.length === 0) {
-            grid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#666; margin-top:20px;">Nenhum box encontrado.</p>';
-            return;
-        }
-
-        filtered.forEach(box => {
-            const pct = (box.freeSpace / MAX_CAPACITY) * 100;
-            let statusClass = '', color = 'var(--success)';
-            if (box.freeSpace <= 0.1) { statusClass = 'full'; color = 'var(--danger)'; }
-            else if (box.freeSpace < 5) color = 'var(--warning)';
-            if (box.locked) statusClass += ' locked';
-
-            const disabledAttr = box.locked ? 'disabled' : '';
-            const lockIcon = box.locked ? '<i class="fas fa-lock"></i>' : '<i class="fas fa-lock-open" style="color:#ccc"></i>';
+            const useCode = document.getElementById('chkCode').checked;
+            const inputCode = document.getElementById('valCode').value.trim().toLowerCase();
             
-            let metaHtml = '';
-            if (box.code || box.year || box.sector || box.statusContext) {
-                metaHtml = `<div class="meta-container">`;
+            const useYear = document.getElementById('chkYear').checked;
+            const inputYear = document.getElementById('valYear').value.trim().toLowerCase();
+
+            const useSector = document.getElementById('chkSector').checked;
+            const inputSector = document.getElementById('valSector').value.trim().toLowerCase();
+
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            
+            let filtered = boxes.filter(box => {
+                // Filtros Básicos
+                if (!box.id.toLowerCase().includes(searchText)) return false;
+                if (hideFull && box.freeSpace < 0.1) return false;
                 
-                // Tag de Status do Documento (Roxo)
-                if(box.statusContext) {
-                    metaHtml += `<div class="meta-row"><span class="tag tag-status"><i class="fas fa-file-alt"></i> ${box.statusContext}</span></div>`;
+                // Filtro STATUS DO ARQUIVO (A1)
+                if (useStatus && globalStatusFilter) {
+                    if (box.statusContext !== globalStatusFilter) return false;
                 }
 
-                if(box.sector) {
-                    metaHtml += `<div class="meta-row">`;
-                    box.sector.split(',').forEach(s => metaHtml += `<span class="tag tag-sector"><i class="fas fa-building"></i> ${s.trim()}</span>`);
-                    metaHtml += `</div>`;
+                // Códigos (Exato) - PROTEÇÃO COM STRING()
+                if (useCode && inputCode !== "") {
+                    const tokens = box.code ? String(box.code).toLowerCase().split(',').map(t=>t.trim()) : [];
+                    if (!tokens.includes(inputCode)) return false;
                 }
-                if(box.code) {
-                    metaHtml += `<div class="meta-row">`;
-                    box.code.split(',').forEach(c => metaHtml += `<span class="tag tag-code"><i class="fas fa-tag"></i> ${c.trim()}</span>`);
-                    metaHtml += `</div>`;
+                // Anos (Exato)
+                if (useYear && inputYear !== "") {
+                    const tokens = box.year ? String(box.year).toLowerCase().split(',').map(t=>t.trim()) : [];
+                    if (!tokens.includes(inputYear)) return false;
                 }
-                if(box.year) {
-                    metaHtml += `<div class="meta-row">`;
-                    box.year.split(',').forEach(y => metaHtml += `<span class="tag tag-year"><i class="far fa-calendar"></i> ${y.trim()}</span>`);
-                    metaHtml += `</div>`;
+                // Setores (Exato)
+                if (useSector && inputSector !== "") {
+                    const tokens = box.sector ? String(box.sector).toLowerCase().split(',').map(t=>t.trim()) : [];
+                    if (!tokens.includes(inputSector)) return false;
                 }
-                metaHtml += `</div>`;
+                return true;
+            });
+            
+            filtered.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' }));
+
+            if(filtered.length === 0) {
+                grid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#666; margin-top:20px;">Nenhum box encontrado.</p>';
+                return;
             }
 
-            const div = document.createElement('div');
-            div.className = `card ${statusClass}`;
-            div.innerHTML = `
-                <div class="card-header">
-                    <span>${box.id}</span>
-                    <span onclick="toggleLock('${box.id}')" style="cursor:pointer">${lockIcon}</span>
-                </div>
-                ${metaHtml}
-                <div class="info-row">Livre: <strong>${parseFloat(box.freeSpace).toFixed(2)} cm</strong></div>
-                <div class="bar-bg"><div class="bar-fill" style="width: ${pct}%; background-color: ${color}"></div></div>
-                <div class="card-actions" style="${box.locked ? 'opacity:0.6' : ''}">
-                    <input type="number" id="in-${box.id}" class="input-mini" placeholder="cm" ${disabledAttr}>
-                    <button class="btn-mini btn-act" onclick="addSpace('${box.id}')" ${disabledAttr}><i class="fas fa-minus"></i></button>
-                    <button class="btn-mini btn-res" onclick="resetBox('${box.id}')" ${disabledAttr}><i class="fas fa-undo"></i></button>
-                    <button class="btn-mini btn-lck" onclick="toggleLock('${box.id}')">${box.locked ? 'Destravar' : 'Reservar'}</button>
-                </div>
-            `;
-            grid.appendChild(div);
-        });
+            filtered.forEach(box => {
+                const pct = (box.freeSpace / MAX_CAPACITY) * 100;
+                let statusClass = '', color = 'var(--success)';
+                if (box.freeSpace <= 0.1) { statusClass = 'full'; color = 'var(--danger)'; }
+                else if (box.freeSpace < 5) color = 'var(--warning)';
+                if (box.locked) statusClass += ' locked';
+
+                const disabledAttr = box.locked ? 'disabled' : '';
+                const lockIcon = box.locked ? '<i class="fas fa-lock"></i>' : '<i class="fas fa-lock-open" style="color:#ccc"></i>';
+                
+                // GERA TAGS VISUAIS (PROTEÇÃO COM STRING)
+                let metaHtml = '';
+                if (box.code || box.year || box.sector || box.statusContext) {
+                    metaHtml = `<div class="meta-container">`;
+                    
+                    if(box.statusContext) {
+                        metaHtml += `<div class="meta-row"><span class="tag tag-status"><i class="fas fa-file-alt"></i> ${box.statusContext}</span></div>`;
+                    }
+
+                    if(box.sector) {
+                        metaHtml += `<div class="meta-row">`;
+                        String(box.sector).split(',').forEach(s => {
+                            metaHtml += `<span class="tag tag-sector"><i class="fas fa-building"></i> ${s.trim()}</span>`;
+                        });
+                        metaHtml += `</div>`;
+                    }
+
+                    if(box.code) {
+                        metaHtml += `<div class="meta-row">`;
+                        String(box.code).split(',').forEach(c => {
+                            metaHtml += `<span class="tag tag-code"><i class="fas fa-tag"></i> ${c.trim()}</span>`;
+                        });
+                        metaHtml += `</div>`;
+                    }
+                    
+                    if(box.year) {
+                        metaHtml += `<div class="meta-row">`;
+                        String(box.year).split(',').forEach(y => {
+                            metaHtml += `<span class="tag tag-year"><i class="far fa-calendar"></i> ${y.trim()}</span>`;
+                        });
+                        metaHtml += `</div>`;
+                    }
+                    
+                    metaHtml += `</div>`;
+                }
+
+                const div = document.createElement('div');
+                div.className = `card ${statusClass}`;
+                div.innerHTML = `
+                    <div class="card-header">
+                        <span>${box.id}</span>
+                        <span onclick="toggleLock('${box.id}')" style="cursor:pointer">${lockIcon}</span>
+                    </div>
+                    ${metaHtml}
+                    <div class="info-row">Livre: <strong>${parseFloat(box.freeSpace).toFixed(2)} cm</strong></div>
+                    <div class="bar-bg"><div class="bar-fill" style="width: ${pct}%; background-color: ${color}"></div></div>
+                    <div class="card-actions" style="${box.locked ? 'opacity:0.6' : ''}">
+                        <input type="number" id="in-${box.id}" class="input-mini" placeholder="cm" ${disabledAttr}>
+                        <button class="btn-mini btn-act" onclick="addSpace('${box.id}')" ${disabledAttr}><i class="fas fa-minus"></i></button>
+                        <button class="btn-mini btn-res" onclick="resetBox('${box.id}')" ${disabledAttr}><i class="fas fa-undo"></i></button>
+                        <button class="btn-mini btn-lck" onclick="toggleLock('${box.id}')">${box.locked ? 'Destravar' : 'Reservar'}</button>
+                    </div>
+                `;
+                grid.appendChild(div);
+            });
+        } catch(err) {
+            console.error("Erro na renderização:", err);
+            grid.innerHTML = '<p style="color:red">Erro ao exibir boxes. Verifique console.</p>';
+        }
     }
 </script>
 </body>
