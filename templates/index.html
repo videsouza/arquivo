@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão de Boxes</title>
+    <title>Gestão de Boxes (Final)</title>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
@@ -55,6 +55,7 @@
 
         .card-header { display: flex; justify-content: space-between; align-items: center; font-weight: bold; margin-bottom: 12px; font-size: 1.15em; color: var(--primary); }
         
+        /* Tags */
         .meta-container { margin-bottom: 10px; }
         .meta-row { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 4px; }
         .tag { padding: 2px 6px; border-radius: 3px; font-weight: 600; font-size: 0.75em; white-space: nowrap; }
@@ -100,7 +101,7 @@
 
         <button class="btn btn-export" onclick="exportarRelatorio()"><i class="fas fa-file-download"></i> Backup</button>
         <div style="flex-grow:1"></div>
-       
+        <button class="btn btn-upload" onclick="loadBoxes()"><i class="fas fa-sync"></i> Atualizar Tela</button>
     </div>
 
     <div id="fileInfoPanel">
@@ -153,7 +154,10 @@
 <script>
     const MAX_CAPACITY = 14;
     let boxes = [];
-    let globalStatusFilter = ""; 
+    
+    // Recupera status do LocalStorage ou inicia vazio
+    let globalStatusFilter = localStorage.getItem('lastStatusFilter') || ""; 
+    let globalDateFilter = localStorage.getItem('lastDateFilter') || "";
 
     window.onload = loadBoxes;
 
@@ -165,6 +169,12 @@
             boxes = await res.json();
             if(boxes.error) throw new Error(boxes.error);
             if (!Array.isArray(boxes)) boxes = [];
+            
+            // Restaura visual do Status Filter se houver dados salvos
+            if (globalStatusFilter) {
+                updateStatusUI(globalStatusFilter, globalDateFilter);
+            }
+            
             renderBoxes();
         } catch (e) { 
             console.error(e);
@@ -187,6 +197,23 @@
     }
 
     // --- HELPERS ---
+    function updateStatusUI(status, date) {
+        document.getElementById('infoStatus').innerText = status;
+        document.getElementById('infoDate').innerText = date;
+        document.getElementById('fileInfoPanel').style.display = 'block';
+
+        const btnStatus = document.getElementById('statusFilterContainer');
+        const lblStatus = document.getElementById('lblFilterStatus');
+        lblStatus.innerText = `Exibir apenas "${status}"`;
+        btnStatus.style.display = 'flex';
+        
+        // Salva para o futuro (F5)
+        localStorage.setItem('lastStatusFilter', status);
+        localStorage.setItem('lastDateFilter', date);
+        globalStatusFilter = status;
+        globalDateFilter = date;
+    }
+
     function getYearFromExcel(cellValue) {
         if (!cellValue) return "";
         if (typeof cellValue === 'number') {
@@ -220,11 +247,16 @@
         return arr.join(', ');
     }
 
-    // --- UPLOAD 1 ---
+    // --- UPLOAD 1: CAPACIDADES (COM PROTEÇÃO) ---
     document.getElementById('excelInput').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        if(!confirm("Substituir capacidades?")) return;
+        
+        // Confirmação dupla
+        if(!confirm("⚠️ ATENÇÃO: Isso substituirá TODA a lista de boxes do sistema.\n\nUse este botão apenas para CARGA INICIAL ou RESTAURAÇÃO DE BACKUP.\n\nPara aplicar filtros, use o outro botão (cinza).\n\nDeseja continuar?")) {
+            e.target.value = ""; // Limpa input
+            return;
+        }
 
         const reader = new FileReader();
         reader.onload = (evt) => {
@@ -233,6 +265,18 @@
             const sheet = workbook.Sheets[workbook.SheetNames[0]];
             const jsonData = XLSX.utils.sheet_to_json(sheet, {header: "A"});
             
+            // Verificação de Segurança: O arquivo parece um Backup?
+            // Verifica se as primeiras linhas da coluna A parecem IDs
+            let validRows = 0;
+            for(let i=0; i < Math.min(10, jsonData.length); i++) {
+                if(jsonData[i].A) validRows++;
+            }
+            
+            if (validRows < 1) {
+                alert("ERRO: O arquivo não parece ser uma lista de boxes válida (Coluna A vazia). Verifique se você não está subindo a planilha de Filtros no lugar errado.");
+                return;
+            }
+
             const headerCellB = jsonData[0]?.B ? String(jsonData[0].B).toLowerCase() : "";
             const isBackup = headerCellB.includes("livre") || headerCellB.includes("espaço") || headerCellB.includes("cm");
             
@@ -261,12 +305,12 @@
                 }
             });
             boxes = newBoxes;
-            renderBoxes(); saveBoxes(); alert("Dados importados!");
+            renderBoxes(); saveBoxes(); alert("Dados importados com sucesso!");
         };
         reader.readAsArrayBuffer(file);
     });
 
-    // --- UPLOAD 2 ---
+    // --- UPLOAD 2: METADADOS ---
     document.getElementById('metaInput').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -274,7 +318,7 @@
         const reader = new FileReader();
         reader.onload = (evt) => {
             try {
-                const shouldReset = confirm("Deseja LIMPAR filtros anteriores?\n\n[OK] = Sim, substituir.\n[Cancelar] = Não, acumular.");
+                const shouldReset = confirm("Deseja LIMPAR filtros anteriores (Códigos/Anos/Setores)?\n\n[OK] = Sim, substituir.\n[Cancelar] = Não, acumular.");
                 
                 if (shouldReset) {
                     boxes.forEach(b => { 
@@ -294,7 +338,6 @@
                     
                     if (json1.length > 0 && json1[0].A) {
                         statusMsg = json1[0].A;
-                        globalStatusFilter = statusMsg; 
                     }
                     processarBoxesDaAba(json1, statusMsg);
                     if (workbook.SheetNames.length === 1) {
@@ -312,14 +355,7 @@
                     if (lastData) dateMsg = lastData;
                 }
 
-                document.getElementById('infoStatus').innerText = statusMsg;
-                document.getElementById('infoDate').innerText = dateMsg;
-                document.getElementById('fileInfoPanel').style.display = 'block';
-
-                const btnStatus = document.getElementById('statusFilterContainer');
-                const lblStatus = document.getElementById('lblFilterStatus');
-                lblStatus.innerText = `Exibir apenas "${statusMsg}"`;
-                btnStatus.style.display = 'flex';
+                updateStatusUI(statusMsg, dateMsg);
 
                 renderBoxes(); saveBoxes(); 
                 document.getElementById('metaInput').value = ''; 
@@ -399,10 +435,9 @@
         if (box) { box.locked = !box.locked; renderBoxes(); saveBoxes(); }
     };
 
-    // --- RENDERIZAR (COM BUSCA EXATA) ---
+    // --- RENDERIZAR ---
     function renderBoxes() {
         try {
-            // Trim() remove espaços em branco antes/depois, toLowerCase() normaliza
             const searchText = document.getElementById('searchBox').value.trim().toLowerCase();
             const hideFull = document.getElementById('filterFree').checked;
             const useStatus = document.getElementById('filterStatus').checked;
@@ -420,10 +455,7 @@
             grid.innerHTML = '';
             
             let filtered = boxes.filter(box => {
-                // --- FILTRO BOX ID (EXATO) ---
-                // Se searchText não for vazio, o ID tem que ser IDÊNTICO.
                 if (searchText !== "") {
-                    // Proteção String() para garantir que box.id é string
                     if (String(box.id).toLowerCase() !== searchText) return false;
                 }
 
@@ -474,23 +506,17 @@
                     }
                     if(box.sector) {
                         metaHtml += `<div class="meta-row">`;
-                        String(box.sector).split(',').forEach(s => {
-                            metaHtml += `<span class="tag tag-sector"><i class="fas fa-building"></i> ${s.trim()}</span>`;
-                        });
+                        String(box.sector).split(',').forEach(s => metaHtml += `<span class="tag tag-sector"><i class="fas fa-building"></i> ${s.trim()}</span>`);
                         metaHtml += `</div>`;
                     }
                     if(box.code) {
                         metaHtml += `<div class="meta-row">`;
-                        String(box.code).split(',').forEach(c => {
-                            metaHtml += `<span class="tag tag-code"><i class="fas fa-tag"></i> ${c.trim()}</span>`;
-                        });
+                        String(box.code).split(',').forEach(c => metaHtml += `<span class="tag tag-code"><i class="fas fa-tag"></i> ${c.trim()}</span>`);
                         metaHtml += `</div>`;
                     }
                     if(box.year) {
                         metaHtml += `<div class="meta-row">`;
-                        String(box.year).split(',').forEach(y => {
-                            metaHtml += `<span class="tag tag-year"><i class="far fa-calendar"></i> ${y.trim()}</span>`;
-                        });
+                        String(box.year).split(',').forEach(y => metaHtml += `<span class="tag tag-year"><i class="far fa-calendar"></i> ${y.trim()}</span>`);
                         metaHtml += `</div>`;
                     }
                     metaHtml += `</div>`;
@@ -517,7 +543,7 @@
             });
         } catch(err) {
             console.error("Erro na renderização:", err);
-            grid.innerHTML = '<p style="color:red; text-align:center;">Erro ao exibir boxes. Verifique o console ou limpe o banco.</p>';
+            grid.innerHTML = '<p style="color:red; text-align:center;">Erro ao exibir boxes. Verifique o console.</p>';
         }
     }
 </script>
