@@ -433,7 +433,7 @@
             
             let filtered = boxes.filter(box => {
                 // Filtros Básicos
-                if (!box.id.toLowerCase().includes(searchText)) return false;
+                if (!box.id.toLowerCase() !== searchText) return false;
                 if (hideFull && box.freeSpace < 0.1) return false;
                 
                 // Filtro STATUS (A1)
