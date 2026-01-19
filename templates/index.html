@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão de Boxes (Render)</title>
+    <title>Gestão de Boxes</title>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
@@ -31,12 +31,10 @@
         .filter-group { display: flex; align-items: center; gap: 8px; background: white; padding: 5px 10px; border-radius: 5px; border: 1px solid #ccc; }
         .filter-input { border: none; outline: none; padding: 5px; width: 80px; font-size: 14px; }
 
-        /* Estilo Checkbox "Botão" */
         .filter-toggle { display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--primary); background: #f1f2f6; padding: 8px 15px; border-radius: 5px; cursor: pointer; border: 1px solid #dcdde1; }
         .filter-toggle:hover { background: #dfe4ea; }
         .filter-toggle input { cursor: pointer; width: 16px; height: 16px; }
-        /* Destaque para o filtro de status */
-        .filter-status-highlight { background-color: #d6eaf8; color: #2980b9; border-color: #a9cce3; display: none; /* Oculto por padrão */ }
+        .filter-status-highlight { background-color: #d6eaf8; color: #2980b9; border-color: #a9cce3; display: none; }
         
         .btn { padding: 10px 18px; border: none; border-radius: 5px; cursor: pointer; color: white; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
         .btn:hover { opacity: 0.9; }
@@ -57,7 +55,6 @@
 
         .card-header { display: flex; justify-content: space-between; align-items: center; font-weight: bold; margin-bottom: 12px; font-size: 1.15em; color: var(--primary); }
         
-        /* Tags de metadados */
         .meta-container { margin-bottom: 10px; }
         .meta-row { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 4px; }
         .tag { padding: 2px 6px; border-radius: 3px; font-weight: 600; font-size: 0.75em; white-space: nowrap; }
@@ -65,7 +62,7 @@
         .tag-code { background: #e8f6f3; color: #16a085; border: 1px solid #d0ece7; }
         .tag-year { background: #fef9e7; color: #d35400; border: 1px solid #fdebd0; }
         .tag-sector { background: #eaf2f8; color: #2980b9; border: 1px solid #d4e6f1; } 
-        .tag-status { background: #ebdef0; color: #8e44ad; border: 1px solid #d2b4de; } /* Roxo para Status */
+        .tag-status { background: #ebdef0; color: #8e44ad; border: 1px solid #d2b4de; }
 
         .info-row { font-size: 0.95em; color: #666; margin-bottom: 8px; }
         .bar-bg { height: 8px; background: #eee; border-radius: 4px; overflow: hidden; margin-bottom: 15px; }
@@ -79,8 +76,6 @@
         .btn-lck { background-color: var(--warning); color: #fff; }
         
         #loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 999; justify-content: center; align-items: center; }
-        
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -118,7 +113,7 @@
 
         <div class="filter-group" style="width: 180px;">
             <i class="fas fa-search" style="color:#ccc"></i>
-            <input type="text" id="searchBox" class="filter-input" style="width:100%" placeholder="Buscar Box..." oninput="renderBoxes()">
+            <input type="text" id="searchBox" class="filter-input" style="width:100%" placeholder="Buscar Box Exato..." oninput="renderBoxes()">
         </div>
 
         <label class="filter-toggle" title="Mostrar apenas boxes com espaço livre">
@@ -158,7 +153,7 @@
 <script>
     const MAX_CAPACITY = 14;
     let boxes = [];
-    let globalStatusFilter = ""; // Armazena o texto da célula A1 atual
+    let globalStatusFilter = ""; 
 
     window.onload = loadBoxes;
 
@@ -169,12 +164,10 @@
             const res = await fetch('/api/boxes');
             boxes = await res.json();
             if(boxes.error) throw new Error(boxes.error);
-            // Verifica se boxes é um array (proteção contra erro de backend)
             if (!Array.isArray(boxes)) boxes = [];
             renderBoxes();
         } catch (e) { 
             console.error(e);
-            // Silencioso no onload para não assustar, mas loga erro
         } 
         finally { document.getElementById('loader').style.display = 'none'; }
     }
@@ -227,7 +220,7 @@
         return arr.join(', ');
     }
 
-    // --- UPLOAD 1: CAPACIDADES ---
+    // --- UPLOAD 1 ---
     document.getElementById('excelInput').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -257,7 +250,6 @@
                     freeSpace = (row.B == 1) ? 0 : MAX_CAPACITY;
                 }
                 
-                // Mantém metadados existentes, se houver
                 const oldBox = boxes.find(b => b.id === id);
                 const code = oldBox ? oldBox.code : "";
                 const year = oldBox ? oldBox.year : "";
@@ -274,7 +266,7 @@
         reader.readAsArrayBuffer(file);
     });
 
-    // --- UPLOAD 2: METADADOS E STATUS ---
+    // --- UPLOAD 2 ---
     document.getElementById('metaInput').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -282,7 +274,7 @@
         const reader = new FileReader();
         reader.onload = (evt) => {
             try {
-                const shouldReset = confirm("Deseja LIMPAR filtros anteriores (Códigos/Anos/Setores)?\n\n[OK] = Sim, substituir.\n[Cancelar] = Não, acumular.");
+                const shouldReset = confirm("Deseja LIMPAR filtros anteriores?\n\n[OK] = Sim, substituir.\n[Cancelar] = Não, acumular.");
                 
                 if (shouldReset) {
                     boxes.forEach(b => { 
@@ -296,26 +288,21 @@
                 let statusMsg = "Sem status";
                 let dateMsg = "Sem data";
                 
-                // ABA 1
                 if (workbook.SheetNames.length > 0) {
                     const sheet1 = workbook.Sheets[workbook.SheetNames[0]];
                     const json1 = XLSX.utils.sheet_to_json(sheet1, {header: "A", defval: ""});
                     
-                    // A1 contém o status
                     if (json1.length > 0 && json1[0].A) {
                         statusMsg = json1[0].A;
                         globalStatusFilter = statusMsg; 
                     }
-                    
                     processarBoxesDaAba(json1, statusMsg);
-                    
                     if (workbook.SheetNames.length === 1) {
                         const lastData = getLastRowData(json1, "A");
                         if (lastData) dateMsg = lastData;
                     }
                 }
 
-                // ABA 2
                 if (workbook.SheetNames.length > 1) {
                     const sheet2 = workbook.Sheets[workbook.SheetNames[1]];
                     const json2 = XLSX.utils.sheet_to_json(sheet2, {header: "A", defval: ""});
@@ -412,10 +399,11 @@
         if (box) { box.locked = !box.locked; renderBoxes(); saveBoxes(); }
     };
 
-    // --- RENDERIZAR BLINDADO ---
+    // --- RENDERIZAR (COM BUSCA EXATA) ---
     function renderBoxes() {
         try {
-            const searchText = document.getElementById('searchBox').value.toLowerCase();
+            // Trim() remove espaços em branco antes/depois, toLowerCase() normaliza
+            const searchText = document.getElementById('searchBox').value.trim().toLowerCase();
             const hideFull = document.getElementById('filterFree').checked;
             const useStatus = document.getElementById('filterStatus').checked;
             
@@ -432,16 +420,19 @@
             grid.innerHTML = '';
             
             let filtered = boxes.filter(box => {
-                // Filtros Básicos
-                if (!box.id.toLowerCase() !== searchText) return false;
+                // --- FILTRO BOX ID (EXATO) ---
+                // Se searchText não for vazio, o ID tem que ser IDÊNTICO.
+                if (searchText !== "") {
+                    // Proteção String() para garantir que box.id é string
+                    if (String(box.id).toLowerCase() !== searchText) return false;
+                }
+
                 if (hideFull && box.freeSpace < 0.1) return false;
                 
-                // Filtro STATUS (A1)
                 if (useStatus && globalStatusFilter) {
                     if (box.statusContext !== globalStatusFilter) return false;
                 }
 
-                // Proteção String()
                 if (useCode && inputCode !== "") {
                     const tokens = box.code ? String(box.code).toLowerCase().split(',').map(t=>t.trim()) : [];
                     if (!tokens.includes(inputCode)) return false;
@@ -474,7 +465,6 @@
                 const disabledAttr = box.locked ? 'disabled' : '';
                 const lockIcon = box.locked ? '<i class="fas fa-lock"></i>' : '<i class="fas fa-lock-open" style="color:#ccc"></i>';
                 
-                // GERA TAGS (Proteção String)
                 let metaHtml = '';
                 if (box.code || box.year || box.sector || box.statusContext) {
                     metaHtml = `<div class="meta-container">`;
@@ -484,17 +474,23 @@
                     }
                     if(box.sector) {
                         metaHtml += `<div class="meta-row">`;
-                        String(box.sector).split(',').forEach(s => metaHtml += `<span class="tag tag-sector"><i class="fas fa-building"></i> ${s.trim()}</span>`);
+                        String(box.sector).split(',').forEach(s => {
+                            metaHtml += `<span class="tag tag-sector"><i class="fas fa-building"></i> ${s.trim()}</span>`;
+                        });
                         metaHtml += `</div>`;
                     }
                     if(box.code) {
                         metaHtml += `<div class="meta-row">`;
-                        String(box.code).split(',').forEach(c => metaHtml += `<span class="tag tag-code"><i class="fas fa-tag"></i> ${c.trim()}</span>`);
+                        String(box.code).split(',').forEach(c => {
+                            metaHtml += `<span class="tag tag-code"><i class="fas fa-tag"></i> ${c.trim()}</span>`;
+                        });
                         metaHtml += `</div>`;
                     }
                     if(box.year) {
                         metaHtml += `<div class="meta-row">`;
-                        String(box.year).split(',').forEach(y => metaHtml += `<span class="tag tag-year"><i class="far fa-calendar"></i> ${y.trim()}</span>`);
+                        String(box.year).split(',').forEach(y => {
+                            metaHtml += `<span class="tag tag-year"><i class="far fa-calendar"></i> ${y.trim()}</span>`;
+                        });
                         metaHtml += `</div>`;
                     }
                     metaHtml += `</div>`;
