@@ -3,27 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Otimizador & Auditor de Eliminação</title>
+    <title>Otimizador & Auditor | Hub de Serviços</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        /* --- DESIGN SYSTEM --- */
+        /* --- DESIGN SYSTEM DO HUB (Azul/Roxo) --- */
         :root {
-            --primary: #f7931e;
-            --primary-light: #fff7ed;
-            --primary-dark: #d67d12;
+            --primary: #667eea; /* Azul Principal */
+            --primary-dark: #5a67d8;
+            --primary-light: #eef2ff;
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            
             --text-main: #1f2937;
             --text-sub: #6b7280;
             --bg-body: #f3f4f6;
             --bg-card: #ffffff;
             --border: #e5e7eb;
+            
             --success: #10b981;
             --danger: #ef4444;
             --warning: #f59e0b;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
@@ -40,153 +43,187 @@
             max-width: 1400px;
             margin: 0 auto;
             background: var(--bg-card);
-            border-radius: 16px;
+            border-radius: 20px;
             box-shadow: var(--shadow);
             overflow: hidden;
             display: flex; flex-direction: column;
             min-height: 90vh;
         }
 
-        /* HEADER */
+        /* HEADER (Padrão Hub) */
         .header {
-            background: #fff; padding: 30px 40px; border-bottom: 1px solid var(--border);
+            background: var(--gradient);
+            padding: 35px 40px;
             display: flex; justify-content: space-between; align-items: center;
+            color: white;
         }
-        .header h1 { font-size: 24px; font-weight: 800; color: var(--text-main); }
-        .header h1 i { color: var(--primary); margin-right: 10px; }
-        .header p { color: var(--text-sub); font-size: 14px; margin-top: 5px; }
+        .header h1 { font-size: 26px; font-weight: 800; color: white; letter-spacing: -0.5px; }
+        .header h1 i { color: rgba(255,255,255,0.9); margin-right: 12px; }
+        .header p { color: rgba(255,255,255,0.8); font-size: 14px; margin-top: 6px; font-weight: 500; }
+
+        .btn-restart {
+            background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3);
+            color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer;
+            backdrop-filter: blur(4px); transition: 0.2s; font-weight: 600; font-size: 14px;
+        }
+        .btn-restart:hover { background: rgba(255,255,255,0.3); }
 
         .content { padding: 40px; }
 
         /* UPLOAD */
         .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 40px; }
         .upload-area {
-            background: #f9fafb; border: 2px dashed var(--border); border-radius: 12px;
-            padding: 40px 20px; text-align: center; cursor: pointer; transition: all 0.3s; position: relative;
+            background: #f8fafc; border: 2px dashed var(--border); border-radius: 16px;
+            padding: 45px 20px; text-align: center; cursor: pointer; transition: all 0.3s; position: relative;
         }
-        .upload-area:hover { border-color: var(--primary); background: var(--primary-light); transform: translateY(-2px); }
-        .upload-area.loaded { border-color: var(--success); background: #ecfdf5; }
-        .upload-icon { font-size: 40px; color: var(--primary); margin-bottom: 15px; opacity: 0.8; }
-        .upload-area.loaded .upload-icon { color: var(--success); }
+        .upload-area:hover { border-color: var(--primary); background: var(--primary-light); transform: translateY(-3px); }
+        .upload-area.loaded { border-color: var(--success); background: #f0fdf4; }
+        
+        .upload-icon { font-size: 42px; color: var(--primary); margin-bottom: 15px; opacity: 0.7; transition: 0.3s; }
+        .upload-area:hover .upload-icon { opacity: 1; transform: scale(1.1); }
+        .upload-area.loaded .upload-icon { color: var(--success); opacity: 1; }
+        
         .step-badge {
-            position: absolute; top: -12px; left: 20px; background: var(--text-main); color: white;
-            padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase;
+            position: absolute; top: 20px; left: 20px; background: var(--text-main); color: white;
+            padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; text-transform: uppercase;
         }
 
         /* CONFIG PANEL */
         .config-section {
-            background: white; border: 1px solid var(--border); border-radius: 12px;
-            padding: 30px; margin-bottom: 30px; display: none; animation: fadeIn 0.5s ease;
+            background: white; border: 1px solid var(--border); border-radius: 16px;
+            padding: 35px; margin-bottom: 30px; display: none; animation: fadeIn 0.5s ease;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
         }
         .config-section.show { display: block; }
         
-        .config-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .config-title { font-size: 18px; font-weight: 700; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; color: var(--text-main); }
+        .config-title i { color: var(--primary); }
 
         /* Cards Objetivo */
-        .objective-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .objective-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 35px; }
         .obj-card {
-            border: 2px solid var(--border); border-radius: 10px; padding: 20px; cursor: pointer;
-            display: flex; align-items: center; gap: 15px; transition: all 0.2s;
+            border: 2px solid var(--border); border-radius: 12px; padding: 25px; cursor: pointer;
+            display: flex; align-items: center; gap: 15px; transition: all 0.2s; background: white;
         }
-        .obj-card:hover { border-color: var(--primary); }
+        .obj-card:hover { border-color: var(--primary); transform: translateY(-2px); }
         .obj-card.active { border-color: var(--primary); background: var(--primary-light); box-shadow: 0 0 0 1px var(--primary); }
-        .obj-icon { font-size: 24px; }
+        .obj-icon { font-size: 28px; }
 
         /* Inputs Grid */
-        .params-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: end; }
-        .input-group label { display: block; font-size: 12px; font-weight: 700; color: var(--text-sub); margin-bottom: 8px; text-transform: uppercase; }
+        .params-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; align-items: end; }
+        .input-group label { display: block; font-size: 12px; font-weight: 700; color: var(--text-sub); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
         .input-control {
-            width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px;
-            font-size: 15px; font-family: 'Inter', sans-serif;
+            width: 100%; padding: 12px 15px; border: 1px solid var(--border); border-radius: 10px;
+            font-size: 15px; font-family: 'Inter', sans-serif; transition: 0.2s;
         }
+        .input-control:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
 
         /* Toggles */
         .toggle-wrapper { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
         .toggle-switch {
-            position: relative; width: 44px; height: 24px; background: #ccc; border-radius: 12px; cursor: pointer; transition: 0.3s;
+            position: relative; width: 44px; height: 24px; background: #e5e7eb; border-radius: 12px; cursor: pointer; transition: 0.3s;
         }
         .toggle-switch.active { background: var(--primary); }
         .toggle-slider {
-            position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: 0.3s;
+            position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         .toggle-switch.active .toggle-slider { left: 22px; }
         
         /* RESULTADOS */
-        .results-section { display: none; animation: slideUp 0.5s ease; }
+        .results-section { display: none; animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
         .results-section.show { display: block; }
 
-        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; }
-        .stat-val { font-size: 28px; font-weight: 800; color: var(--text-main); margin: 5px 0; }
-        .stat-lbl { font-size: 11px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px; margin-bottom: 40px; }
+        .stat-card { background: white; border: 1px solid var(--border); border-radius: 16px; padding: 25px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .stat-val { font-size: 32px; font-weight: 800; color: var(--text-main); margin: 5px 0; letter-spacing: -1px; }
+        .stat-lbl { font-size: 11px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: 1px; }
 
         /* Blocos */
-        .blocks-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+        .blocks-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; }
         .block-card {
-            background: white; border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
-            transition: all 0.2s; display: flex; flex-direction: column;
+            background: white; border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+            transition: all 0.3s; display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.03);
         }
-        .block-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: var(--shadow); }
+        .block-card:hover { border-color: var(--primary); transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.08); }
+        
         .block-header {
-            background: #f9fafb; padding: 12px 15px; border-bottom: 1px solid var(--border);
-            display: flex; justify-content: space-between; font-weight: 700; color: var(--text-main); font-size: 14px;
+            background: #f8fafc; padding: 15px 20px; border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
         }
-        .block-body { padding: 15px; font-size: 13px; color: var(--text-sub); flex: 1; }
-        .info-row { display: flex; justify-content: space-between; margin-bottom: 6px; border-bottom: 1px dotted #e5e7eb; padding-bottom: 2px;}
+        .block-header span:first-child { font-weight: 700; color: var(--text-main); font-size: 15px; }
+        .block-count { background: var(--primary-light); color: var(--primary); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+        
+        .block-body { padding: 20px; font-size: 13px; color: var(--text-sub); flex: 1; }
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px dashed var(--border); padding-bottom: 4px;}
+        
         .box-list {
-            margin-top: 10px; padding-top: 10px; background: #fffbf5; padding: 10px; border-radius: 6px;
-            font-family: monospace; line-height: 1.4; max-height: 80px; overflow-y: auto; color: var(--text-main); border: 1px solid #fed7aa;
+            margin-top: 15px; padding: 12px; background: #f9fafb; border-radius: 8px;
+            font-family: 'Monaco', 'Consolas', monospace; line-height: 1.5; max-height: 100px; overflow-y: auto; 
+            color: var(--text-main); border: 1px solid var(--border); font-size: 12px;
         }
         
         /* Erros nos Blocos */
         .error-tag {
-            display: block; margin-top: 8px; padding: 6px; background: #fee2e2; 
-            border: 1px solid #fca5a5; border-radius: 4px; color: #991b1b; font-size: 11px; line-height: 1.3;
+            display: block; margin-top: 10px; padding: 8px 10px; background: #fef2f2; 
+            border: 1px solid #fee2e2; border-radius: 6px; color: #b91c1c; font-size: 11px; line-height: 1.4;
+            display: flex; align-items: flex-start; gap: 6px;
         }
+        .error-tag i { margin-top: 2px; }
 
+        /* Botões */
         .btn {
-            padding: 14px 28px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+            padding: 0 30px; height: 50px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;
             display: inline-flex; align-items: center; justify-content: center; gap: 10px; font-size: 16px;
+            transition: all 0.2s;
         }
-        .btn-primary { background: var(--primary); color: white; width: 100%; }
-        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); }
-        .btn-secondary { background: white; border: 1px solid var(--border); color: var(--text-main); }
+        .btn-primary { background: var(--gradient); color: white; width: 100%; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(102, 126, 234, 0.4); }
+        .btn-secondary { background: white; border: 1px solid var(--border); color: var(--text-main); font-size: 14px; height: 40px; }
+        .btn-secondary:hover { background: #f9fafb; border-color: #d1d5db; }
 
         /* Logs */
-        .log-section { margin-top: 30px; display: none; }
-        .log-box { padding: 20px; border-radius: 10px; font-size: 13px; margin-bottom: 20px; }
+        .log-section { margin-top: 40px; display: none; }
+        .log-box { padding: 25px; border-radius: 12px; font-size: 13px; margin-bottom: 25px; }
         .log-danger { background: #fff1f2; border: 1px solid #fecaca; color: #991b1b; }
         .log-warning { background: #fffbeb; border: 1px solid #fcd34d; color: #92400e; }
-        .log-title { font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .log-title { font-weight: 700; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; font-size: 15px; }
 
         /* Loading */
         .loading {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95);
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.96);
             z-index: 100; display: none; justify-content: center; align-items: center; flex-direction: column;
         }
-        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        .spinner { 
+            border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; 
+            width: 60px; height: 60px; animation: spin 1s linear infinite; margin-bottom: 25px; 
+        }
         
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
     <div class="loading" id="loading">
         <div class="spinner"></div>
-        <h3 style="color:var(--text-main)">Processando...</h3>
-        <p style="color:var(--text-sub)">1. Leitura Multi-Abas<br>2. Cross-Check de Totais<br>3. Auditoria de Datas e Eliminação<br>4. Otimização</p>
+        <h3 style="color:var(--text-main); font-weight:700; font-size:20px;">Processando...</h3>
+        <p style="color:var(--text-sub); margin-top:10px; text-align:center;">
+            1. Leitura Completa (Multi-Abas)<br>
+            2. Cross-Check de Totais<br>
+            3. Auditoria de Dados (Datas/Eliminação)<br>
+            4. Algoritmo de Otimização
+        </p>
     </div>
 
     <div class="container">
         <div class="header">
             <div>
-                <h1><i class="fas fa-cubes"></i> Otimizador & Auditor de Eliminação</h1>
-                <p>Otimização Logística com Auditoria de Integridade de Dados</p>
+                <h1><i class="fas fa-cubes"></i> Otimizador & Auditor</h1>
+                <p>Módulo Logístico Integrado de Gestão Documental</p>
             </div>
-            <button class="btn-secondary" onclick="location.reload()" style="padding: 8px 16px; border-radius: 6px;">
-                <i class="fas fa-undo"></i> Reiniciar
+            <button class="btn-restart" onclick="location.reload()">
+                <i class="fas fa-undo"></i> Nova Análise
             </button>
         </div>
 
@@ -194,40 +231,40 @@
             
             <div class="upload-grid" id="uploadSection">
                 <div class="upload-area" id="dropElim" onclick="document.getElementById('fileElim').click()">
-                    <span class="step-badge">Passo 1</span>
+                    <span class="step-badge">Arquivo Principal</span>
                     <input type="file" id="fileElim" accept=".xlsx,.xls,.csv" hidden>
-                    <i class="fas fa-file-alt upload-icon" id="iconElim"></i>
-                    <h3 style="font-size:16px; font-weight:700;">Relatório de Elimináveis</h3>
-                    <p style="font-size:13px; color:var(--text-sub)">Docs a eliminar (Lê todas as abas)</p>
-                    <div id="nameElim" style="margin-top:10px; font-weight:600; color:var(--primary); font-size:12px;"></div>
+                    <i class="fas fa-file-invoice upload-icon" id="iconElim"></i>
+                    <h3 style="font-size:16px; font-weight:700; color:var(--text-main);">Relatório de Elimináveis</h3>
+                    <p style="font-size:13px; color:var(--text-sub); margin-top:5px;">Processa todas as abas automaticamente</p>
+                    <div id="nameElim" style="margin-top:15px; font-weight:600; color:var(--primary); font-size:12px;"></div>
                 </div>
 
                 <div class="upload-area" id="dropTot" onclick="document.getElementById('fileTot').click()">
-                    <span class="step-badge">Passo 2</span>
+                    <span class="step-badge">Validação</span>
                     <input type="file" id="fileTot" accept=".xlsx,.xls,.csv" hidden>
-                    <i class="fas fa-chart-pie upload-icon" id="iconTot"></i>
-                    <h3 style="font-size:16px; font-weight:700;">Totais por Box</h3>
-                    <p style="font-size:13px; color:var(--text-sub)">Validação (Box na Col A, Total na Col I)</p>
-                    <div id="nameTot" style="margin-top:10px; font-weight:600; color:var(--primary); font-size:12px;"></div>
+                    <i class="fas fa-clipboard-check upload-icon" id="iconTot"></i>
+                    <h3 style="font-size:16px; font-weight:700; color:var(--text-main);">Totais por Box</h3>
+                    <p style="font-size:13px; color:var(--text-sub); margin-top:5px;">Para Cross-Check de segurança</p>
+                    <div id="nameTot" style="margin-top:15px; font-weight:600; color:var(--primary); font-size:12px;"></div>
                 </div>
             </div>
 
             <div class="config-section" id="configSection">
-                <h3 class="config-title"><i class="fas fa-sliders-h"></i> Parâmetros do Processo</h3>
+                <h3 class="config-title"><i class="fas fa-sliders-h"></i> Configuração da Otimização</h3>
                 
                 <div class="objective-grid">
                     <div class="obj-card active" id="objDocs" onclick="selecionarObjetivo('documentos')">
                         <div class="obj-icon">📄</div>
                         <div>
-                            <div style="font-weight:700;">Maximizar Documentos</div>
-                            <div style="font-size:12px; color:var(--text-sub);">Prioriza boxes mais cheios.</div>
+                            <div style="font-weight:700; color:var(--text-main);">Maximizar Documentos</div>
+                            <div style="font-size:12px; color:var(--text-sub);">Prioriza esvaziar o arquivo (boxes cheios).</div>
                         </div>
                     </div>
                     <div class="obj-card" id="objBoxes" onclick="selecionarObjetivo('boxes')">
                         <div class="obj-icon">📦</div>
                         <div>
-                            <div style="font-weight:700;">Maximizar Boxes</div>
-                            <div style="font-size:12px; color:var(--text-sub);">Prioriza agrupar mais caixas.</div>
+                            <div style="font-weight:700; color:var(--text-main);">Maximizar Boxes</div>
+                            <div style="font-size:12px; color:var(--text-sub);">Prioriza liberar espaço físico (mais caixas).</div>
                         </div>
                     </div>
                 </div>
@@ -235,7 +272,7 @@
                 <div class="params-grid">
                     <div class="input-group">
                         <div class="toggle-wrapper">
-                            <label>Limite Códigos Únicos</label>
+                            <label>Max Códigos / Bloco</label>
                             <div class="toggle-switch active" id="toggleCod" onclick="toggleInput('Cod')"><div class="toggle-slider"></div></div>
                         </div>
                         <input type="number" id="inputCod" class="input-control" value="30">
@@ -243,7 +280,7 @@
 
                     <div class="input-group">
                         <div class="toggle-wrapper">
-                            <label>Limite Setores / Cód</label>
+                            <label>Max Setores / Cód</label>
                             <div class="toggle-switch active" id="toggleSet" onclick="toggleInput('Set')"><div class="toggle-slider"></div></div>
                         </div>
                         <input type="number" id="inputSet" class="input-control" value="12">
@@ -251,15 +288,18 @@
 
                     <div class="input-group">
                         <label>&nbsp;</label>
-                        <button class="btn btn-primary" onclick="iniciarOtimizacao()">🚀 Iniciar Auditoria</button>
+                        <button class="btn btn-primary" onclick="iniciarOtimizacao()">
+                            <i class="fas fa-play"></i> Iniciar Processo
+                        </button>
                     </div>
                 </div>
             </div>
 
             <div class="results-section" id="resultsSection">
                 
-                <div style="display:flex; justify-content:flex-end; margin-bottom:20px;">
-                    <button class="btn btn-secondary" onclick="exportarExcel()"><i class="fas fa-download"></i> Baixar Relatório Auditado</button>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
+                    <h2 style="font-size:20px; font-weight:700; color:var(--text-main);">Relatório Final</h2>
+                    <button class="btn btn-secondary" onclick="exportarExcel()"><i class="fas fa-download" style="margin-right:8px;"></i> Baixar Excel</button>
                 </div>
 
                 <div class="stats-grid" id="statsGrid"></div>
@@ -267,17 +307,17 @@
 
                 <div class="log-section" id="crossCheckLog">
                     <div class="log-box log-danger">
-                        <div class="log-title"><i class="fas fa-ban"></i> Boxes Bloqueados pelo Cross-Check (Divergência de Totais)</div>
-                        <p style="margin-bottom:10px;">Removidos pois o total eliminável diverge do total físico.</p>
-                        <ul id="errorList" style="padding-left:20px; margin:0;"></ul>
+                        <div class="log-title"><i class="fas fa-ban"></i> Boxes Bloqueados pelo Cross-Check</div>
+                        <p style="margin-bottom:10px;">Estes boxes apresentam divergência entre o total eliminável listado e o total físico da caixa. Por segurança, foram removidos.</p>
+                        <ul id="errorList" style="padding-left:20px; margin:0; line-height:1.6;"></ul>
                     </div>
                 </div>
 
                 <div class="log-section" id="complexLog">
                     <div class="log-box log-warning">
-                        <div class="log-title"><i class="fas fa-exclamation-triangle"></i> Boxes Muito Complexos (Isolados)</div>
-                        <p style="margin-bottom:10px;">Excedem os limites de setores/códigos individualmente.</p>
-                        <ul id="complexList" style="padding-left:20px; margin:0;"></ul>
+                        <div class="log-title"><i class="fas fa-exclamation-triangle"></i> Boxes de Alta Complexidade</div>
+                        <p style="margin-bottom:10px;">Estes boxes, individualmente, já excedem os limites configurados (Setores ou Códigos) e não foram agrupados.</p>
+                        <ul id="complexList" style="padding-left:20px; margin:0; line-height:1.6;"></ul>
                     </div>
                 </div>
 
@@ -295,7 +335,7 @@
             finalBlocks: []
         };
 
-        // --- UPLOAD HANDLERS ---
+        // --- UPLOAD ---
         setupUpload('fileElim', 'dropElim', 'iconElim', 'nameElim', 'fileElim');
         setupUpload('fileTot', 'dropTot', 'iconTot', 'nameTot', 'fileTot');
 
@@ -303,11 +343,12 @@
             const input = document.getElementById(inputId);
             const drop = document.getElementById(dropId);
             input.addEventListener('change', (e) => processFile(e.target.files[0], drop, iconId, nameId, stateKey));
-            drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.style.borderColor = 'var(--primary)'; });
-            drop.addEventListener('dragleave', () => { drop.style.borderColor = 'var(--border)'; });
+            drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.style.borderColor = 'var(--primary)'; drop.style.background = 'var(--primary-light)'; });
+            drop.addEventListener('dragleave', () => { drop.style.borderColor = 'var(--border)'; drop.style.background = '#f8fafc'; });
             drop.addEventListener('drop', (e) => { e.preventDefault(); processFile(e.dataTransfer.files[0], drop, iconId, nameId, stateKey); });
         }
 
+        // Leitura Multi-Abas
         function processFile(file, dropEl, iconId, nameEl, stateKey) {
             if(!file) return;
             const reader = new FileReader();
@@ -323,10 +364,10 @@
                 state[stateKey] = allRows;
                 dropEl.classList.add('loaded');
                 document.getElementById(iconId).className = 'fas fa-check-circle upload-icon';
-                document.getElementById(nameEl).innerText = file.name + ` (${workbook.SheetNames.length} abas)`;
+                document.getElementById(nameEl).innerText = file.name + ` (${workbook.SheetNames.length} abas processadas)`;
                 if(state.fileElim && state.fileTot) {
                     document.getElementById('configSection').classList.add('show');
-                    setTimeout(() => document.getElementById('configSection').scrollIntoView({behavior:'smooth'}), 200);
+                    setTimeout(() => document.getElementById('configSection').scrollIntoView({behavior:'smooth'}), 300);
                 }
             };
             reader.readAsArrayBuffer(file);
@@ -338,7 +379,6 @@
             document.querySelectorAll('.obj-card').forEach(c => c.classList.remove('active'));
             document.getElementById(obj === 'documentos' ? 'objDocs' : 'objBoxes').classList.add('active');
         }
-
         function toggleInput(key) {
             state.restrictions[key].active = !state.restrictions[key].active;
             document.getElementById('toggle'+key).classList.toggle('active');
@@ -354,33 +394,27 @@
             
             setTimeout(() => {
                 try {
-                    // 1. EXTRAÇÃO E AUDITORIA INICIAL
                     const eliminaveisData = extrairDadosCompletos(state.fileElim);
                     const totaisData = extrairTotais(state.fileTot);
 
-                    // 2. CROSS-CHECK
+                    // Cross-Check
                     const validBoxes = [];
                     const rejectedBoxes = [];
-                    
                     for(const [boxId, data] of Object.entries(eliminaveisData)) {
                         const totalReal = totaisData[boxId];
-                        if(totalReal === undefined) {
-                            rejectedBoxes.push({ id: boxId, motivo: 'Não encontrado na planilha de Totais' });
-                        } else if(data.qtd === totalReal) {
-                            validBoxes.push(data);
-                        } else {
-                            rejectedBoxes.push({ id: boxId, motivo: `Divergência: ${data.qtd} elim. / ${totalReal} total` });
-                        }
+                        if(totalReal === undefined) rejectedBoxes.push({ id: boxId, motivo: 'Box não encontrado no arquivo de Totais' });
+                        else if(data.qtd === totalReal) validBoxes.push(data);
+                        else rejectedBoxes.push({ id: boxId, motivo: `Divergência: ${data.qtd} elimináveis vs ${totalReal} físico` });
                     }
 
-                    // 3. OTIMIZAÇÃO
+                    // Otimização
                     const { blocos, complexBoxes } = executarOtimizacao(validBoxes);
                     state.finalBlocks = blocos;
 
-                    // 4. AUDITORIA DOS BLOCOS GERADOS
+                    // Auditoria
                     auditarBlocos(blocos);
 
-                    // 5. RENDER
+                    // Render
                     renderizarResultados(Object.keys(eliminaveisData).length, validBoxes, rejectedBoxes, blocos, complexBoxes);
                     
                     document.getElementById('uploadSection').style.display = 'none';
@@ -389,19 +423,17 @@
 
                 } catch(e) {
                     console.error(e);
-                    alert("Erro: " + e.message);
+                    alert("Erro no processamento: " + e.message);
                 } finally {
                     document.getElementById('loading').style.display = 'none';
                 }
             }, 500);
         }
 
-        // --- EXTRAÇÃO ---
+        // --- HELPERS ---
         function extrairDadosCompletos(rows) {
             const map = {};
-            // Índices: Box=K(10), Setor=D(3), Cod=Q(16)
-            // Auditoria: Data=G(6), DtPrev=W(22), Elim1=Y(24), Elim2=AA(26), Elim3=AC(28)
-            
+            // Índices: Box=K(10), Setor=D(3), Cod=Q(16), Data=G(6), DtPrev=W(22), Elim1=Y(24)...
             for(let i=0; i < rows.length; i++) {
                 const row = rows[i];
                 if(row && row[10] !== undefined) {
@@ -410,31 +442,14 @@
 
                     const setor = row[3] ? String(row[3]).trim() : 'ND';
                     const cod = row[16] ? String(row[16]).trim() : 'ND';
-                    
-                    // Dados para auditoria
-                    const dtDoc = row[6]; // G
-                    const dtPrev = row[22]; // W
-                    const elimCols = [row[24], row[26], row[28]]; // Y, AA, AC
+                    const dtDoc = row[6];
+                    const dtPrev = row[22];
+                    const elimFlags = [row[24], row[26], row[28]];
 
                     if(box) {
-                        if(!map[box]) {
-                            map[box] = { 
-                                id: box, qtd: 0, documentos: [],
-                                codigos: new Set(), setoresPorCod: {},
-                                erros: new Set()
-                            };
-                        }
+                        if(!map[box]) map[box] = { id: box, qtd: 0, documentos: [], codigos: new Set(), setoresPorCod: {}, erros: new Set() };
                         map[box].qtd++;
-                        
-                        // Armazena doc com dados crus para auditoria
-                        map[box].documentos.push({ 
-                            SETOR: setor, 
-                            COD: cod,
-                            DT_DOC: dtDoc,
-                            DT_PREV: dtPrev,
-                            ELIM_FLAGS: elimCols
-                        });
-                        
+                        map[box].documentos.push({ SETOR: setor, COD: cod, DT_DOC: dtDoc, DT_PREV: dtPrev, ELIM_FLAGS: elimFlags });
                         map[box].codigos.add(cod);
                         if(!map[box].setoresPorCod[cod]) map[box].setoresPorCod[cod] = new Set();
                         map[box].setoresPorCod[cod].add(setor);
@@ -461,7 +476,6 @@
             return map;
         }
 
-        // --- ALGORITMO ---
         function executarOtimizacao(boxes) {
             if(state.objective === 'documentos') boxes.sort((a, b) => b.qtd - a.qtd);
             else boxes.sort((a, b) => a.qtd - b.qtd);
@@ -470,7 +484,7 @@
             const complexBoxes = [];
 
             for (const box of boxes) {
-                // Checa complexidade do box isolado
+                // Check complexidade isolada
                 let boxComplexo = false;
                 if (state.restrictions.Cod.active && box.codigos.size > state.restrictions.Cod.value) boxComplexo = true;
                 if (!boxComplexo && state.restrictions.Set.active) {
@@ -481,10 +495,9 @@
                         }
                     }
                 }
-                
                 if(boxComplexo) { complexBoxes.push(box); continue; }
 
-                // Tenta agrupar
+                // Best Fit
                 let blocoCandidato = null;
                 for (const bloco of blocos) {
                     let valido = true;
@@ -494,13 +507,8 @@
                     }
                     if (valido && state.restrictions.Set.active) {
                         for (const cod of box.codigos) {
-                            const setoresAtuais = bloco.setoresPorCod[cod] || new Set();
-                            const setoresNovos = box.setoresPorCod[cod];
-                            const uniaoSetores = new Set([...setoresAtuais, ...setoresNovos]);
-                            if (uniaoSetores.size > state.restrictions.Set.value) {
-                                valido = false;
-                                break;
-                            }
+                            const uniaoSetores = new Set([...(bloco.setoresPorCod[cod] || []), ...box.setoresPorCod[cod]]);
+                            if (uniaoSetores.size > state.restrictions.Set.value) { valido = false; break; }
                         }
                     }
                     if (valido) { blocoCandidato = bloco; break; }
@@ -517,7 +525,7 @@
         }
 
         function criarBloco(id) {
-            return { id: id, boxes: [], totalDocs: 0, codigos: new Set(), setoresPorCod: {}, errosAudit: [] };
+            return { id: id, boxes: [], totalDocs: 0, codigos: new Set(), setoresPorCod: {} };
         }
 
         function adicionarBoxAoBloco(bloco, box) {
@@ -530,58 +538,47 @@
             }
         }
 
-        // --- AUDITORIA DE REGRAS ---
+        // --- AUDITORIA ---
         function auditarBlocos(blocos) {
             const now = new Date();
-            
             blocos.forEach(bloco => {
                 bloco.boxes.forEach(box => {
                     box.documentos.forEach(doc => {
-                        // 1. DATA DOC (G)
+                        // 1. DATA DOC
                         let erroData = false;
                         if(!doc.DT_DOC) erroData = true;
                         else {
                             const d = parseExcelDate(doc.DT_DOC);
-                            if(!d || d.getFullYear() < 1920 || d.getFullYear() > now.getFullYear() + 1) erroData = true;
+                            if(!d || d.getFullYear() < 1900 || d.getFullYear() > now.getFullYear() + 1) erroData = true;
                         }
-                        if(erroData) box.erros.add("1- Data Inválida");
+                        if(erroData) box.erros.add("Erro Data Doc");
 
-                        // 2. DATA PREV ELIM (W)
+                        // 2. DATA PREV
                         let erroPrev = false;
                         if(!doc.DT_PREV) erroPrev = true;
                         else {
                             const d = parseExcelDate(doc.DT_PREV);
-                            if(!d || d > now) erroPrev = true; // Se data futura, não pode eliminar
+                            if(!d || d > now) erroPrev = true;
                         }
-                        if(erroPrev) box.erros.add("2- Data de Eliminação Futura/Vazia");
+                        if(erroPrev) box.erros.add("Erro Data Eliminação");
 
-                        // 3. ELIMINAÇÃO (Y, AA, AC)
+                        // 3. FLAGS ELIMINADO
                         let erroStatus = false;
                         doc.ELIM_FLAGS.forEach(flag => {
-                            // Aceita vazio, undefined, null ou hífen. Qualquer outra coisa é erro.
                             if(flag && String(flag).trim() !== '-' && String(flag).trim() !== '') erroStatus = true;
                         });
-                        if(erroStatus) box.erros.add("3- Dado como Eliminado");
+                        if(erroStatus) box.erros.add("Já Eliminado?");
                     });
                 });
             });
         }
 
-        // Helper para datas do Excel
-        function parseExcelDate(excelSerial) {
-            // Tenta processar número serial do Excel ou string dd/mm/yyyy
-            if(!excelSerial) return null;
-            
-            // Se for número (serial Excel)
-            if(!isNaN(excelSerial)) {
-                 // Ajuste básico para Excel Windows (epoch 1900)
-                 return new Date(Math.round((excelSerial - 25569)*86400*1000));
-            }
-            
-            // Se for string
-            if(typeof excelSerial === 'string') {
-                const parts = excelSerial.split('/');
-                if(parts.length === 3) return new Date(parts[2], parts[1]-1, parts[0]);
+        function parseExcelDate(val) {
+            if(!val) return null;
+            if(!isNaN(val)) return new Date(Math.round((val - 25569)*86400*1000));
+            if(typeof val === 'string') {
+                const p = val.split('/');
+                if(p.length === 3) return new Date(p[2], p[1]-1, p[0]);
             }
             return null;
         }
@@ -596,7 +593,7 @@
                     <div class="stat-val">${totalInput}</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-lbl">Boxes Auditados</div>
+                    <div class="stat-lbl">Boxes Aprovados</div>
                     <div class="stat-val" style="color:var(--success)">${validos.length}</div>
                 </div>
                 <div class="stat-card">
@@ -611,45 +608,55 @@
 
             const wrapper = document.getElementById('blocksWrapper');
             wrapper.innerHTML = '';
+            
             blocos.forEach(b => {
-                const lista = b.boxes.map(i => i.id).join(', ');
-                
-                // Gerar tags de erro
-                let errosHTML = '';
+                let boxListHTML = b.boxes.map(box => box.id).join(', ');
+                let errorsHTML = '';
+                let hasError = false;
+
                 b.boxes.forEach(box => {
                     if(box.erros.size > 0) {
-                        const listaErros = Array.from(box.erros).join('; ');
-                        errosHTML += `<span class="error-tag"><strong>Box ${box.id}:</strong> ${listaErros}</span>`;
+                        hasError = true;
+                        errorsHTML += `
+                            <div class="error-tag">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <span><strong>Box ${box.id}:</strong> ${Array.from(box.erros).join(', ')}</span>
+                            </div>
+                        `;
                     }
                 });
 
-                const statusColor = errosHTML !== '' ? '#fff1f2' : '#ffffff';
-                const borderColor = errosHTML !== '' ? 'var(--danger)' : 'var(--border)';
+                // Style conditional
+                const borderStyle = hasError ? '2px solid #fee2e2' : '1px solid var(--border)';
+                const bgStyle = hasError ? '#fffafa' : '#fff';
 
                 wrapper.innerHTML += `
-                    <div class="block-card" style="background:${statusColor}; border-color:${borderColor}">
-                        <div class="block-header">
-                            <span>Bloco #${b.id}</span>
-                            <span style="background:var(--primary-light); color:var(--primary-dark); padding:2px 8px; border-radius:10px; font-size:11px;">${b.boxes.length} Boxes</span>
+                    <div class="block-card" style="border:${borderStyle}; background:${bgStyle}">
+                        <div class="block-header" style="${hasError ? 'background:#fef2f2;' : ''}">
+                            <span style="${hasError ? 'color:#b91c1c;' : ''}">Bloco #${b.id}</span>
+                            <span class="block-count">${b.boxes.length} Boxes</span>
                         </div>
                         <div class="block-body">
                             <div class="info-row"><span>Documentos:</span> <strong>${b.totalDocs}</strong></div>
-                            <div class="info-row"><span>Códigos:</span> <strong>${b.codigos.size}</strong></div>
-                            <div class="box-list">${lista}</div>
-                            ${errosHTML}
+                            <div class="info-row"><span>Códigos Únicos:</span> <strong>${b.codigos.size}</strong></div>
+                            <div class="box-list">${boxListHTML}</div>
+                            ${errorsHTML}
                         </div>
                     </div>
                 `;
             });
 
+            // Logs
+            const errList = document.getElementById('errorList');
+            const cpxList = document.getElementById('complexList');
+            
             if(rejeitados.length > 0) {
                 document.getElementById('crossCheckLog').style.display = 'block';
-                document.getElementById('errorList').innerHTML = rejeitados.map(r => `<li><strong>Box ${r.id}:</strong> ${r.motivo}</li>`).join('');
+                errList.innerHTML = rejeitados.map(r => `<li><strong>Box ${r.id}:</strong> ${r.motivo}</li>`).join('');
             }
-
             if(complexos.length > 0) {
                 document.getElementById('complexLog').style.display = 'block';
-                document.getElementById('complexList').innerHTML = complexos.map(b => `<li><strong>Box ${b.id}:</strong> Excede limites sozinho (${b.codigos.size} Códigos / Máx Setores atingido)</li>`).join('');
+                cpxList.innerHTML = complexos.map(b => `<li><strong>Box ${b.id}:</strong> Excede limites (${b.codigos.size} cód / setores).</li>`).join('');
             }
         }
 
@@ -663,17 +670,17 @@
                         data.push({
                             'Bloco': b.id,
                             'Box': box.id,
+                            'Auditoria': errosStr,
                             'Setor': doc.SETOR,
-                            'Código': doc.COD,
-                            'Auditoria': errosStr
+                            'Código': doc.COD
                         });
                     });
                 });
             });
             const ws = XLSX.utils.json_to_sheet(data);
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Blocos Auditados");
-            XLSX.writeFile(wb, "Resultado_Auditado.xlsx");
+            XLSX.utils.book_append_sheet(wb, ws, "Resultado Auditado");
+            XLSX.writeFile(wb, "Resultado_Eliminacao_Auditado.xlsx");
         }
     </script>
 </body>
