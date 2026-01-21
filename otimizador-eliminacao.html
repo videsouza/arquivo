@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Otimizador de Eliminação</title>
+    <title>Otimizador & Auditor de Eliminação</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -11,20 +11,20 @@
 
     <style>
         /* --- DESIGN SYSTEM --- */
-       :root {
-    --primary: #2563eb;          /* Azul institucional */
-    --primary-light: #eff6ff;    /* Azul muito claro */
-    --primary-dark: #1e40af;     /* Azul escuro */
-    --text-main: #111827;        /* Cinza quase preto */
-    --text-sub: #6b7280;         /* Cinza médio */
-    --bg-body: #f3f4f6;          /* Cinza claro */
-    --bg-card: #ffffff;
-    --border: #d1d5db;           /* Cinza neutro */
-    --success: #10b981;          /* Verde funcional */
-    --danger: #ef4444;           /* Vermelho alerta */
-    --warning: #f59e0b;          /* Âmbar aviso */
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
-   }
+        :root {
+            --primary: #f7931e;
+            --primary-light: #fff7ed;
+            --primary-dark: #d67d12;
+            --text-main: #1f2937;
+            --text-sub: #6b7280;
+            --bg-body: #f3f4f6;
+            --bg-card: #ffffff;
+            --border: #e5e7eb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
 
         * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
 
@@ -121,7 +121,7 @@
         .stat-lbl { font-size: 11px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; }
 
         /* Blocos */
-        .blocks-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .blocks-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
         .block-card {
             background: white; border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
             transition: all 0.2s; display: flex; flex-direction: column;
@@ -136,6 +136,12 @@
         .box-list {
             margin-top: 10px; padding-top: 10px; background: #fffbf5; padding: 10px; border-radius: 6px;
             font-family: monospace; line-height: 1.4; max-height: 80px; overflow-y: auto; color: var(--text-main); border: 1px solid #fed7aa;
+        }
+        
+        /* Erros nos Blocos */
+        .error-tag {
+            display: block; margin-top: 8px; padding: 6px; background: #fee2e2; 
+            border: 1px solid #fca5a5; border-radius: 4px; color: #991b1b; font-size: 11px; line-height: 1.3;
         }
 
         .btn {
@@ -170,14 +176,14 @@
     <div class="loading" id="loading">
         <div class="spinner"></div>
         <h3 style="color:var(--text-main)">Processando...</h3>
-        <p style="color:var(--text-sub)">1. Lendo TODAS as abas<br>2. Cross-Check de Totais<br>3. Algoritmo de Otimização</p>
+        <p style="color:var(--text-sub)">1. Leitura Multi-Abas<br>2. Cross-Check de Totais<br>3. Auditoria de Datas e Eliminação<br>4. Otimização</p>
     </div>
 
     <div class="container">
         <div class="header">
             <div>
-                <h1><i class="fas fa-cubes"></i> Otimizador de Eliminação</h1>
-                <p>Algoritmo de maximização de blocos de eliminação.</p>
+                <h1><i class="fas fa-cubes"></i> Otimizador & Auditor de Eliminação</h1>
+                <p>Otimização Logística com Auditoria de Integridade de Dados</p>
             </div>
             <button class="btn-secondary" onclick="location.reload()" style="padding: 8px 16px; border-radius: 6px;">
                 <i class="fas fa-undo"></i> Reiniciar
@@ -191,8 +197,8 @@
                     <span class="step-badge">Passo 1</span>
                     <input type="file" id="fileElim" accept=".xlsx,.xls,.csv" hidden>
                     <i class="fas fa-file-alt upload-icon" id="iconElim"></i>
-                    <h3 style="font-size:16px; font-weight:700;">Lista de Elimináveis</h3>
-                    <p style="font-size:13px; color:var(--text-sub)">Docs a eliminar (status "Aguardando Planilha")</p>
+                    <h3 style="font-size:16px; font-weight:700;">Relatório de Elimináveis</h3>
+                    <p style="font-size:13px; color:var(--text-sub)">Docs a eliminar (Lê todas as abas)</p>
                     <div id="nameElim" style="margin-top:10px; font-weight:600; color:var(--primary); font-size:12px;"></div>
                 </div>
 
@@ -201,13 +207,13 @@
                     <input type="file" id="fileTot" accept=".xlsx,.xls,.csv" hidden>
                     <i class="fas fa-chart-pie upload-icon" id="iconTot"></i>
                     <h3 style="font-size:16px; font-weight:700;">Totais por Box</h3>
-                    <p style="font-size:13px; color:var(--text-sub)">Planilha de totais de docs por status.</p>
+                    <p style="font-size:13px; color:var(--text-sub)">Validação (Box na Col A, Total na Col I)</p>
                     <div id="nameTot" style="margin-top:10px; font-weight:600; color:var(--primary); font-size:12px;"></div>
                 </div>
             </div>
 
             <div class="config-section" id="configSection">
-                <h3 class="config-title"><i class="fas fa-sliders-h"></i> Parâmetros do Algoritmo</h3>
+                <h3 class="config-title"><i class="fas fa-sliders-h"></i> Parâmetros do Processo</h3>
                 
                 <div class="objective-grid">
                     <div class="obj-card active" id="objDocs" onclick="selecionarObjetivo('documentos')">
@@ -245,7 +251,7 @@
 
                     <div class="input-group">
                         <label>&nbsp;</label>
-                        <button class="btn btn-primary" onclick="iniciarOtimizacao()">🚀 Iniciar Otimização</button>
+                        <button class="btn btn-primary" onclick="iniciarOtimizacao()">🚀 Iniciar Auditoria</button>
                     </div>
                 </div>
             </div>
@@ -253,7 +259,7 @@
             <div class="results-section" id="resultsSection">
                 
                 <div style="display:flex; justify-content:flex-end; margin-bottom:20px;">
-                    <button class="btn btn-secondary" onclick="exportarExcel()"><i class="fas fa-download"></i> Baixar Excel</button>
+                    <button class="btn btn-secondary" onclick="exportarExcel()"><i class="fas fa-download"></i> Baixar Relatório Auditado</button>
                 </div>
 
                 <div class="stats-grid" id="statsGrid"></div>
@@ -262,7 +268,7 @@
                 <div class="log-section" id="crossCheckLog">
                     <div class="log-box log-danger">
                         <div class="log-title"><i class="fas fa-ban"></i> Boxes Bloqueados pelo Cross-Check (Divergência de Totais)</div>
-                        <p style="margin-bottom:10px;">Estes boxes foram removidos pois o total eliminável é diferente do total físico.</p>
+                        <p style="margin-bottom:10px;">Removidos pois o total eliminável diverge do total físico.</p>
                         <ul id="errorList" style="padding-left:20px; margin:0;"></ul>
                     </div>
                 </div>
@@ -270,7 +276,7 @@
                 <div class="log-section" id="complexLog">
                     <div class="log-box log-warning">
                         <div class="log-title"><i class="fas fa-exclamation-triangle"></i> Boxes Muito Complexos (Isolados)</div>
-                        <p style="margin-bottom:10px;">Estes boxes excedem os limites (Setores/Códigos) mesmo sozinhos.</p>
+                        <p style="margin-bottom:10px;">Excedem os limites de setores/códigos individualmente.</p>
                         <ul id="complexList" style="padding-left:20px; margin:0;"></ul>
                     </div>
                 </div>
@@ -285,10 +291,7 @@
         let state = {
             fileElim: null, fileTot: null,
             objective: 'documentos',
-            restrictions: {
-                Cod: { active: true, value: 30 },
-                Set: { active: true, value: 12 }
-            },
+            restrictions: { Cod: { active: true, value: 30 }, Set: { active: true, value: 12 } },
             finalBlocks: []
         };
 
@@ -299,35 +302,28 @@
         function setupUpload(inputId, dropId, iconId, nameId, stateKey) {
             const input = document.getElementById(inputId);
             const drop = document.getElementById(dropId);
-            
             input.addEventListener('change', (e) => processFile(e.target.files[0], drop, iconId, nameId, stateKey));
             drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.style.borderColor = 'var(--primary)'; });
             drop.addEventListener('dragleave', () => { drop.style.borderColor = 'var(--border)'; });
             drop.addEventListener('drop', (e) => { e.preventDefault(); processFile(e.dataTransfer.files[0], drop, iconId, nameId, stateKey); });
         }
 
-        // --- LEITURA MULTI-ABAS ---
         function processFile(file, dropEl, iconId, nameEl, stateKey) {
             if(!file) return;
             const reader = new FileReader();
             reader.onload = (e) => {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, {type: 'array'});
-                
-                // LÓGICA DE CONCATENAÇÃO DE ABAS
                 let allRows = [];
                 workbook.SheetNames.forEach(sheetName => {
                     const sheet = workbook.Sheets[sheetName];
                     const rows = XLSX.utils.sheet_to_json(sheet, {header: 1});
                     allRows = allRows.concat(rows);
                 });
-
                 state[stateKey] = allRows;
-                
                 dropEl.classList.add('loaded');
                 document.getElementById(iconId).className = 'fas fa-check-circle upload-icon';
                 document.getElementById(nameEl).innerText = file.name + ` (${workbook.SheetNames.length} abas)`;
-                
                 if(state.fileElim && state.fileTot) {
                     document.getElementById('configSection').classList.add('show');
                     setTimeout(() => document.getElementById('configSection').scrollIntoView({behavior:'smooth'}), 200);
@@ -358,7 +354,7 @@
             
             setTimeout(() => {
                 try {
-                    // 1. EXTRAÇÃO
+                    // 1. EXTRAÇÃO E AUDITORIA INICIAL
                     const eliminaveisData = extrairDadosCompletos(state.fileElim);
                     const totaisData = extrairTotais(state.fileTot);
 
@@ -368,7 +364,6 @@
                     
                     for(const [boxId, data] of Object.entries(eliminaveisData)) {
                         const totalReal = totaisData[boxId];
-                        
                         if(totalReal === undefined) {
                             rejectedBoxes.push({ id: boxId, motivo: 'Não encontrado na planilha de Totais' });
                         } else if(data.qtd === totalReal) {
@@ -378,11 +373,14 @@
                         }
                     }
 
-                    // 3. OTIMIZAÇÃO + COMPLEXIDADE
+                    // 3. OTIMIZAÇÃO
                     const { blocos, complexBoxes } = executarOtimizacao(validBoxes);
                     state.finalBlocks = blocos;
 
-                    // 4. RENDER
+                    // 4. AUDITORIA DOS BLOCOS GERADOS
+                    auditarBlocos(blocos);
+
+                    // 5. RENDER
                     renderizarResultados(Object.keys(eliminaveisData).length, validBoxes, rejectedBoxes, blocos, complexBoxes);
                     
                     document.getElementById('uploadSection').style.display = 'none';
@@ -401,27 +399,41 @@
         // --- EXTRAÇÃO ---
         function extrairDadosCompletos(rows) {
             const map = {};
-            // Índices: Box=K(10), Setor=D(3), Cod=Q(16) -> CORRIGIDO AQUI
+            // Índices: Box=K(10), Setor=D(3), Cod=Q(16)
+            // Auditoria: Data=G(6), DtPrev=W(22), Elim1=Y(24), Elim2=AA(26), Elim3=AC(28)
+            
             for(let i=0; i < rows.length; i++) {
                 const row = rows[i];
-                // Verifica se parece uma linha de dados (Box na col 10)
                 if(row && row[10] !== undefined) {
                     const box = String(row[10]).trim();
-                    // Ignora cabeçalhos repetidos de outras abas se houver
                     if(box.toUpperCase() === 'BOX' || box === '') continue;
 
                     const setor = row[3] ? String(row[3]).trim() : 'ND';
-                    const cod = row[16] ? String(row[16]).trim() : 'ND'; // Coluna Q = 16
+                    const cod = row[16] ? String(row[16]).trim() : 'ND';
+                    
+                    // Dados para auditoria
+                    const dtDoc = row[6]; // G
+                    const dtPrev = row[22]; // W
+                    const elimCols = [row[24], row[26], row[28]]; // Y, AA, AC
 
                     if(box) {
                         if(!map[box]) {
                             map[box] = { 
                                 id: box, qtd: 0, documentos: [],
-                                codigos: new Set(), setoresPorCod: {}
+                                codigos: new Set(), setoresPorCod: {},
+                                erros: new Set()
                             };
                         }
                         map[box].qtd++;
-                        map[box].documentos.push({ SETOR: setor, COD: cod });
+                        
+                        // Armazena doc com dados crus para auditoria
+                        map[box].documentos.push({ 
+                            SETOR: setor, 
+                            COD: cod,
+                            DT_DOC: dtDoc,
+                            DT_PREV: dtPrev,
+                            ELIM_FLAGS: elimCols
+                        });
                         
                         map[box].codigos.add(cod);
                         if(!map[box].setoresPorCod[cod]) map[box].setoresPorCod[cod] = new Set();
@@ -434,13 +446,11 @@
 
         function extrairTotais(rows) {
             const map = {};
-            // Box=A(0), Total=I(8)
             for(let i=0; i < rows.length; i++) {
                 const row = rows[i];
                 if(row && row[0] !== undefined) {
                      const box = String(row[0]).trim();
-                     if(box.toUpperCase() === 'BOX' || box === '') continue; // Ignora header
-
+                     if(box.toUpperCase() === 'BOX' || box === '') continue;
                     const total = row[8];
                     if(total !== undefined) {
                         const key = box.replace(/\.0$/, '');
@@ -453,17 +463,14 @@
 
         // --- ALGORITMO ---
         function executarOtimizacao(boxes) {
-            if(state.objective === 'documentos') {
-                boxes.sort((a, b) => b.qtd - a.qtd);
-            } else {
-                boxes.sort((a, b) => a.qtd - b.qtd);
-            }
+            if(state.objective === 'documentos') boxes.sort((a, b) => b.qtd - a.qtd);
+            else boxes.sort((a, b) => a.qtd - b.qtd);
 
             const blocos = [];
             const complexBoxes = [];
 
             for (const box of boxes) {
-                // VERIFICAÇÃO INICIAL: Box complexo demais sozinho?
+                // Checa complexidade do box isolado
                 let boxComplexo = false;
                 if (state.restrictions.Cod.active && box.codigos.size > state.restrictions.Cod.value) boxComplexo = true;
                 if (!boxComplexo && state.restrictions.Set.active) {
@@ -475,21 +482,16 @@
                     }
                 }
                 
-                if(boxComplexo) {
-                    complexBoxes.push(box);
-                    continue;
-                }
+                if(boxComplexo) { complexBoxes.push(box); continue; }
 
-                // TENTA AGRUPAR
+                // Tenta agrupar
                 let blocoCandidato = null;
                 for (const bloco of blocos) {
                     let valido = true;
-
                     if (state.restrictions.Cod.active) {
                         const uniaoCodigos = new Set([...bloco.codigos, ...box.codigos]);
                         if (uniaoCodigos.size > state.restrictions.Cod.value) valido = false;
                     }
-
                     if (valido && state.restrictions.Set.active) {
                         for (const cod of box.codigos) {
                             const setoresAtuais = bloco.setoresPorCod[cod] || new Set();
@@ -501,38 +503,87 @@
                             }
                         }
                     }
-
-                    if (valido) {
-                        blocoCandidato = bloco;
-                        break;
-                    }
+                    if (valido) { blocoCandidato = bloco; break; }
                 }
 
-                if (blocoCandidato) {
-                    adicionarBoxAoBloco(blocoCandidato, box);
-                } else {
+                if (blocoCandidato) adicionarBoxAoBloco(blocoCandidato, box);
+                else {
                     const novo = criarBloco(blocos.length + 1);
                     adicionarBoxAoBloco(novo, box);
                     blocos.push(novo);
                 }
             }
-
             return { blocos, complexBoxes };
         }
 
         function criarBloco(id) {
-            return { id: id, boxes: [], totalDocs: 0, codigos: new Set(), setoresPorCod: {} };
+            return { id: id, boxes: [], totalDocs: 0, codigos: new Set(), setoresPorCod: {}, errosAudit: [] };
         }
 
         function adicionarBoxAoBloco(bloco, box) {
             bloco.boxes.push(box);
             bloco.totalDocs += box.qtd;
-            
             box.codigos.forEach(c => bloco.codigos.add(c));
             for(const [cod, setSetores] of Object.entries(box.setoresPorCod)) {
                 if(!bloco.setoresPorCod[cod]) bloco.setoresPorCod[cod] = new Set();
                 setSetores.forEach(s => bloco.setoresPorCod[cod].add(s));
             }
+        }
+
+        // --- AUDITORIA DE REGRAS ---
+        function auditarBlocos(blocos) {
+            const now = new Date();
+            
+            blocos.forEach(bloco => {
+                bloco.boxes.forEach(box => {
+                    box.documentos.forEach(doc => {
+                        // 1. DATA DOC (G)
+                        let erroData = false;
+                        if(!doc.DT_DOC) erroData = true;
+                        else {
+                            const d = parseExcelDate(doc.DT_DOC);
+                            if(!d || d.getFullYear() < 1920 || d.getFullYear() > now.getFullYear() + 1) erroData = true;
+                        }
+                        if(erroData) box.erros.add("1- Data Inválida");
+
+                        // 2. DATA PREV ELIM (W)
+                        let erroPrev = false;
+                        if(!doc.DT_PREV) erroPrev = true;
+                        else {
+                            const d = parseExcelDate(doc.DT_PREV);
+                            if(!d || d > now) erroPrev = true; // Se data futura, não pode eliminar
+                        }
+                        if(erroPrev) box.erros.add("2- Data de Eliminação Futura/Vazia");
+
+                        // 3. ELIMINAÇÃO (Y, AA, AC)
+                        let erroStatus = false;
+                        doc.ELIM_FLAGS.forEach(flag => {
+                            // Aceita vazio, undefined, null ou hífen. Qualquer outra coisa é erro.
+                            if(flag && String(flag).trim() !== '-' && String(flag).trim() !== '') erroStatus = true;
+                        });
+                        if(erroStatus) box.erros.add("3- Dado como Eliminado");
+                    });
+                });
+            });
+        }
+
+        // Helper para datas do Excel
+        function parseExcelDate(excelSerial) {
+            // Tenta processar número serial do Excel ou string dd/mm/yyyy
+            if(!excelSerial) return null;
+            
+            // Se for número (serial Excel)
+            if(!isNaN(excelSerial)) {
+                 // Ajuste básico para Excel Windows (epoch 1900)
+                 return new Date(Math.round((excelSerial - 25569)*86400*1000));
+            }
+            
+            // Se for string
+            if(typeof excelSerial === 'string') {
+                const parts = excelSerial.split('/');
+                if(parts.length === 3) return new Date(parts[2], parts[1]-1, parts[0]);
+            }
+            return null;
         }
 
         // --- RENDER ---
@@ -545,7 +596,7 @@
                     <div class="stat-val">${totalInput}</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-lbl">Boxes Seguros</div>
+                    <div class="stat-lbl">Boxes Auditados</div>
                     <div class="stat-val" style="color:var(--success)">${validos.length}</div>
                 </div>
                 <div class="stat-card">
@@ -562,16 +613,30 @@
             wrapper.innerHTML = '';
             blocos.forEach(b => {
                 const lista = b.boxes.map(i => i.id).join(', ');
+                
+                // Gerar tags de erro
+                let errosHTML = '';
+                b.boxes.forEach(box => {
+                    if(box.erros.size > 0) {
+                        const listaErros = Array.from(box.erros).join('; ');
+                        errosHTML += `<span class="error-tag"><strong>Box ${box.id}:</strong> ${listaErros}</span>`;
+                    }
+                });
+
+                const statusColor = errosHTML !== '' ? '#fff1f2' : '#ffffff';
+                const borderColor = errosHTML !== '' ? 'var(--danger)' : 'var(--border)';
+
                 wrapper.innerHTML += `
-                    <div class="block-card">
+                    <div class="block-card" style="background:${statusColor}; border-color:${borderColor}">
                         <div class="block-header">
                             <span>Bloco #${b.id}</span>
                             <span style="background:var(--primary-light); color:var(--primary-dark); padding:2px 8px; border-radius:10px; font-size:11px;">${b.boxes.length} Boxes</span>
                         </div>
                         <div class="block-body">
                             <div class="info-row"><span>Documentos:</span> <strong>${b.totalDocs}</strong></div>
-                            <div class="info-row"><span>Códigos Únicos:</span> <strong>${b.codigos.size}</strong></div>
+                            <div class="info-row"><span>Códigos:</span> <strong>${b.codigos.size}</strong></div>
                             <div class="box-list">${lista}</div>
+                            ${errosHTML}
                         </div>
                     </div>
                 `;
@@ -593,20 +658,22 @@
             const data = [];
             state.finalBlocks.forEach(b => {
                 b.boxes.forEach(box => {
+                    const errosStr = box.erros.size > 0 ? Array.from(box.erros).join(' | ') : 'OK';
                     box.documentos.forEach(doc => {
                         data.push({
                             'Bloco': b.id,
                             'Box': box.id,
                             'Setor': doc.SETOR,
-                            'Código': doc.COD
+                            'Código': doc.COD,
+                            'Auditoria': errosStr
                         });
                     });
                 });
             });
             const ws = XLSX.utils.json_to_sheet(data);
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Blocos");
-            XLSX.writeFile(wb, "Resultado_Eliminacao_Otimizado.xlsx");
+            XLSX.utils.book_append_sheet(wb, ws, "Blocos Auditados");
+            XLSX.writeFile(wb, "Resultado_Auditado.xlsx");
         }
     </script>
 </body>
