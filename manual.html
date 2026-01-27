@@ -45,6 +45,8 @@
             margin-top: 20px;
             margin-bottom: 10px;
         }
+        
+        /* Tabelas */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -54,14 +56,11 @@
         table, th, td {
             border: 1px solid #ddd;
         }
-        
-        /* Alteração solicitada: Centralização total */
         th, td {
             padding: 12px;
             text-align: center;      /* Centraliza horizontalmente */
             vertical-align: middle;  /* Centraliza verticalmente */
         }
-
         th {
             background-color: #2c3e50;
             color: white;
@@ -69,6 +68,8 @@
         tr:nth-child(even) {
             background-color: #f9f9f9;
         }
+
+        /* Destaques e Glossário */
         .highlight {
             background-color: #fff3cd;
             padding: 15px;
@@ -110,6 +111,44 @@
         ul, ol {
             margin-left: 20px;
         }
+
+        /* Estilo para a área de Downloads */
+        .download-section {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        .download-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .download-link {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #2c3e50;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .download-link:hover {
+            background-color: #eaf2f8;
+            border-color: #3498db;
+            color: #3498db;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .icon { margin-right: 10px; font-size: 1.2em; }
         
         /* Estilo do Rodapé */
         footer {
@@ -132,6 +171,7 @@
         @media (max-width: 600px) {
             .label-example { width: 100%; }
             .container { padding: 15px; }
+            .download-link { width: 100%; justify-content: center; }
         }
     </style>
 </head>
@@ -181,7 +221,6 @@
         <li>Projeto Político-Pedagógico (PPP)</li>
         <li>Livro de ocorrência de funcionários</li>
         <li>Documentação do PDDE</li>
-        <li>...</li>
     </ul>
 
     <h3>2. Documentos com prazo de guarda (não permanentes)</h3>
@@ -227,7 +266,6 @@
             <tr><td>Lista de entrega de kit escolar</td><td>1</td></tr>
             <tr><td>Manual de Equipamentos (impressora, TV, DVD, etc.)</td><td>1</td></tr>
             <tr><td>Balancete da A.A.E</td><td>6</td></tr>
-             <tr><td>...</td><td>...</td></tr>
         </tbody>
     </table>
 
@@ -284,10 +322,9 @@
         <tr><td>4</td><td>2019 – 2021</td><td>Livro de atribuição de aulas</td><td></td></tr>
         <tr><td>5</td><td>2022 – 2025</td><td>Livro de atribuição de aulas</td><td></td></tr>
         <tr><td>6</td><td>2020</td><td>CPC</td><td>1º, 2º e 4º Bimestre</td></tr>
-        <tr><td>6</td><td>...</td><td>...</td><td>...</td></tr>
     </table>
     
-    <p>Quando houver mais de um tipo documental no mesmo box, utilize a mesma identificação; quando sobrar espaço, registre-o (em centímetros) no campo de observações ou utilize o modelo proposto na Fase 3.</p>
+    <p>Quando houver mais de um tipo documental no mesmo box, utilize a mesma identificação (P1, P2, ...); quando sobrar espaço, registre-o (em centímetros) no campo de observações ou utilize o modelo proposto na Fase 3.</p>
     
     <p><strong>Modelos de etiqueta:</strong></p>
     <div style="display:flex; gap:20px; flex-wrap:wrap;">
@@ -323,7 +360,6 @@
         <tr><td>2025</td><td>Balancete da AAE</td><td>6</td><td>2031</td><td>5</td></tr>
         <tr><td>2023</td><td>Lista de entrega kit</td><td>1</td><td>2024</td><td>2</td></tr>
         <tr><td>2024</td><td>Lista de entrega kit</td><td>1</td><td>2025</td><td>2</td></tr>
-         <tr><td>...</td><td>...</td><td>...</td><td>...</td><td>...</td></tr>
     </table>
 
     <h4>Passo 2 – Separação dos documentos</h4>
@@ -428,10 +464,32 @@
         <tr><th>Destinação</th><th>Cor da etiqueta</th><th>Identificação</th></tr>
         <tr><td>Guarda permanente</td><td style="background-color:#d6eaf8; color:#000; font-weight:bold;">Azul</td><td>P1, P2, P3...</td></tr>
         <tr><td>Cumprindo prazo na escola</td><td style="background-color:#fcf3cf; color:#000; font-weight:bold;">Amarela</td><td>Q1, Q2, Q3...</td></tr>
-        <tr><td>Aguardando retirada</td><td style="border:1px solid #ccc; background-color:#fff; color:#000; font-weight:bold;">Branca</td><td>Box 1, Box 2, Box 3, ...</td></tr>
+        <tr><td>Aguardando retirada</td><td style="border:1px solid #ccc; background-color:#fff; color:#000; font-weight:bold;">Branca</td><td>Box 1, Box 2...</td></tr>
     </table>
     
     <p>Vale ressaltar que o uso de cores é um recurso auxiliar de identificação visual e não substitui a correta etiquetagem dos boxes.</p>
+
+    <h2>MODELOS E ANEXOS</h2>
+    <div class="download-section">
+        <p>Abaixo estão disponíveis os modelos de documentos e planilhas auxiliares para download:</p>
+        <ul class="download-list">
+            <li>
+                <a href="Etiquetas.docx" class="download-link">
+                    <span class="icon">📄</span> Modelos de Etiqueta (Word)
+                </a>
+            </li>
+            <li>
+                <a href="#" class="download-link">
+                    <span class="icon">📊</span> Planilha de Gerenciamento de Box (Excel)
+                </a>
+            </li>
+            <li>
+                <a href="#" class="download-link">
+                    <span class="icon">📊</span> Planilha de Cálculo de Prazos (Excel)
+                </a>
+            </li>
+        </ul>
+    </div>
 
     <footer>
         <p>Em caso de dúvidas, entre em contato com o setor de Arquivo pelo e-mail <a href="mailto:arquivo.sec@sjc.sp.gov.br">arquivo.sec@sjc.sp.gov.br</a></p>
@@ -441,4 +499,3 @@
 
 </body>
 </html>
-
