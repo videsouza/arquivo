@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quadradinho | Gestão Documental</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        /* Variáveis de Cor – Paleta SÓBRIA (Azul + Cinza) */
+        :root {
+            --primary-color: #2563eb;        /* Azul institucional */
+            --text-dark: #111827;            /* Cinza quase preto */
+            --text-light: #6b7280;           /* Cinza médio */
+            --bg-light: #f3f4f6;              /* Cinza muito claro */
+            --bg-white: #ffffff;
+            --border-color: #d1d5db;          /* Cinza neutro */
+            --shadow-subtle: 0 2px 4px rgba(0, 0, 0, 0.04);
+            --shadow-hover: 0 12px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+            min-height: 100vh;
+            padding: 40px 20px;
+            line-height: 1.6;
+            color: var(--text-light);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .hero {
+            text-align: center;
+            color: var(--text-dark);
+            margin-bottom: 60px;
+            padding: 20px 0;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .hero h1 {
+            font-size: 44px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+        }
+
+        .hero p {
+            font-size: 18px;
+            max-width: 700px;
+            margin: 0 auto;
+            color: var(--text-light);
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            padding: 20px 0;
+            margin-bottom: 60px;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-dark);
+        }
+
+        .stat-icon {
+            color: var(--primary-color);
+            font-size: 20px;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            font-size: 20px;
+            color: var(--text-dark);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            justify-items: center;
+        }
+
+        .service-card {
+            background: var(--bg-white);
+            border-radius: 12px;
+            padding: 30px;
+            transition: all 0.3s ease-in-out;
+            box-shadow: var(--shadow-subtle);
+            border: 1px solid var(--border-color);
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--primary-color);
+        }
+
+        .badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: white;
+        }
+
+        .badge-new { background-color: #10b981; }      /* Verde frio */
+        .badge-breve { background-color: #64748b; }   /* Cinza azulado */
+        .badge-popular { background-color: var(--primary-color); }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(37, 99, 235, 0.12);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .service-card:hover .card-icon {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+        }
+
+        .card-desc {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+
+        .card-action {
+            margin-top: 15px;
+            font-weight: 600;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+        }
+
+        .footer {
+            margin-top: 80px;
+            text-align: center;
+            color: var(--text-light);
+            font-size: 10px;
+        }
+
+        .footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 32px; }
+            .stats-bar { flex-direction: column; gap: 20px; }
+        }
+    </style>
+</head>
+<body>
+<!-- HTML original mantido integralmente -->
+
+    <div class="container">
+        
+        <section class="services-grid">
+
+             <a href="visualiza-boxes.html" class="service-card">
+               
+                <div class="card-icon"><i class="fas fa-boxes"></i></div>
+                <h3 class="card-title">Visualizador de Boxes</h3>
+                <p class="card-desc">Mapa visual interativo para gestão da ocupação do arquivo físico. Requer planilha de Totais</p>
+                <div class="card-action">Iniciar Aplicação <i class="fas fa-arrow-right"></i></div>
+            </a>
+
+            
+             <a href="otimizador-eliminacao.html" class="service-card">
+               
+                <div class="card-icon"><i class="fas fa-recycle"></i></div>
+                <h3 class="card-title">Otimizador de Eliminação</h3>
+                <p class="card-desc">Algoritmo de otimização de blocos de eliminação. Requer planilha AP e de Totais.</p>
+                <div class="card-action">Iniciar Aplicação <i class="fas fa-arrow-right"></i></div>
+            </a>
+            
+            
+            <a href="super-analista.html" class="service-card">
+               
+                <div class="card-icon"><i class="fas fa-chart-pie"></i></div>
+                <h3 class="card-title">Análise de Dados</h3>
+                <p class="card-desc">Dashboard com gráficos e tabelas de frequência. Requer planilha com cabeçalhos.</p>
+                <div class="card-action">Iniciar Aplicação <i class="fas fa-arrow-right"></i></div>
+            </a>
+
+             <a href="https://arquivo.lovable.app/box-space" class="service-card">
+                <div class="card-icon"><i class="fa-solid fa-box-archive"></i></div>
+                <h3 class="card-title">Ocupação de Boxes</h3>
+                <p class="card-desc">Gerencia a ocupação física (em cm) dos boxes do Arquivo.</p>
+                <div class="card-action">Iniciar Aplicação <i class="fas fa-arrow-right"></i></div>
+            </a>
+            
+             <a href="https://corretor-datas.onrender.com/" class="service-card">
+               
+                <div class="card-icon"><i class="fa-solid fa-calendar-days"></i></div>
+                <h3 class="card-title">Revisor de Datas</h3>
+                <p class="card-desc">Revisa as datas de eliminação previstas da planilha de eliminação.</p>
+                <div class="card-action">Iniciar Aplicação <i class="fas fa-arrow-right"></i></div>
+            </a>
+
+            <a href="docs/dados2025.html" class="service-card">
+               
+                <div class="card-icon"><i class="fa-solid fa-file-lines"></i></i></div>
+                <h3 class="card-title">Dados de 2025</h3>
+                <p class="card-desc">Números consolidados do ano de 2025 do setor de Arquivo.</p>
+                <div class="card-action">Abrir Relatório <i class="fas fa-arrow-right"></i></div>
+            </a>
+
+           
+
+        </section>
+
+        <footer class="footer">
+            <p>&copy; 2025-2026 Sistema de Apoio à Gestão Documental.</p>
+            <p>
+                Desenvolvido por Vinicius A. de Souza com Gemini, ChatGPT e Claude.ai
+            </p>
+        </footer>
+
+    </div>
+
+    
+</body>
+</html>
