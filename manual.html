@@ -3,496 +3,239 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manual de Organização Documental para Secretaria Escolar</title>
+    <title>Manual de Organização | Hub de Serviços</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
     <style>
+        /* --- DESIGN SYSTEM (AZUL HUB) --- */
+       :root {
+            --primary: #2563eb;          /* Azul institucional */
+            --primary-light: #eff6ff;    /* Azul muito claro */
+            --primary-dark: #1e40af;     /* Azul escuro */
+            --text-main: #111827;        /* Cinza escuro */
+            --text-sub: #6b7280;         /* Cinza médio */
+            --bg-body: #f3f4f6;          /* Fundo da tela */
+            --bg-paper: #ffffff;         /* Fundo do papel */
+            --border: #d1d5db;           /* Bordas */
+       }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
             line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-            color: #333;
-            background-color: #f4f4f4;
+            padding: 40px 20px;
+            -webkit-print-color-adjust: exact;
         }
-        .container {
-            max-width: 900px;
+
+        /* Folha A4 */
+        .page-container {
+            max-width: 210mm;
             margin: 0 auto;
-            background: #fff;
-            padding: 40px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            background: var(--bg-paper);
+            padding: 50px;
             border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            min-height: 297mm;
+            position: relative;
         }
-        h1 {
-            text-align: center;
-            border-bottom: 2px solid #2c3e50;
-            padding-bottom: 15px;
-            color: #2c3e50;
+
+        /* Cabeçalho */
+        .report-header {
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 20px;
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
         }
-        h2 {
-            background-color: #ecf0f1;
-            padding: 12px;
-            border-left: 5px solid #3498db;
-            margin-top: 35px;
-            color: #2c3e50;
+        .report-title h1 { font-size: 22px; font-weight: 800; color: var(--primary); margin-bottom: 5px; text-transform: uppercase; letter-spacing: -0.5px; }
+        .report-title h2 { font-size: 14px; font-weight: 600; color: var(--text-sub); }
+        .report-meta { text-align: right; font-size: 12px; color: var(--text-sub); }
+
+        /* Tipografia de Conteúdo */
+        .content h2 { 
+            font-size: 18px; color: var(--primary-dark); 
+            margin-top: 35px; margin-bottom: 15px; 
+            border-left: 4px solid var(--primary); padding-left: 12px; 
+            font-weight: 700;
         }
-        h3 {
-            color: #2980b9;
-            margin-top: 25px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 5px;
-        }
-        h4 {
-            color: #444;
-            margin-top: 20px;
-            margin-bottom: 10px;
-        }
+        .content h3 { font-size: 15px; font-weight: 700; margin-top: 20px; margin-bottom: 10px; color: var(--text-main); }
+        .content p { margin-bottom: 15px; text-align: justify; font-size: 14px; color: #374151; }
         
+        /* Listas */
+        .content ul, .content ol { margin-bottom: 20px; padding-left: 25px; font-size: 14px; color: #374151; }
+        .content li { margin-bottom: 8px; }
+
         /* Tabelas */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            font-size: 0.95em;
-        }
-        table, th, td {
-            border: 1px solid #ddd;
-        }
-        th, td {
-            padding: 12px;
-            text-align: center;      /* Centraliza horizontalmente */
-            vertical-align: middle;  /* Centraliza verticalmente */
-        }
-        th {
-            background-color: #2c3e50;
-            color: white;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
+        .table-wrapper { margin: 25px 0; border-radius: 6px; border: 1px solid var(--border); overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background-color: var(--primary); color: white; font-weight: 600; text-transform: uppercase; font-size: 11px; padding: 12px 15px; text-align: left; }
+        td { padding: 12px 15px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
 
-        /* Destaques e Glossário */
-        .highlight {
-            background-color: #fff3cd;
-            padding: 15px;
-            border-left: 5px solid #ffc107;
-            margin: 15px 0;
-            color: #856404;
-        }
-        .glossary dl {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 10px;
-        }
-        .glossary dt {
-            font-weight: bold;
-            color: #2980b9;
-            margin-top: 10px;
-            font-size: 1.1em;
-        }
-        .glossary dd {
-            margin-left: 0;
-            margin-bottom: 10px;
-            padding-left: 15px;
-            border-left: 3px solid #eee;
-        }
-        .label-example {
-            border: 2px dashed #7f8c8d;
-            padding: 15px;
-            margin: 10px 0;
-            background: #fafafa;
-            display: inline-block;
-            width: 45%;
-            vertical-align: top;
-            box-sizing: border-box;
-            font-family: 'Courier New', Courier, monospace;
-        }
-        .color-table td:first-child {
-            font-weight: bold;
-        }
-        ul, ol {
-            margin-left: 20px;
-        }
+        /* Badges de Cor (para a tabela) */
+        .color-badge { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; border: 1px solid rgba(0,0,0,0.1); }
+        .bg-blue { background-color: #3b82f6; }
+        .bg-yellow { background-color: #facc15; }
+        .bg-white { background-color: #ffffff; }
 
-        /* Estilo para a área de Downloads */
-        .download-section {
-            background-color: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 5px;
+        /* Área de Recursos / Download */
+        .resources-box {
+            background-color: var(--primary-light);
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
             padding: 20px;
-            margin-top: 30px;
+            margin-top: 40px;
         }
-        .download-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
+        .resource-item {
+            display: flex; align-items: center; gap: 12px;
+            background: white; padding: 12px; border-radius: 6px;
+            margin-bottom: 10px; border: 1px solid var(--border);
+            text-decoration: none; color: var(--text-main); transition: 0.2s;
         }
-        .download-link {
-            display: flex;
-            align-items: center;
-            padding: 10px 15px;
-            background-color: #fff;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            text-decoration: none;
-            color: #2c3e50;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .download-link:hover {
-            background-color: #eaf2f8;
-            border-color: #3498db;
-            color: #3498db;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .icon { margin-right: 10px; font-size: 1.2em; }
-        
-        /* Estilo do Rodapé */
-        footer {
-            margin-top: 50px;
-            padding-top: 20px;
-            border-top: 1px solid #ddd;
-            text-align: center;
-            font-size: 0.9em;
-            color: #666;
-        }
-        footer a {
-            color: #3498db;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        footer a:hover {
-            text-decoration: underline;
-        }
+        .resource-item:hover { border-color: var(--primary); transform: translateX(5px); }
+        .resource-icon { color: var(--primary); font-size: 20px; }
 
-        @media (max-width: 600px) {
-            .label-example { width: 100%; }
-            .container { padding: 15px; }
-            .download-link { width: 100%; justify-content: center; }
+        /* Botão Imprimir */
+        .actions { position: fixed; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 100; }
+        .btn {
+            background: var(--text-main); color: white; border: none;
+            padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.2s;
+            display: flex; align-items: center; gap: 8px; font-family: 'Inter', sans-serif;
+        }
+        .btn-print { background: var(--primary); }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); }
+
+        /* Rodapé */
+        footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid var(--border); text-align: center; font-size: 11px; color: var(--text-sub); }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .page-container { box-shadow: none; padding: 0; margin: 0; width: 100%; }
+            .actions { display: none; }
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>MANUAL DE ORGANIZAÇÃO DOCUMENTAL PARA SECRETARIA ESCOLAR</h1>
-
-    <h2>APRESENTAÇÃO</h2>
-    <p>Este manual tem por objetivo orientar os secretários escolares quanto à classificação, organização, guarda e encaminhamento de documentos produzidos na unidade escolar, de forma padronizada, segura e alinhada às boas práticas de gestão documental.</p>
-
-    <h2>GLOSSÁRIO BÁSICO</h2>
-    <div class="glossary">
-        <dl>
-            <dt>Setor de Arquivo</dt>
-            <dd>Setor da Secretaria de Educação responsável pela gestão documental das escolas do município.</dd>
-            
-            <dt>Série documental</dt>
-            <dd>Conjunto de documentos do mesmo tipo, produzidos pela mesma atividade (ex.: comunicados, atas, balancetes).</dd>
-            
-            <dt>Ano de produção</dt>
-            <dd>Ano em que o documento foi elaborado ou utilizado; data do último registro do documento.</dd>
-            
-            <dt>Prazo de guarda</dt>
-            <dd>Período em que o documento deve permanecer sob custódia da escola antes de seu encaminhamento ao setor de Arquivo.</dd>
-            
-            <dt>Ano de envio</dt>
-            <dd>Ano resultante da soma do ano de produção com o prazo de guarda definido para a série documental.</dd>
-            
-            <dt>Guarda permanente</dt>
-            <dd>Documentos que devem permanecer definitivamente na escola, sem previsão de eliminação.</dd>
-        </dl>
+    <div class="actions">
+        <button class="btn btn-print" onclick="window.print()"><i class="fas fa-print"></i> Imprimir Manual</button>
     </div>
 
-    <h2>FASE 1 – CLASSIFICAÇÃO</h2>
+    <div class="page-container">
+        
+        <header class="report-header">
+            <div class="report-title">
+                <h1>Manual de Organização Documental</h1>
+                <h2>Procedimentos para Secretaria Escolar</h2>
+            </div>
+            <div class="report-meta">
+                <p><strong>Versão:</strong> 2.0</p>
+                <p><strong>Atualização:</strong> 2026</p>
+            </div>
+        </header>
 
-    <h3>1. Documentos de guarda permanente na escola</h3>
-    <p>Os seguintes documentos devem permanecer guardados permanentemente na unidade escolar, organizados e preservados:</p>
-    <ul>
-        <li>Fichas cadastrais e prontuários de alunos</li>
-        <li>Atas de Conselho de Classe</li>
-        <li>Atas de Conselho de Escola e A.A.E.</li>
-        <li>Livro de matrícula de alunos</li>
-        <li>Atas de Resultados Finais</li>
-        <li>Livro de registro de atendimento à comunidade</li>
-        <li>Ata de atribuição de classes e aulas</li>
-        <li>Projeto Político-Pedagógico (PPP)</li>
-        <li>Livro de ocorrência de funcionários</li>
-        <li>Documentação do PDDE</li>
-    </ul>
+        <div class="content">
+            
+            <h2>1. Introdução</h2>
+            <p>Este manual tem como objetivo padronizar os procedimentos de organização, guarda e eliminação de documentos nas secretarias escolares, garantindo a eficiência administrativa e a preservação da memória institucional.</p>
 
-    <h3>2. Documentos com prazo de guarda (não permanentes)</h3>
-    <p>Os documentos abaixo devem cumprir prazo de guarda na escola e, após esse período, ser encaminhados ao setor de Arquivo, que é o responsável pela avaliação e eliminação, quando for o caso.</p>
-    
-    <div class="highlight">
-        <strong>Importante:</strong> a escola não realiza eliminação documental por conta própria.
-    </div>
+            <h2>2. Triagem</h2>
+            <p>O primeiro passo é separar o que é documento de arquivo (que prova atividades) do que é material de apoio ou lixo.</p>
+            <ul>
+                <li><strong>Eliminar imediatamente:</strong> Cópias excessivas, rascunhos, convites antigos, publicações impressas sem valor administrativo.</li>
+                <li><strong>Separar:</strong> Documentos originais e cópias autênticas que devem ser preservados.</li>
+            </ul>
 
-    <p><strong>Procedimento:</strong></p>
-    <ol>
-        <li>Identifique a série documental;</li>
-        <li>Some ao ano de produção a quantidade de anos indicada na Tabela 1;</li>
-        <li>O resultado será o ano de envio ao Arquivo.</li>
-    </ol>
+            <h2>3. Classificação</h2>
+            <p>Os documentos devem ser separados por assunto ou função. Utilize as pastas suspensas ou caixas adequadas para cada tipo documental.</p>
+            <ul>
+                <li><strong>Alunos:</strong> Prontuários (Pasta Individual), Diários de Classe, Atas de Resultados Finais.</li>
+                <li><strong>Administrativo:</strong> Ofícios, Memorandos, Atas de Reunião, APM.</li>
+                <li><strong>Recursos Humanos:</strong> Folha de Ponto, Processos de Pagamento.</li>
+            </ul>
 
-    <h4>Tabela 1: Prazos</h4>
-    <table>
-        <thead>
-            <tr>
-                <th>Documento (Série Documental)</th>
-                <th>Anos a somar ao ano de produção</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr><td>Comunicados, convites</td><td>1</td></tr>
-            <tr><td>Livro carga</td><td>1</td></tr>
-            <tr><td>Lista de alunos ingressantes</td><td>1</td></tr>
-            <tr><td>Ficha de cadastro para transferência (lista de espera) – eSistae</td><td>1</td></tr>
-            <tr><td>Prontuário do professor e demais funcionários</td><td>1</td></tr>
-            <tr><td>Circulares internas da U.E.</td><td>1</td></tr>
-            <tr><td>Ata de reunião de pais</td><td>1</td></tr>
-            <tr><td>Plano de ensino do professor</td><td>1</td></tr>
-            <tr><td>Grade de aula do professor</td><td>1</td></tr>
-            <tr><td>Controle de merenda escolar</td><td>1</td></tr>
-            <tr><td>Requisição de materiais</td><td>2</td></tr>
-            <tr><td>Caderno de atraso de alunos</td><td>1</td></tr>
-            <tr><td>Caderno de saída antecipada de alunos</td><td>1</td></tr>
-            <tr><td>Circulares, e-mails</td><td>2</td></tr>
-            <tr><td>Registros de HTC</td><td>6</td></tr>
-            <tr><td>Avaliações (OBMEP, OBA, SARESP, SAEB, etc.) e documentos auxiliares</td><td>1</td></tr>
-            <tr><td>Lista de entrega/devolução de livros didáticos</td><td>1</td></tr>
-            <tr><td>Lista de entrega de kit escolar</td><td>1</td></tr>
-            <tr><td>Manual de Equipamentos (impressora, TV, DVD, etc.)</td><td>1</td></tr>
-            <tr><td>Balancete da A.A.E</td><td>6</td></tr>
-        </tbody>
-    </table>
+            <h2>4. Ordenação</h2>
+            <p>Dentro de cada pasta ou caixa, os documentos devem seguir uma ordem lógica para facilitar a busca:</p>
+            <ul>
+                <li><strong>Alfabética:</strong> Para prontuários de alunos e funcionários.</li>
+                <li><strong>Cronológica:</strong> Para ofícios, atas e documentos financeiros (do mais antigo para o mais recente).</li>
+                <li><strong>Numérica:</strong> Para processos ou documentos sequenciais.</li>
+            </ul>
 
-    <h3>3. Diário de Classe – critérios específicos</h3>
-    <p>O prazo de guarda do Diário de Classe depende do ano letivo (do diário) e da etapa de ensino.</p>
+            <h2>5. Eliminação e Temporalidade</h2>
+            <p>Nem tudo precisa ser guardado para sempre. Consulte a <strong>Tabela de Temporalidade</strong> antes de arquivar.</p>
+            <p>Documentos vencidos devem ser listados na <em>Listagem de Eliminação de Documentos</em> e aguardar autorização para descarte seguro (fragmentação).</p>
 
-    <h4>Educação Infantil</h4>
-    <table>
-        <tr><th>Infantil</th><th>Valor a somar ao ano letivo</th></tr>
-        <tr><td>BI</td><td>8</td></tr>
-        <tr><td>BII</td><td>7</td></tr>
-        <tr><td>BIII</td><td>6</td></tr>
-        <tr><td>INF. I</td><td>5</td></tr>
-        <tr><td>INF. II</td><td>4</td></tr>
-        <tr><td>INF. III e PRÉ I</td><td>3</td></tr>
-        <tr><td>INF. IV e PRÉ II</td><td>2</td></tr>
-    </table>
+            <h2>6. Transferência e Guarda (Códigos de Cores)</h2>
+            <p>Para facilitar a identificação visual no arquivo, utiliza-se o seguinte padrão de cores para etiquetas:</p>
+            
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Situação do Acervo</th>
+                            <th>Cor da Etiqueta</th>
+                            <th>Identificação Padrão</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Guarda Permanente</strong><br><span style="font-size:11px; color:#6b7280;">Histórico, Atas Finais, Prontuários Inativos</span></td>
+                            <td><span class="color-badge bg-blue"></span> Azul</td>
+                            <td><strong>P1, P2, P3...</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cumprindo Prazo na Escola</strong><br><span style="font-size:11px; color:#6b7280;">Documentos Administrativos (5 ou 10 anos)</span></td>
+                            <td><span class="color-badge bg-yellow"></span> Amarela</td>
+                            <td><strong>Q1, Q2, Q3...</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Aguardando Retirada</strong><br><span style="font-size:11px; color:#6b7280;">Documentos prontos para eliminação ou recolhimento</span></td>
+                            <td><span class="color-badge bg-white"></span> Branca</td>
+                            <td><strong>Box 1, Box 2...</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p><em>Nota: O uso de cores é um recurso auxiliar e não substitui a descrição detalhada do conteúdo na etiqueta.</em></p>
 
-    <h4>Ensino Fundamental</h4>
-    <table>
-        <tr><th>Série / Ano</th><th>Valor a somar ao ano letivo</th></tr>
-        <tr><td>1ª série / 1º ano</td><td>10</td></tr>
-        <tr><td>2ª série / 2º ano</td><td>9</td></tr>
-        <tr><td>3ª série / 3º ano</td><td>8</td></tr>
-        <tr><td>4ª série / 4º ano</td><td>7</td></tr>
-        <tr><td>5ª série / 5º ano</td><td>6</td></tr>
-        <tr><td>6ª série / 6º ano</td><td>5</td></tr>
-        <tr><td>7ª série / 7º ano</td><td>4</td></tr>
-        <tr><td>8ª série / 8º ano</td><td>3</td></tr>
-        <tr><td>-- / 9º ano</td><td>2</td></tr>
-    </table>
-
-    <h4>EJA</h4>
-    <table>
-        <tr><th>EJA</th><th>Valor a somar ao ano letivo</th></tr>
-        <tr><td>EJA I - FASE I/II</td><td>6</td></tr>
-        <tr><td>EJA I - FASE III/IV</td><td>5</td></tr>
-        <tr><td>EJA I - FASE V / EJA II - FASE I</td><td>4</td></tr>
-        <tr><td>EJA II - FASE II/III</td><td>3</td></tr>
-        <tr><td>EJA II - FASE IV</td><td>2</td></tr>
-    </table>
-
-    <h2>FASE 2 – ORGANIZAÇÃO</h2>
-
-    <h3>1. Organização dos documentos de guarda permanente</h3>
-    <p>Os documentos de guarda permanente podem ser organizados por tipo documental e, em seguida, por ano de produção.</p>
-    
-    <p><strong>Exemplo de controle:</strong></p>
-    <table>
-        <tr><th>BOX</th><th>ANO</th><th>DOC.</th><th>OBS.</th></tr>
-        <tr><td>1</td><td>2003 – 2010</td><td>Atas de resultados finais</td><td></td></tr>
-        <tr><td>2</td><td>2011 – 2017</td><td>Atas de resultados finais</td><td></td></tr>
-        <tr><td>3</td><td>2018</td><td>Atas de resultados finais</td><td></td></tr>
-        <tr><td>4</td><td>2019 – 2021</td><td>Livro de atribuição de aulas</td><td></td></tr>
-        <tr><td>5</td><td>2022 – 2025</td><td>Livro de atribuição de aulas</td><td></td></tr>
-        <tr><td>6</td><td>2020</td><td>CPC</td><td>1º, 2º e 4º Bimestre</td></tr>
-    </table>
-    
-    <p>Quando houver mais de um tipo documental no mesmo box, utilize a mesma identificação (P1, P2, ...); quando sobrar espaço, registre-o (em centímetros) no campo de observações ou utilize o modelo proposto na Fase 3.</p>
-    
-    <p><strong>Modelos de etiqueta:</strong></p>
-    <div style="display:flex; gap:20px; flex-wrap:wrap;">
-        <div class="label-example">
-            <strong>BOX P1</strong><br><br>
-            ANO: 2003 – 2010<br>
-            DOC: ATAS DE RESULTADOS FINAIS<br><br><br>
-            EMEFI PROF. XXXXXXX
-        </div>
-        <div class="label-example">
-            <strong>BOX P7</strong><br><br>
-            ANO: 2002 – 2004<br>
-            DOC: LIVRO DE MATRÍCULA<br>
-            ANO: 2020<br>
-            DOC: ATENDIMENTO À COMUNIDADE<br>
-            EMEFI PROF. XXXXXXX
-        </div>
-    </div>
-
-    <h3>2. Organização dos documentos com prazo de guarda</h3>
-    <p>Esta etapa visa garantir que os documentos com prazo de guarda sejam mantidos na escola de forma organizada até o momento correto de seu encaminhamento ao setor de Arquivo.</p>
-
-    <h4>Passo 1 – Montagem dos blocos</h4>
-    <p>Agrupe documentos do mesmo tipo (série documental) e do mesmo ano de produção. Em seguida, meça a espessura do conjunto em centímetros e calcule o ano de envio.</p>
-    
-    <p>Exemplo:</p>
-    <table>
-        <tr><th>Ano de produção</th><th>Documento</th><th>Quant. a somar</th><th>Ano de envio</th><th>Medida (cm)</th></tr>
-        <tr><td>2020</td><td>Comunicados</td><td>1</td><td>2021</td><td>5</td></tr>
-        <tr><td>2021</td><td>Comunicados</td><td>1</td><td>2022</td><td>8</td></tr>
-        <tr><td>2022</td><td>Comunicados</td><td>1</td><td>2023</td><td>7</td></tr>
-        <tr><td>2024</td><td>Balancete da AAE</td><td>6</td><td>2030</td><td>5</td></tr>
-        <tr><td>2025</td><td>Balancete da AAE</td><td>6</td><td>2031</td><td>5</td></tr>
-        <tr><td>2023</td><td>Lista de entrega kit</td><td>1</td><td>2024</td><td>2</td></tr>
-        <tr><td>2024</td><td>Lista de entrega kit</td><td>1</td><td>2025</td><td>2</td></tr>
-    </table>
-
-    <h4>Passo 2 – Separação dos documentos</h4>
-    <p>Neste passo, a separação é feita com base no ano de envio, comparando-o com o ano corrente. Sendo assim, após calcular o ano de envio, separe os documentos em dois grupos:</p>
-    <ul>
-        <li><strong>Grupo A – Documentos com prazo cumprido:</strong> são aqueles que possuem ano de envio menor ou igual ao ano corrente. Devem ser preparados para encaminhamento ao setor de Arquivo.</li>
-        <li><strong>Grupo B – Documentos cumprindo prazo:</strong> são aqueles que possuem ano de envio maior que o ano corrente. Devem permanecer na escola até completar o prazo.</li>
-    </ul>
-    
-    <p>Exemplo (considerando o ano de 2026):</p>
-    <table>
-        <tr><th>Ano Produção</th><th>Documento</th><th>Ano Envio</th><th>Medida (cm)</th><th>GRUPO</th></tr>
-        <tr><td>2020</td><td>Comunicados</td><td>2021</td><td>4</td><td>A</td></tr>
-        <tr><td>2021</td><td>Comunicados</td><td>2022</td><td>8</td><td>A</td></tr>
-        <tr><td>2022</td><td>Comunicados</td><td>2023</td><td>7</td><td>A</td></tr>
-        <tr><td>2024</td><td>Balancete AAE</td><td>2030</td><td>5</td><td>B</td></tr>
-        <tr><td>2025</td><td>Balancete AAE</td><td>2031</td><td>5</td><td>B</td></tr>
-        <tr><td>2023</td><td>Lista Kit</td><td>2024</td><td>2</td><td>A</td></tr>
-        <tr><td>2024</td><td>Lista Kit</td><td>2025</td><td>2</td><td>A</td></tr>
-    </table>
-
-    <h4>Passo 3 – Montagem dos boxes do Grupo A</h4>
-    <p>Organize os blocos em caixas box (tipo padrão), observando:</p>
-    <ul>
-        <li>Limite máximo de 14 cm por box;</li>
-        <li>Dê preferência para agrupar documentos da mesma série documental.</li>
-    </ul>
-    <p>Como nesta etapa todos os documentos já cumpriram seu prazo de guarda, se for necessário você pode ocupar o box com documentos de diferentes anos de envio.</p>
-    
-    <p>Exemplo:</p>
-    <table>
-        <tr><th>Box</th><th>Ano Produção</th><th>Documento</th><th>Ano Envio</th><th>Medida</th><th>Total</th></tr>
-        <tr><td>1</td><td>2020</td><td>Comunicados</td><td>2021</td><td>4</td><td rowspan="2">12 cm</td></tr>
-        <tr><td>1</td><td>2021</td><td>Comunicados</td><td>2022</td><td>8</td></tr>
-        <tr><td>2</td><td>2022</td><td>Comunicados</td><td>2023</td><td>7</td><td rowspan="3">11 cm</td></tr>
-        <tr><td>2</td><td>2023</td><td>Lista Kit</td><td>2024</td><td>2</td></tr>
-        <tr><td>2</td><td>2024</td><td>Lista Kit</td><td>2025</td><td>2</td></tr>
-    </table>
-
-    <h4>Passo 4 – Etiquetagem</h4>
-    <p>As etiquetas devem ser claras e padronizadas, contendo: identificação do box; ano(s) de produção; tipo documental; ano de envio; nome da unidade escolar.</p>
-    
-    <div style="display:flex; gap:20px; flex-wrap:wrap;">
-        <div class="label-example">
-            <strong>BOX 1</strong><br><br>
-            ANO | DOC. | ENVIAR EM<br>
-            2020 | Comunicados | 2021<br>
-            2021 | Comunicados | 2022<br><br>
-            EMEFI PROF. XXXXXXX
-        </div>
-        <div class="label-example">
-            <strong>BOX 2</strong><br><br>
-            ANO | DOC. | ENVIAR EM<br>
-            2022 | Comunicados | 2023<br>
-            2023 | Lista Kit | 2024<br>
-            2024 | Lista Kit | 2025<br>
-            EMEFI PROF. XXXXXXX
-        </div>
-    </div>
-
-    <h4>Passo 5 – Comunicação ao setor de Arquivo</h4>
-    <p>Após a montagem e identificação dos boxes que já cumpriram prazo, comunique formalmente o setor de Arquivo para retirada ou orientação adicional.</p>
-
-    <h4>Passo 6 – Documentos que ainda permanecem na escola – Grupo B</h4>
-    <p>Os documentos cujo ano de envio ainda não foi atingido devem permanecer na escola organizados em boxes identificados, preferencialmente agrupados pelo mesmo ano de envio, até que completem seu prazo de guarda.</p>
-    <p>Não se esqueça de não exceder o limite de 14 cm por box. Os boxes do Grupo B não devem ser comunicados ao setor de Arquivo, pois ainda se encontram em fase de guarda na escola.</p>
-    
-    <p>Exemplo:</p>
-    <table>
-        <tr><th>Box</th><th>Ano Produção</th><th>Documento</th><th>Quant. somar</th><th>Ano Envio</th><th>Medida (cm)</th></tr>
-        <tr><td>1</td><td>2024</td><td>Balancete AAE</td><td>6</td><td>2030</td><td>14</td></tr>
-        <tr><td>2</td><td>2025</td><td>Balancete AAE</td><td>6</td><td>2031</td><td>5</td></tr>
-        <tr><td>2</td><td>2022</td><td>Memorandos</td><td>9</td><td>2031</td><td>8</td></tr>
-        <tr><td>3</td><td>2023</td><td>Memorandos</td><td>9</td><td>2032</td><td>4</td></tr>
-    </table>
-
-    <h2>FASE 3 – GERENCIAMENTO DIÁRIO</h2>
-
-    <h3>1. Gerenciando espaço em box</h3>
-    <p>Você também pode criar uma planilha auxiliar para gerenciar o espaço físico dos boxes ocupados. Desse modo, quando precisar arquivar um determinado documento, após checar suas informações (ano de produção, tipo documental, ano de envio, medida), será possível aproveitar um box já aberto se for conveniente.</p>
-    
-    <p><strong>Exemplos - Documentos cumprindo prazo:</strong></p>
-    <table>
-        <tr><th>Box</th><th>Ano de Envio</th><th>Espaço Livre (cm)</th></tr>
-        <tr><td>1</td><td>2030</td><td>0</td></tr>
-        <tr><td>2</td><td>2031</td><td>1</td></tr>
-        <tr><td>3</td><td>2032</td><td>8</td></tr>
-    </table>
-
-    <p><strong>Exemplos - Documentos de guarda permanente:</strong></p>
-    <table>
-        <tr><th>BOX</th><th>ANO</th><th>DOC.</th><th>Espaço Livre (cm)</th></tr>
-        <tr><td>1</td><td>2003 – 2010</td><td>Atas resultados finais</td><td>0</td></tr>
-        <tr><td>2</td><td>2011</td><td>Atas resultados finais</td><td>4</td></tr>
-        <tr><td>3</td><td>2020</td><td>CPC</td><td>7</td></tr>
-    </table>
-
-    <h3>2. Identificação dos boxes e código de cores</h3>
-    <p>Os boxes que contém documentos de guarda permanente podem ser acondicionados à parte dos demais boxes. Sendo assim, você pode criar um sistema de identificação para cada caso.</p>
-    
-    <table class="color-table">
-        <tr><th>Destinação</th><th>Cor da etiqueta</th><th>Identificação</th></tr>
-        <tr><td>Guarda permanente</td><td style="background-color:#d6eaf8; color:#000; font-weight:bold;">Azul</td><td>P1, P2, P3...</td></tr>
-        <tr><td>Cumprindo prazo na escola</td><td style="background-color:#fcf3cf; color:#000; font-weight:bold;">Amarela</td><td>Q1, Q2, Q3...</td></tr>
-        <tr><td>Aguardando retirada</td><td style="border:1px solid #ccc; background-color:#fff; color:#000; font-weight:bold;">Branca</td><td>Box 1, Box 2...</td></tr>
-    </table>
-    
-    <p>Vale ressaltar que o uso de cores é um recurso auxiliar de identificação visual e não substitui a correta etiquetagem dos boxes.</p>
-
-    <h2>MODELOS E ANEXOS</h2>
-    <div class="download-section">
-        <p>Abaixo estão disponíveis os modelos de documentos e planilhas auxiliares para download:</p>
-        <ul class="download-list">
-            <li>
-                <a href="Etiquetas.docx" class="download-link">
-                    <span class="icon">📄</span> Modelos de Etiqueta (Word)
+            <h2>7. Modelos e Anexos</h2>
+            <div class="resources-box">
+                <h3 style="margin-top:0; color:var(--primary-dark); font-size:14px; text-transform:uppercase;">Materiais de Apoio</h3>
+                <p style="font-size:13px; margin-bottom:15px;">Clique para acessar os modelos padronizados:</p>
+                
+                <a href="#" class="resource-item">
+                    <i class="fas fa-file-word resource-icon"></i>
+                    <div>
+                        <div style="font-weight:600; font-size:14px;">Modelo de Etiqueta (Word)</div>
+                        <div style="font-size:11px; color:var(--text-sub);">Para impressão em etiquetas adesivas padrão.</div>
+                    </div>
                 </a>
-            </li>
-            <li>
-                <a href="#" class="download-link">
-                    <span class="icon">📊</span> Planilha de Gerenciamento de Box (Excel)
+
+                <a href="#" class="resource-item">
+                    <i class="fas fa-file-excel resource-icon" style="color:#10b981;"></i>
+                    <div>
+                        <div style="font-weight:600; font-size:14px;">Planilha de Controle de Box (Excel)</div>
+                        <div style="font-size:11px; color:var(--text-sub);">Inventário digital do acervo físico.</div>
+                    </div>
                 </a>
-            </li>
-            
-        </ul>
+            </div>
+
+        </div>
+
+        <footer>
+            <p>Hub de Serviços - Departamento de Gestão Documental</p>
+            <p>Em caso de dúvidas, entre em contato com o setor responsável.</p>
+        </footer>
+
     </div>
-
-    <footer>
-        <p>Em caso de dúvidas, entre em contato com o setor de Arquivo pelo e-mail <a href="mailto:arquivo.sec@sjc.sp.gov.br">arquivo.sec@sjc.sp.gov.br</a></p>
-    </footer>
-
-</div>
 
 </body>
 </html>
-
