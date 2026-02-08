@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório do Arquivo 2025 | Hub de Serviços</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- DESIGN SYSTEM (AZUL HUB) --- */
+       :root {
+            --primary: #2563eb;          /* Azul institucional */
+            --primary-light: #eff6ff;    /* Azul muito claro */
+            --primary-dark: #1e40af;     /* Azul escuro */
+            --text-main: #111827;        /* Cinza escuro */
+            --text-sub: #6b7280;         /* Cinza médio */
+            --bg-body: #f3f4f6;          /* Fundo da tela */
+            --bg-paper: #ffffff;         /* Fundo do papel */
+            --border: #d1d5db;           /* Bordas */
+       }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 40px 20px;
+            -webkit-print-color-adjust: exact; /* Garante cores na impressão */
+        }
+
+        /* Folha A4 */
+        .page-container {
+            max-width: 210mm;
+            margin: 0 auto;
+            background: var(--bg-paper);
+            padding: 50px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            min-height: 297mm;
+        }
+
+        /* Cabeçalho */
+        .report-header {
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .report-title h1 { font-size: 24px; font-weight: 800; color: var(--primary); margin-bottom: 5px; text-transform: uppercase; }
+        .report-title h2 { font-size: 14px; font-weight: 600; color: var(--text-sub); }
+        .report-meta { text-align: right; font-size: 12px; color: var(--text-sub); }
+
+        /* Conteúdo */
+        .content h2 { 
+            font-size: 18px; color: var(--primary-dark); 
+            margin-top: 30px; margin-bottom: 15px; 
+            border-left: 4px solid var(--primary); padding-left: 10px; 
+        }
+        .content p { margin-bottom: 15px; text-align: justify; font-size: 14px; }
+        .content ul { margin-bottom: 15px; padding-left: 20px; font-size: 14px; }
+        .content li { margin-bottom: 5px; }
+
+        /* Tabelas */
+        .table-wrapper {
+            margin: 20px 0;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th {
+            background-color: var(--primary); color: white;
+            font-weight: 600; text-transform: uppercase; font-size: 11px;
+            padding: 10px 12px; text-align: left;
+        }
+        td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text-main); }
+        
+        /* Zebrado */
+        tr:nth-child(even) { background-color: #f9fafb; }
+        tr:last-child td { border-bottom: none; font-weight: 700; background-color: var(--primary-light); }
+
+        /* Botões Flutuantes */
+        .actions { position: fixed; top: 20px; right: 20px; display: flex; gap: 10px; }
+        .btn {
+            background: var(--text-main); color: white; border: none;
+            padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.2s;
+            display: flex; align-items: center; gap: 8px; font-family: 'Inter', sans-serif;
+        }
+        .btn:hover { background: black; transform: translateY(-2px); }
+        .btn-print { background: var(--primary); }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .page-container { box-shadow: none; padding: 0; margin: 0; width: 100%; }
+            .actions { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="actions">
+        <button class="btn btn-print" onclick="window.print()"><i class="fas fa-print"></i> Imprimir / PDF</button>
+    </div>
+
+    <div class="page-container">
+        
+        <header class="report-header">
+            <div class="report-title">
+                <h1>Relatório do Arquivo</h1>
+                <h2>Secretaria de Educação e Cidadania (SEC)</h2>
+            </div>
+            <div class="report-meta">
+                <p><strong>Ano Base:</strong> 2025</p>
+                <p><strong>Planejamento:</strong> 2026</p>
+            </div>
+        </header>
+
+        <div class="content">
+            <p>Apresentamos neste documento as atividades desenvolvidas pelo setor de Arquivo da SEC ao longo do ano de 2025 e o planejamento das ações para 2026.</p>
+
+            <h2>I – Caracterização do Arquivo</h2>
+
+            <p><strong>Status dos Registros Documentais</strong></p>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Situação do Registro</th>
+                            <th style="text-align:center">Quantidade</th>
+                            <th style="text-align:center">Percentual</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Aguardando autorização para início do processo (AP)</td>
+                            <td style="text-align:center">119.362</td>
+                            <td style="text-align:center">58,5 %</td>
+                        </tr>
+                        <tr>
+                            <td>Guarda Permanente</td>
+                            <td style="text-align:center">57.002</td>
+                            <td style="text-align:center">28 %</td>
+                        </tr>
+                        <tr>
+                            <td>Demais</td>
+                            <td style="text-align:center">16.255</td>
+                            <td style="text-align:center">8 %</td>
+                        </tr>
+                        <tr>
+                            <td>Aguardando publicação da Planilha no Diário</td>
+                            <td style="text-align:center">11.207</td>
+                            <td style="text-align:center">5,5 %</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total Geral</strong></td>
+                            <td style="text-align:center"><strong>203.826</strong></td>
+                            <td style="text-align:center"><strong>100 %</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p><strong>Ocupação Física (Boxes)</strong></p>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Status do Box</th>
+                            <th style="text-align:center">Quantidade</th>
+                            <th style="text-align:center">Percentual</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Ocupados</td>
+                            <td style="text-align:center">6.030</td>
+                            <td style="text-align:center">86,5 %</td>
+                        </tr>
+                        <tr>
+                            <td>Vazios</td>
+                            <td style="text-align:center">943</td>
+                            <td style="text-align:center">13,5 %</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total</strong></td>
+                            <td style="text-align:center"><strong>6.973</strong></td>
+                            <td style="text-align:center"><strong>100 %</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p><strong>Status das Planilhas de Eliminação</strong></p>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Situação</th>
+                            <th style="text-align:center">Quantidade</th>
+                            <th style="text-align:center">Percentual</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Publicadas no Diário do Município</td>
+                            <td style="text-align:center">2</td>
+                            <td style="text-align:center">40 %</td>
+                        </tr>
+                        <tr>
+                            <td>Aguardando Comissão Permanente (CPAD)</td>
+                            <td style="text-align:center">3</td>
+                            <td style="text-align:center">60 %</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total</strong></td>
+                            <td style="text-align:center"><strong>5</strong></td>
+                            <td style="text-align:center"><strong>100 %</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p><strong>Métricas de Eliminação</strong></p>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Situação</th>
+                            <th style="text-align:center">Quantidade</th>
+                            <th style="text-align:center">Metros Lineares (cm)</th>
+                            <th style="text-align:center">Percentual</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Boxes efetivamente eliminados</td>
+                            <td style="text-align:center">406</td>
+                            <td style="text-align:center">5.684</td>
+                            <td style="text-align:center">23,5 %</td>
+                        </tr>
+                        <tr>
+                            <td>Boxes aguardando eliminação</td>
+                            <td style="text-align:center">1.323</td>
+                            <td style="text-align:center">18.522</td>
+                            <td style="text-align:center">76,5 %</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total</strong></td>
+                            <td style="text-align:center"><strong>1.729</strong></td>
+                            <td style="text-align:center"><strong>24.206</strong></td>
+                            <td style="text-align:center"><strong>100 %</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="page-break-before: always;"></div> <p><strong>Registro de Visitas Técnicas e Atendimentos</strong></p>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Unidade / Local</th>
+                            <th>Atividade Realizada</th>
+                            <th style="text-align:center">Freq.</th>
+                            <th style="text-align:center">%</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>EMEFI Dom Pedro de Alcântara</td>
+                            <td>Devolução de boxes (Guarda Permanente)</td>
+                            <td style="text-align:center">1</td>
+                            <td style="text-align:center">3,7%</td>
+                        </tr>
+                        <tr>
+                            <td>Arquivo Público Municipal</td>
+                            <td>Entrega p/ microfilmagem</td>
+                            <td style="text-align:center">4</td>
+                            <td style="text-align:center">14,8%</td>
+                        </tr>
+                        <tr>
+                            <td>EMEFI Maria Nazareth de Moura</td>
+                            <td>Assinatura Planilha Eliminação</td>
+                            <td style="text-align:center">1</td>
+                            <td style="text-align:center">3,7%</td>
+                        </tr>
+                        <tr>
+                            <td>Arquivo Público Municipal</td>
+                            <td>Retirada de boxes</td>
+                            <td style="text-align:center">8</td>
+                            <td style="text-align:center">70,4%</td>
+                        </tr>
+                        <tr>
+                            <td>EMEFI Prof.ª Silvana Maria R. de Almeida</td>
+                            <td>Visita técnica</td>
+                            <td style="text-align:center">1</td>
+                            <td style="text-align:center">7,4%</td>
+                        </tr>
+                        <tr><td>EMEFI Prof.ª Ana Berling Macedo</td><td>-</td><td style="text-align:center">3</td><td style="text-align:center">-</td></tr>
+                        <tr><td>EMEI Benedito Carvalho Dos Santos</td><td>-</td><td style="text-align:center">3</td><td style="text-align:center">-</td></tr>
+                        <tr><td>EMEI Profª Maria J. Guido Brogliato</td><td>-</td><td style="text-align:center">1</td><td style="text-align:center">-</td></tr>
+                        <tr><td>IMI Jesus De Nazaré</td><td>-</td><td style="text-align:center">2</td><td style="text-align:center">-</td></tr>
+                        <tr><td>IMI Profª Helena Vaz de Lima Soliva</td><td>-</td><td style="text-align:center">2</td><td style="text-align:center">-</td></tr>
+                        <tr><td>EMEFI Profª Mercedes Maria Perotti</td><td>-</td><td style="text-align:center">1</td><td style="text-align:center">-</td></tr>
+                        
+                        <tr>
+                            <td><strong>Total de Visitas</strong></td>
+                            <td></td>
+                            <td style="text-align:center"><strong>27</strong></td>
+                            <td style="text-align:center"><strong>100%</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p><strong>Movimentação Física de Boxes</strong></p>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Atividade</th>
+                            <th style="text-align:center">Qtd</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Entrada</td>
+                            <td>Recebimento de documentos (Avaliação)</td>
+                            <td style="text-align:center">992</td>
+                        </tr>
+                        <tr>
+                            <td>Saída</td>
+                            <td>Devolução de boxes (Guarda Permanente)</td>
+                            <td style="text-align:center">15</td>
+                        </tr>
+                        <tr>
+                            <td>Saída</td>
+                            <td>Entrega para microfilmagem</td>
+                            <td style="text-align:center; color:var(--text-sub);">A verificar</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total</strong></td>
+                            <td></td>
+                            <td style="text-align:center"><strong>~1007</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h2>II – Ações para 2026</h2>
+            <ul>
+                <li><strong>Reorganização do acervo de guarda permanente:</strong> Necessária para liberação de espaço físico. Ação crítica devido à ausência de Comissão de Avaliação de Documentos no município, o que trava novos processos de eliminação.</li>
+                <li><strong>Visita técnica:</strong> Planejada ao Arquivo Público do Estado de SP.</li>
+                <li><strong>Pesquisa de Diagnóstico:</strong> Realização de pesquisa junto às escolas da rede.</li>
+            </ul>
+
+            <hr style="border: 0; border-top: 1px dashed var(--border); margin: 30px 0;">
+
+            <p style="font-size:12px; color:var(--danger);">
+                <strong><i class="fas fa-exclamation-triangle"></i> Pendências de Dados (Notas Internas):</strong><br>
+                Falta contabilizar: Follow-up; Merenda (ok); Informática; Visitas da Audrey.
+            </p>
+
+        </div>
+    </div>
+
+</body>
+</html>
