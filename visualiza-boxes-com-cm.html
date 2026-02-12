@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,22 +10,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <style>
-        /* --- DESIGN ORIGINAL RESTAURADO --- */
+        /* --- ESTILOS ORIGINAIS --- */
         :root {
-            --primary: #2563eb;        /* Azul Institucional */
+            --primary: #2563eb;
             --primary-light: #eff6ff;
             --primary-dark: #1e40af;
-            --text-main: #111827;      /* Cinza Chumbo */
-            --text-sub: #6b7280;       /* Cinza Médio */
-            --bg-body: #f3f4f6;        /* Fundo leve */
+            --text-main: #111827;
+            --text-sub: #6b7280;
+            --bg-body: #f3f4f6;
             --bg-card: #ffffff;
             --border: #d1d5db;
-            --success: #10b981;        /* Verde */
-            --danger: #ef4444;         /* Vermelho */
-            --highlight: #10b981;      /* Cor do Destaque (Espaço Livre) */
-            
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --success: #10b981;
+            --danger: #ef4444;
+            --highlight: #10b981; /* Verde Destaque */
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
@@ -39,57 +36,38 @@
             min-height: 100vh;
         }
 
-        /* Container Principal */
         .app-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: var(--bg-card);
-            border-radius: 16px;
-            box-shadow: var(--shadow-md);
-            border: 1px solid var(--border);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            min-height: 800px;
+            max-width: 1400px; margin: 0 auto; background: var(--bg-card);
+            border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border); overflow: hidden;
+            display: flex; flex-direction: column; min-height: 800px;
         }
 
-        /* Header */
+        /* HEADER */
         .app-header {
-            padding: 30px 40px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: white;
+            padding: 30px 40px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between; background: white;
         }
-
-        .header-title h1 {
-            font-size: 24px; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px;
-        }
+        .header-title h1 { font-size: 24px; font-weight: 700; color: var(--text-main); }
         .header-title h1 i { color: var(--primary); margin-right: 10px; }
         .header-desc { font-size: 14px; color: var(--text-sub); margin-top: 4px; }
 
         .app-content { padding: 40px; }
 
-        /* Área de Upload (Estilo Original) */
+        /* UPLOAD STEPPER */
         .upload-section { margin-bottom: 30px; transition: all 0.3s ease; }
         
         .upload-area {
-            border: 2px dashed var(--border);
-            border-radius: 12px;
-            background: #f9fafb;
-            padding: 60px 20px;
-            text-align: center;
-            transition: all 0.2s ease;
-            cursor: pointer;
+            border: 2px dashed var(--border); border-radius: 12px; background: #f9fafb;
+            padding: 60px 20px; text-align: center; cursor: pointer; transition: all 0.2s ease;
         }
         .upload-area:hover { border-color: var(--primary); background: #f0f7ff; }
 
         .icon-upload { font-size: 48px; color: var(--primary); margin-bottom: 20px; opacity: 0.8; }
         .upload-title { font-size: 18px; font-weight: 600; margin-bottom: 8px; color: var(--text-main); }
-        .upload-hint { font-size: 14px; color: var(--text-sub); margin-bottom: 25px; max-width: 600px; margin-left: auto; margin-right: auto; }
+        .upload-hint { font-size: 14px; color: var(--text-sub); margin-bottom: 25px; max-width: 600px; margin: 0 auto 25px auto; }
 
-        /* Botões */
+        /* BOTÕES */
         .btn {
             display: inline-flex; align-items: center; justify-content: center;
             padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: 600;
@@ -100,9 +78,10 @@
         .btn-secondary { background-color: white; border: 1px solid var(--border); color: var(--text-main); }
         .btn-secondary:hover { background-color: #f3f4f6; }
 
-        /* Dashboard e Cards (Restaurados) */
+        /* RESULTADOS */
         #results { display: none; animation: fadeIn 0.6s ease; }
 
+        /* KPIs */
         .stats-grid {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px; margin-bottom: 40px;
@@ -114,63 +93,51 @@
         .stat-val { font-size: 30px; font-weight: 800; color: var(--text-main); line-height: 1.2; }
         .stat-label { font-size: 12px; font-weight: 600; color: var(--text-sub); text-transform: uppercase; margin-top: 5px; }
 
-        /* Mapa e Estantes */
+        /* MAPA */
         .map-wrapper {
             background: #f9fafb; border: 1px solid var(--border);
             border-radius: 12px; padding: 30px; margin-bottom: 40px;
         }
-        
         .legend-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
         .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: var(--text-sub); }
         .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
 
         .shelves-area { display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; }
-        
-        .shelf {
-            background: #fff; border: 1px solid var(--border);
-            border-radius: 8px; padding: 10px; transition: transform 0.2s;
-        }
-        .shelf:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); border-color: var(--primary); }
-        
+        .shelf { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 10px; }
         .shelf-title { text-align: center; font-size: 11px; font-weight: 700; color: var(--text-sub); margin-bottom: 8px; border-bottom: 1px solid #f3f4f6; }
         .shelf-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
 
-        /* O Box (Quadradinho) Original */
+        /* BOXES */
         .box-unit {
-            width: 32px; height: 32px;
-            background: #f3f4f6; border: 1px solid #e5e7eb;
-            border-radius: 4px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 9px; font-weight: 700; color: #9ca3af;
-            transition: all 0.15s ease; position: relative;
+            width: 32px; height: 32px; background: #f3f4f6; border: 1px solid #e5e7eb;
+            border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 9px; font-weight: 700; color: #9ca3af; transition: all 0.15s ease; position: relative;
         }
         .box-unit:hover { transform: scale(1.5); z-index: 100; border-color: var(--text-main); color: #000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-
-        /* Cores de Texto */
+        
+        /* Cor texto docs */
         .box-unit.has-docs { color: #1f2937; }
 
-        /* --- NOVO EFEITO: DESTAQUE DE ESPAÇO (INTEGRADO AO DESIGN ORIGINAL) --- */
+        /* DESTAQUE DE ESPAÇO (RELEVO) */
         .box-unit.box-highlight {
             border: 2px solid var(--highlight) !important;
-            box-shadow: inset 0 0 0 2px white !important; /* Cria um "anel" interno branco */
+            box-shadow: inset 0 0 0 2px white !important;
             z-index: 5;
         }
-        /* Indicador de Espaço Livre (Bolinha) */
         .box-unit.box-highlight::after {
             content: ''; position: absolute; top: -4px; right: -4px;
             width: 8px; height: 8px; background: var(--highlight);
             border-radius: 50%; border: 1px solid white;
         }
 
-        /* Tabela de Rodapé (Restaurada) */
+        /* TABELA */
         .table-container { overflow-x: auto; margin-top: 30px; }
         table { width: 100%; border-collapse: collapse; font-size: 14px; }
         th { text-align: left; padding: 12px 15px; background: #f9fafb; border-bottom: 2px solid var(--border); font-weight: 600; color: var(--text-sub); }
         td { padding: 12px 15px; border-bottom: 1px solid var(--border); color: var(--text-main); }
-        tr:hover td { background: #f9fafb; }
         .text-right { text-align: right; }
 
-        /* Tooltip Original */
+        /* TOOLTIP */
         .tooltip {
             position: fixed; display: none; z-index: 10000;
             background: #1f2937; color: white; padding: 12px; border-radius: 8px;
@@ -178,14 +145,13 @@
         }
         .tooltip-header { font-weight: 700; font-size: 14px; margin-bottom: 8px; padding-bottom: 5px; border-bottom: 1px solid #374151; }
         .tooltip-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
-        
+
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
     <div class="app-container">
-        
         <header class="app-header">
             <div class="header-title">
                 <h1><i class="fas fa-th"></i> Visualizador de Boxes</h1>
@@ -206,10 +172,10 @@
                     
                     <i class="fas fa-cloud-upload-alt icon-upload" id="uploadIcon"></i>
                     
-                    <h3 class="upload-title" id="stepTitle">PASSO 1: Carregar Dados de Acervo</h3>
+                    <h3 class="upload-title" id="stepTitle">PASSO 1: Carregar Relatório de Tipologias</h3>
                     <p class="upload-hint" id="stepDesc">
-                        Selecione a planilha com a contagem de documentos por tipo/status.<br>
-                        (Geralmente o relatório de tipologia)
+                        Carregue a planilha que contém a contagem de documentos por tipo/status.<br>
+                        (O sistema detectará automaticamente as colunas)
                     </p>
                     
                     <button class="btn btn-primary" id="btnSelectFile">
@@ -225,7 +191,6 @@
             </div>
 
             <div id="results">
-                
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-val" style="color: var(--text-sub)">7.000</div>
@@ -262,34 +227,30 @@
                                 <th class="text-right">% do Acervo</th>
                             </tr>
                         </thead>
-                        <tbody id="tableBody">
-                            </tbody>
+                        <tbody id="tableBody"></tbody>
                     </table>
                 </div>
-
             </div>
-
         </div>
     </div>
 
     <div class="tooltip" id="tooltip"></div>
 
     <script>
-        // --- ESTADO GLOBAL ---
+        // --- CONFIGURAÇÃO GLOBAL ---
         const DB = {
             docs: {},
             space: {},
-            meta: { hasDocs: false, hasSpace: false, statusCols: [], stats: {} }
+            meta: { hasDocs: false, hasSpace: false, statusCols: [] }
         };
         const TOTAL_BOXES = 7000;
         let currentStep = 1;
 
-        // Elementos
+        // --- INTERAÇÃO UPLOAD ---
         const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('fileInput');
         const btnSelectFile = document.getElementById('btnSelectFile');
 
-        // Eventos
         btnSelectFile.onclick = (e) => { e.stopPropagation(); fileInput.click(); };
         dropZone.onclick = () => fileInput.click();
         dropZone.ondragover = (e) => { e.preventDefault(); dropZone.style.borderColor = 'var(--primary)'; dropZone.style.background = '#eff6ff'; };
@@ -302,23 +263,20 @@
             atualizarInterfacePassos();
         }
 
-        // --- LÓGICA DE UPLOAD EM PASSOS ---
         function atualizarInterfacePassos() {
             const title = document.getElementById('stepTitle');
             const desc = document.getElementById('stepDesc');
             const skip = document.getElementById('skipStep');
             const icon = document.getElementById('uploadIcon');
 
-            fileInput.value = ''; // Limpa input
+            fileInput.value = ''; 
 
             if(currentStep === 2) {
-                // Configura Passo 2
                 title.innerText = "PASSO 2: Carregar Planilha de Espaços";
-                desc.innerHTML = "Agora carregue a planilha que contém as colunas<br><strong>'Espaço Livre (cm)'</strong> e <strong>'Reservado'</strong>.";
+                desc.innerHTML = "Agora carregue a planilha com colunas <strong>'Espaço Livre (cm)'</strong> e <strong>'Reservado'</strong>.";
                 icon.className = "fas fa-ruler-combined icon-upload";
-                skip.style.display = 'block'; // Permite pular se não tiver essa planilha
+                skip.style.display = 'block';
             } else if (currentStep > 2) {
-                // Finaliza e mostra resultados
                 document.getElementById('uploadSection').style.display = 'none';
                 document.getElementById('results').style.display = 'block';
                 renderizarResultados();
@@ -339,7 +297,6 @@
 
                     currentStep++;
                     atualizarInterfacePassos();
-
                 } catch (err) {
                     alert("Erro ao ler o arquivo: " + err.message);
                 }
@@ -347,31 +304,55 @@
             reader.readAsArrayBuffer(file);
         }
 
-        // --- PROCESSADORES ---
+        // --- LÓGICA DE DETECÇÃO ROBUSTA (Passo 1) ---
         function processarDocs(rows) {
-            // Procura cabeçalho (Box, ID, etc)
             let headerIdx = -1;
-            let headers = [];
+            let bestScore = -1;
 
-            for(let i=0; i<Math.min(20, rows.length); i++) {
+            // Varre primeiras 30 linhas procurando a melhor candidata a cabeçalho
+            for(let i=0; i<Math.min(30, rows.length); i++) {
                 if(!rows[i]) continue;
                 const r = rows[i].map(x => String(x).toLowerCase().trim());
-                if(r.includes('box') || r.includes('id') || r.includes('caixa')) {
-                    headerIdx = i; headers = rows[i]; break;
+                
+                let score = 0;
+                // Pontos por palavras-chave fortes
+                if(r.some(c => c.includes('box') || c === 'id' || c.includes('caixa') || c === 'nº')) score += 10;
+                // Pontos por quantidade de colunas preenchidas
+                score += r.length;
+
+                if(score > bestScore) {
+                    bestScore = score;
+                    headerIdx = i;
                 }
             }
 
-            if(headerIdx === -1) { alert("Cabeçalho não encontrado no Passo 1."); return; }
+            // Fallback: Se não detectou nada óbvio, usa a primeira linha com dados
+            if(headerIdx === -1 && rows.length > 0) headerIdx = 0;
 
-            // Mapeia colunas
-            const ignore = ['box', 'id', 'total', 'caixa', 'unidade'];
+            if(headerIdx === -1) {
+                alert("Não foi possível detectar dados na planilha.");
+                return;
+            }
+
+            const headers = rows[headerIdx].map(x => String(x).trim());
+            
+            // Tenta achar a coluna ID (Box)
+            let idIdx = 0; // Padrão: Coluna 0
+            const keywordsID = ['box', 'id', 'caixa', 'nº', 'número'];
+            
+            headers.forEach((h, i) => {
+                const clean = h.toLowerCase();
+                if(keywordsID.some(k => clean.includes(k))) idIdx = i;
+            });
+
+            // Mapeia colunas de dados (Tipologias)
+            const ignore = ['total', 'unidade', 'geral', 'soma', 'status', 'obs', 'observação'];
             const statusCols = [];
-            let idIdx = 0;
 
             headers.forEach((h, i) => {
-                const clean = String(h).toLowerCase().trim();
-                if(clean.includes('box') || clean === 'id') idIdx = i;
-                if(!ignore.includes(clean) && isNaN(clean) && String(h).length > 2) {
+                const clean = h.toLowerCase();
+                // É coluna de dados se: não é a ID, não está na lista de ignorados, e não é vazia
+                if(i !== idIdx && !ignore.includes(clean) && !keywordsID.includes(clean) && h.length > 0) {
                     statusCols.push({ name: h, index: i });
                 }
             });
@@ -379,11 +360,12 @@
             DB.meta.statusCols = statusCols;
             DB.meta.hasDocs = true;
 
-            // Extrai dados
+            // Processa as linhas de dados
             for(let i = headerIdx + 1; i < rows.length; i++) {
                 const r = rows[i];
                 if(!r) continue;
-                const id = parseInt(r[idIdx]);
+                
+                const id = parseInt(r[idIdx]); // Pega ID da coluna identificada
                 if(id > 0 && id <= TOTAL_BOXES) {
                     let total = 0;
                     let content = {};
@@ -391,27 +373,42 @@
                         const val = parseInt(r[col.index]) || 0;
                         if(val > 0) { content[col.name] = val; total += val; }
                     });
-                    if(r.length > 0) DB.docs[id] = { total, content };
+                    
+                    // Salva se tiver dados OU se a linha existir (mesmo vazia, conta como box "existente" no relatório)
+                    if(r.length > 0) {
+                        DB.docs[id] = { total, content };
+                    }
                 }
             }
         }
 
+        // --- LÓGICA DE ESPAÇOS (Passo 2) ---
         function processarEspacos(rows) {
+            // Procura cabeçalho que tenha "Espaço" ou "Reservado"
             let headerIdx = -1;
-            for(let i=0; i<Math.min(20, rows.length); i++) {
+            for(let i=0; i<Math.min(30, rows.length); i++) {
                 if(!rows[i]) continue;
                 const r = rows[i].map(x => String(x).toLowerCase());
-                if(r.includes('reservado') && (r.includes('espaço') || r.includes('espaço livre (cm)'))) {
+                if(r.some(c => c.includes('espaço') || c.includes('reservado'))) {
                     headerIdx = i; break;
                 }
             }
 
-            if(headerIdx === -1) { alert("Colunas de Espaço/Reserva não encontradas."); return; }
+            if(headerIdx === -1) { 
+                alert("Colunas 'Espaço' ou 'Reservado' não encontradas. Verifique a planilha."); 
+                return; 
+            }
             
             const headers = rows[headerIdx].map(x => String(x).toLowerCase());
-            const idxID = headers.findIndex(h => h.includes('box') || h.includes('id'));
-            const idxLivre = headers.findIndex(h => h.includes('espaço'));
+            
+            // Mapeia colunas
+            let idxID = headers.findIndex(h => h.includes('box') || h.includes('id') || h.includes('caixa'));
+            if(idxID === -1) idxID = 0; // Fallback coluna 0
+            
+            const idxLivre = headers.findIndex(h => h.includes('espaço') || h.includes('livre'));
             const idxRes = headers.findIndex(h => h.includes('reservado'));
+
+            if(idxLivre === -1) return; // Precisa pelo menos do espaço
 
             DB.meta.hasSpace = true;
 
@@ -422,15 +419,15 @@
                 if(id > 0 && id <= TOTAL_BOXES) {
                     DB.space[id] = {
                         livre: parseFloat(r[idxLivre]) || 0,
-                        reservado: String(r[idxRes] || '').toLowerCase().includes('sim') || String(r[idxRes]).toLowerCase() === 's'
+                        reservado: idxRes !== -1 ? (String(r[idxRes] || '').toLowerCase().includes('s')) : false
                     };
                 }
             }
         }
 
-        // --- RENDERIZAÇÃO FINAL ---
+        // --- RENDERIZAÇÃO ---
         function renderizarResultados() {
-            // 1. Legenda e Cores
+            // Legenda
             const legendDiv = document.getElementById('legendContainer');
             legendDiv.innerHTML = '';
             
@@ -456,7 +453,7 @@
                     </div>`;
             }
 
-            // 2. Grid de Boxes
+            // Grid
             const gridDiv = document.getElementById('shelvesContainer');
             gridDiv.innerHTML = '';
             
@@ -491,28 +488,25 @@
                     const doc = DB.docs[i];
                     const space = DB.space[i];
 
-                    // Visual Camada 1: Docs
+                    // Camada 1: Docs (Fundo)
                     if(doc && doc.total > 0) {
                         div.classList.add('has-docs');
                         div.style.background = gerarGradiente(doc, mapaCores);
                         totalOcupados++;
                         totalDocsGeral += doc.total;
                         
-                        // Computa totais para tabela
                         for(const [k, v] of Object.entries(doc.content)) {
                             if(statsTabela[k] !== undefined) statsTabela[k] += v;
                         }
                     }
 
-                    // Visual Camada 2: Espaço (Relevo)
+                    // Camada 2: Espaço (Borda/Relevo)
                     if(space) {
                         if(space.livre > 0 && !space.reservado) {
                             div.classList.add('box-highlight');
                             totalEspacosLivres++;
                         }
-                        if(space.reservado) {
-                            div.style.color = '#ef4444'; // Texto vermelho
-                        }
+                        if(space.reservado) div.style.color = '#ef4444'; 
                     }
 
                     div.onmouseenter = (ev) => mostrarTooltip(ev, i, doc, space);
@@ -525,7 +519,7 @@
             }
             gridDiv.appendChild(fragment);
 
-            // 3. Atualiza KPIs e Tabela
+            // KPIs e Tabela
             document.getElementById('kpiOcupados').innerText = totalOcupados.toLocaleString();
             document.getElementById('kpiDocs').innerText = totalDocsGeral.toLocaleString();
             document.getElementById('kpiLivres').innerText = totalEspacosLivres.toLocaleString();
@@ -573,7 +567,7 @@
 
             if(space) {
                 if(space.livre > 0) h += `<div style="text-align:center; color:#34d399; font-weight:700; margin-bottom:5px;">✨ ${space.livre} cm Livres</div>`;
-                if(space.reservado) h += `<div style="text-align:center; color:#ef4444; font-weight:700;">RESERVADO</div>`;
+                if(space.reservado) h += `<div style="text-align:center; color:#ef4444; font-weight:700; margin-bottom:5px;">RESERVADO</div>`;
             }
 
             if(doc && doc.total > 0) {
