@@ -22,12 +22,12 @@
             --border: #d1d5db;
             
             /* Status Colors */
-            --box-available-bg: #d1fae5; /* Verde bem claro */
-            --box-available-text: #065f46; /* Verde escuro */
+            --box-available-bg: #d1fae5;
+            --box-available-text: #065f46;
             --box-available-border: #34d399;
             
-            --box-full-bg: #f1f5f9; /* Cinza claro */
-            --box-full-text: #94a3b8; /* Cinza médio */
+            --box-full-bg: #f1f5f9;
+            --box-full-text: #94a3b8;
             --box-full-border: #e2e8f0;
             
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
@@ -134,17 +134,14 @@
             position: relative;
         }
         
-        /* Status: Ocupado/Indisponível */
         .box-cell.is-full {
             background: var(--box-full-bg); border: 1px solid var(--box-full-border); color: var(--box-full-text);
         }
         
-        /* Status: Disponível (Vazio ou com espaço) */
         .box-cell.is-avail {
             background: var(--box-available-bg); border: 1px solid var(--box-available-border); color: var(--box-available-text);
         }
         
-        /* Destaque (Match com o Setor selecionado) */
         .box-cell.sector-match {
             box-shadow: 0 0 0 3px var(--primary);
             transform: scale(1.15);
@@ -152,13 +149,12 @@
             color: var(--primary-dark);
             font-weight: 800;
         }
-        /* Se for match e também estiver disponível, deixa ainda mais evidente */
+        
         .box-cell.sector-match.is-avail {
             box-shadow: 0 0 0 3px var(--primary), 0 0 10px rgba(37, 99, 235, 0.5);
-            background: #a7f3d0; /* Verde um pouco mais forte para constrastar com a borda azul */
+            background: #a7f3d0; 
         }
         
-        /* Célula Fantasma */
         .box-cell.empty {
             background: transparent; border: 1px dashed #cbd5e1; color: transparent; pointer-events: none;
         }
@@ -175,7 +171,7 @@
     <div class="container">
         <div class="header">
             <div>
-                <h1><i class="fas fa-radar"></i> Radar Logístico de Acervo</h1>
+                <h1><i class="fas fa-radar"></i> Radar Logístico de Acervo - v2</h1>
                 <p>Mapeamento visual global para localização de espaços ociosos próximos a setores</p>
             </div>
             <button class="btn btn-secondary" onclick="location.reload()">
@@ -280,11 +276,17 @@
                 return null;
             };
 
-            // 2.1 FUSÃO (JOIN)
+            // 2.1 FUSÃO (JOIN) com conversão para NÚMERO
             [1, 2, 3].forEach(idx => {
                 datasets[idx].forEach(row => {
-                    let boxVal = String(getBoxKey(row)).trim().toUpperCase();
-                    if (!boxVal || boxVal === "UNDEFINED" || boxVal === "") return;
+                    let rawBoxVal = getBoxKey(row);
+                    if (rawBoxVal === null || rawBoxVal === undefined || rawBoxVal === "") return;
+                    
+                    // Extrai apenas os dígitos para forçar a conversão numérica
+                    let numStr = String(rawBoxVal).replace(/[^0-9]/g, '');
+                    let boxVal = parseInt(numStr, 10);
+                    
+                    if (isNaN(boxVal)) return; // Ignora casos em que a coluna não resulte em número
 
                     if (!tempBoxes[boxVal]) {
                         tempBoxes[boxVal] = { id: boxVal, setores: new Set(), total: null, espaco: null, reservado: null, isAvail: false };
@@ -311,7 +313,7 @@
                 });
             });
 
-            // 2.2 CALCULAR DISPONIBILIDADE (Mantendo todos os boxes na lista final)
+            // 2.2 CALCULAR DISPONIBILIDADE
             allBoxes = [];
             for (let boxId in tempBoxes) {
                 let mb = tempBoxes[boxId];
@@ -324,14 +326,13 @@
                 let condicao1 = (total === 0);
                 let condicao2 = (espaco > 0 && espaco < 14 && (reservado === "NÃO" || reservado === "NAO"));
 
-                // Marca se o box atende à regra, mas não o exclui se não atender
                 mb.isAvail = (condicao1 || condicao2);
                 
                 allBoxes.push(mb);
             }
 
-            // Ordena alfanumericamente para manter a sequência física dos boxes no galpão
-            allBoxes.sort((a, b) => a.id.localeCompare(b.id, undefined, {numeric: true}));
+            // Ordena estritamente por NÚMERO (matematicamente correto)
+            allBoxes.sort((a, b) => a.id - b.id);
 
             // 2.3 ATUALIZA INTERFACE
             document.getElementById('uploadSection').style.display = 'none';
@@ -357,10 +358,14 @@
             container.style.display = 'grid';
             container.innerHTML = '';
 
-            const chunkSize = 49;
+            const chunkSize = 49; // 7x7
             for (let i = 0; i < allBoxes.length; i += chunkSize) {
                 const chunk = allBoxes.slice(i, i + chunkSize);
                 const blocoId = Math.floor(i / chunkSize) + 1;
+                
+                // Determina o intervalo numérico do bloco (Ex: Boxes 1 a 49) para o cabeçalho
+                const firstBox = chunk[0].id;
+                const lastBox = chunk[chunk.length - 1].id;
                 
                 let gridHTML = '';
                 
@@ -377,7 +382,6 @@
                         </div>`;
                 });
 
-                // Células vazias para completar o quadrado 7x7 no último bloco
                 const emptyCellsCount = chunkSize - chunk.length;
                 for (let j = 0; j < emptyCellsCount; j++) {
                     gridHTML += `<div class="box-cell empty"></div>`;
@@ -387,6 +391,7 @@
                     <div class="block-7x7">
                         <div class="block-header">
                             <span>Bloco ${blocoId}</span>
+                            <span style="font-size:11px; color:var(--text-sub); font-weight:500;">(Boxes ${firstBox} ao ${lastBox})</span>
                         </div>
                         <div class="grid-layout">
                             ${gridHTML}
@@ -402,7 +407,6 @@
             const allCells = document.querySelectorAll('.box-cell:not(.empty)');
 
             allCells.forEach(cell => {
-                // Limpa destaque anterior
                 cell.classList.remove('sector-match');
                 
                 if (selectedSector) {
