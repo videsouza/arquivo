@@ -171,8 +171,8 @@
     <div class="container">
         <div class="header">
             <div>
-                <h1><i class="fas fa-radar"></i> Radar Logístico de Acervo - v2</h1>
-                <p>Mapeamento visual global para localização de espaços ociosos próximos a setores</p>
+                <h1><i class="fas fa-radar"></i> Radar Logístico de Acervo - v3</h1>
+                <p>Mapeamento visual global para localização de espaços vazios próximos a setores</p>
             </div>
             <button class="btn btn-secondary" onclick="location.reload()">
                 <i class="fas fa-undo"></i> Reiniciar
@@ -231,8 +231,8 @@
     <script>
         // --- ESTADO ---
         let datasets = { 1: [], 2: [], 3: [] };
-        let allBoxes = []; // Array de todos os boxes lidos (unificados)
-        let uniqueSectors = new Set(); // Todos os setores encontrados no sistema
+        let allBoxes = []; 
+        let uniqueSectors = new Set();
 
         // --- 1. UPLOAD ---
         function handleFile(input, index) {
@@ -263,7 +263,7 @@
             }
         }
 
-        // --- 2. PROCESSAMENTO (JOIN E REGRAS) ---
+        // --- 2. PROCESSAMENTO ---
         function processAndRenderAllData() {
             let tempBoxes = {};
             uniqueSectors.clear();
@@ -276,38 +276,44 @@
                 return null;
             };
 
-            // 2.1 FUSÃO (JOIN) com conversão para NÚMERO
+            // 2.1 FUSÃO (JOIN)
             [1, 2, 3].forEach(idx => {
                 datasets[idx].forEach(row => {
                     let rawBoxVal = getBoxKey(row);
                     if (rawBoxVal === null || rawBoxVal === undefined || rawBoxVal === "") return;
                     
-                    // Extrai apenas os dígitos para forçar a conversão numérica
-                    let numStr = String(rawBoxVal).replace(/[^0-9]/g, '');
-                    let boxVal = parseInt(numStr, 10);
-                    
-                    if (isNaN(boxVal)) return; // Ignora casos em que a coluna não resulte em número
+                    // Converte para String, remove espaços para manter a chave padronizada e segura
+                    let boxIdStr = String(rawBoxVal).trim().toUpperCase();
 
-                    if (!tempBoxes[boxVal]) {
-                        tempBoxes[boxVal] = { id: boxVal, setores: new Set(), total: null, espaco: null, reservado: null, isAvail: false };
+                    if (!tempBoxes[boxIdStr]) {
+                        tempBoxes[boxIdStr] = { 
+                            id: boxIdStr, 
+                            setores: new Set(), 
+                            total: null, 
+                            espaco: null, 
+                            reservado: null, 
+                            isAvail: false 
+                        };
                     }
 
                     for (let key in row) {
                         let k = key.toUpperCase().trim();
                         let val = row[key];
 
-                        if (k === 'COD_SETOR' && val) {
-                            tempBoxes[boxVal].setores.add(String(val).trim().toUpperCase());
-                            uniqueSectors.add(String(val).trim().toUpperCase());
+                        if (k === 'COD_SETOR' && val !== "") {
+                            // Salva o setor exatamente como veio
+                            let setorStr = String(val).trim();
+                            tempBoxes[boxIdStr].setores.add(setorStr);
+                            uniqueSectors.add(setorStr);
                         }
                         if (k === 'TOTAL' && val !== "") {
-                            tempBoxes[boxVal].total = parseFloat(val);
+                            tempBoxes[boxIdStr].total = parseFloat(val);
                         }
                         if ((k.includes('ESPAÇO LIVRE') || k.includes('ESPACO LIVRE')) && val !== "") {
-                            tempBoxes[boxVal].espaco = parseFloat(val);
+                            tempBoxes[boxIdStr].espaco = parseFloat(val);
                         }
                         if (k === 'RESERVADO' && val !== "") {
-                            tempBoxes[boxVal].reservado = String(val).trim().toUpperCase();
+                            tempBoxes[boxIdStr].reservado = String(val).trim().toUpperCase();
                         }
                     }
                 });
@@ -322,17 +328,16 @@
                 let espaco = mb.espaco !== null ? mb.espaco : -1;
                 let reservado = mb.reservado !== null ? mb.reservado : "";
 
-                // Regras de Disponibilidade
                 let condicao1 = (total === 0);
                 let condicao2 = (espaco > 0 && espaco < 14 && (reservado === "NÃO" || reservado === "NAO"));
 
                 mb.isAvail = (condicao1 || condicao2);
-                
                 allBoxes.push(mb);
             }
 
-            // Ordena estritamente por NÚMERO (matematicamente correto)
-            allBoxes.sort((a, b) => a.id - b.id);
+            // --- ORDENAÇÃO INTELIGENTE PARA BOXES ---
+            // Usa localeCompare com numeric:true. Isso garante que "Box 2" vem antes de "Box 10" e "12" antes de "566"
+            allBoxes.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' }));
 
             // 2.3 ATUALIZA INTERFACE
             document.getElementById('uploadSection').style.display = 'none';
@@ -347,7 +352,11 @@
             const select = document.getElementById('sectorSelect');
             select.innerHTML = '<option value="">-- Ver arquivo completo (Sem radar) --</option>';
             
-            let sortedSectors = Array.from(uniqueSectors).sort();
+            // --- ORDENAÇÃO INTELIGENTE PARA O LISTBOX DE SETORES ---
+            let sortedSectors = Array.from(uniqueSectors).sort((a, b) => {
+                return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+            });
+            
             sortedSectors.forEach(sector => {
                 select.innerHTML += `<option value="${sector}">Setor: ${sector}</option>`;
             });
@@ -363,7 +372,6 @@
                 const chunk = allBoxes.slice(i, i + chunkSize);
                 const blocoId = Math.floor(i / chunkSize) + 1;
                 
-                // Determina o intervalo numérico do bloco (Ex: Boxes 1 a 49) para o cabeçalho
                 const firstBox = chunk[0].id;
                 const lastBox = chunk[chunk.length - 1].id;
                 
