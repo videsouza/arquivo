@@ -110,26 +110,41 @@
         }
         .select-control:focus { border-color: var(--primary); outline: none; }
 
-        /* GRID 7x7 */
-        .matrices-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px; display: none; }
+        /* GRID 7x7 - AJUSTADO PARA 4 BLOCOS POR LINHA */
+        .matrices-container { 
+            display: grid; 
+            /* Fixa exatamente 4 colunas de tamanhos iguais */
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 20px; 
+            display: none; 
+        }
+        
+        /* Em telas menores que 1200px, cai para 2 blocos para não quebrar o layout */
+        @media (max-width: 1200px) {
+            .matrices-container { grid-template-columns: repeat(2, 1fr); }
+        }
+        /* Em telas de celular, cai para 1 bloco */
+        @media (max-width: 768px) {
+            .matrices-container { grid-template-columns: 1fr; }
+        }
         
         .block-7x7 {
-            background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px;
+            background: white; border: 1px solid var(--border); border-radius: 12px; padding: 15px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
         .block-header {
-            font-size: 14px; font-weight: 700; color: var(--text-main); margin-bottom: 15px;
-            display: flex; justify-content: space-between; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;
+            font-size: 13px; font-weight: 700; color: var(--text-main); margin-bottom: 12px;
+            display: flex; justify-content: space-between; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;
         }
         
         .grid-layout {
-            display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px;
+            display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;
         }
         
         .box-cell {
-            aspect-ratio: 1 / 1; border-radius: 6px;
+            aspect-ratio: 1 / 1; border-radius: 4px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 11px; font-weight: 700;
+            font-size: 10px; font-weight: 700;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: default;
             position: relative;
         }
@@ -171,7 +186,7 @@
     <div class="container">
         <div class="header">
             <div>
-                <h1><i class="fas fa-radar"></i> Radar Logístico de Acervo - v3</h1>
+                <h1><i class="fas fa-radar"></i> Radar Logístico de Acervo - v4</h1>
                 <p>Mapeamento visual global para localização de espaços vazios próximos a setores</p>
             </div>
             <button class="btn btn-secondary" onclick="location.reload()">
@@ -282,7 +297,6 @@
                     let rawBoxVal = getBoxKey(row);
                     if (rawBoxVal === null || rawBoxVal === undefined || rawBoxVal === "") return;
                     
-                    // Converte para String, remove espaços para manter a chave padronizada e segura
                     let boxIdStr = String(rawBoxVal).trim().toUpperCase();
 
                     if (!tempBoxes[boxIdStr]) {
@@ -301,7 +315,6 @@
                         let val = row[key];
 
                         if (k === 'COD_SETOR' && val !== "") {
-                            // Salva o setor exatamente como veio
                             let setorStr = String(val).trim();
                             tempBoxes[boxIdStr].setores.add(setorStr);
                             uniqueSectors.add(setorStr);
@@ -336,7 +349,6 @@
             }
 
             // --- ORDENAÇÃO INTELIGENTE PARA BOXES ---
-            // Usa localeCompare com numeric:true. Isso garante que "Box 2" vem antes de "Box 10" e "12" antes de "566"
             allBoxes.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' }));
 
             // 2.3 ATUALIZA INTERFACE
@@ -352,7 +364,6 @@
             const select = document.getElementById('sectorSelect');
             select.innerHTML = '<option value="">-- Ver arquivo completo (Sem radar) --</option>';
             
-            // --- ORDENAÇÃO INTELIGENTE PARA O LISTBOX DE SETORES ---
             let sortedSectors = Array.from(uniqueSectors).sort((a, b) => {
                 return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
             });
