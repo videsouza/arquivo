@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mapa Logístico 7x7 | Hub de Serviços</title>
+    <title>Radar Logístico de Acervo | Hub de Serviços</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -20,8 +20,16 @@
             --bg-body: #f3f4f6;
             --bg-card: #ffffff;
             --border: #d1d5db;
-            --success: #10b981;
-            --success-light: #d1fae5;
+            
+            /* Status Colors */
+            --box-available-bg: #d1fae5; /* Verde bem claro */
+            --box-available-text: #065f46; /* Verde escuro */
+            --box-available-border: #34d399;
+            
+            --box-full-bg: #f1f5f9; /* Cinza claro */
+            --box-full-text: #94a3b8; /* Cinza médio */
+            --box-full-border: #e2e8f0;
+            
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
        }
 
@@ -64,9 +72,9 @@
             padding: 30px 15px; text-align: center; cursor: pointer; transition: all 0.3s; position: relative;
         }
         .upload-area:hover { border-color: var(--primary); background: var(--primary-light); transform: translateY(-2px); }
-        .upload-area.loaded { border-color: var(--success); background: #ecfdf5; }
+        .upload-area.loaded { border-color: #10b981; background: #ecfdf5; }
         .upload-icon { font-size: 32px; color: var(--primary); margin-bottom: 10px; opacity: 0.8; }
-        .upload-area.loaded .upload-icon { color: var(--success); }
+        .upload-area.loaded .upload-icon { color: #10b981; }
         .step-badge {
             position: absolute; top: -12px; left: 20px; background: var(--text-main); color: white;
             padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase;
@@ -76,16 +84,24 @@
         /* CONTROLES E FILTROS */
         .control-panel {
             background: white; border: 1px solid var(--border); border-radius: 12px;
-            padding: 25px 30px; margin-bottom: 30px; display: none; animation: fadeIn 0.5s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            padding: 25px 30px; margin-bottom: 30px; display: none; flex-wrap: wrap; gap: 20px;
+            align-items: center; justify-content: space-between; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            animation: fadeIn 0.5s ease;
         }
-        .control-panel.show { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+        .control-panel.show { display: flex; }
         
-        .panel-info h3 { font-size: 18px; font-weight: 700; color: var(--text-main); margin-bottom: 5px; }
-        .panel-info p { font-size: 13px; color: var(--text-sub); }
-        .stats-badge { display: inline-block; background: var(--primary-light); color: var(--primary-dark); padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 12px; margin-top: 10px; border: 1px solid #bfdbfe; }
+        .panel-info { flex: 1; min-width: 300px; }
+        .panel-info h3 { font-size: 18px; font-weight: 700; color: var(--text-main); margin-bottom: 10px; }
+        
+        /* Legenda */
+        .legend { display: flex; gap: 15px; font-size: 12px; font-weight: 600; color: var(--text-sub); }
+        .legend-item { display: flex; align-items: center; gap: 6px; }
+        .legend-color { width: 14px; height: 14px; border-radius: 4px; }
+        .color-avail { background: var(--box-available-bg); border: 1px solid var(--box-available-border); }
+        .color-full { background: var(--box-full-bg); border: 1px solid var(--box-full-border); }
+        .color-target { background: transparent; border: 3px solid var(--primary); border-radius: 4px; }
 
-        .selector-group { flex: 1; max-width: 400px; }
+        .selector-group { flex: 1; max-width: 400px; min-width: 300px; }
         .selector-group label { display: block; font-size: 12px; font-weight: 700; color: var(--text-sub); margin-bottom: 8px; text-transform: uppercase; }
         .select-control {
             width: 100%; padding: 12px 15px; border: 2px solid var(--border); border-radius: 8px;
@@ -111,22 +127,38 @@
         }
         
         .box-cell {
-            aspect-ratio: 1 / 1; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px;
+            aspect-ratio: 1 / 1; border-radius: 6px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 11px; font-weight: 700; color: #64748b;
+            font-size: 11px; font-weight: 700;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: default;
-            position: relative; overflow: hidden;
+            position: relative;
         }
         
-        .box-cell:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.05); z-index: 2; }
-        
-        /* Estado Destaque (Match com o Setor) */
-        .box-cell.highlight {
-            background: var(--success); border-color: #047857; color: white;
-            transform: scale(1.08); box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); z-index: 3;
+        /* Status: Ocupado/Indisponível */
+        .box-cell.is-full {
+            background: var(--box-full-bg); border: 1px solid var(--box-full-border); color: var(--box-full-text);
         }
         
-        /* Célula Fantasma (Preencher o 7x7) */
+        /* Status: Disponível (Vazio ou com espaço) */
+        .box-cell.is-avail {
+            background: var(--box-available-bg); border: 1px solid var(--box-available-border); color: var(--box-available-text);
+        }
+        
+        /* Destaque (Match com o Setor selecionado) */
+        .box-cell.sector-match {
+            box-shadow: 0 0 0 3px var(--primary);
+            transform: scale(1.15);
+            z-index: 10;
+            color: var(--primary-dark);
+            font-weight: 800;
+        }
+        /* Se for match e também estiver disponível, deixa ainda mais evidente */
+        .box-cell.sector-match.is-avail {
+            box-shadow: 0 0 0 3px var(--primary), 0 0 10px rgba(37, 99, 235, 0.5);
+            background: #a7f3d0; /* Verde um pouco mais forte para constrastar com a borda azul */
+        }
+        
+        /* Célula Fantasma */
         .box-cell.empty {
             background: transparent; border: 1px dashed #cbd5e1; color: transparent; pointer-events: none;
         }
@@ -143,8 +175,8 @@
     <div class="container">
         <div class="header">
             <div>
-                <h1><i class="fas fa-th"></i> Mapa Logístico de Acervo (7x7)</h1>
-                <p>Mapeamento visual de espaços disponíveis cruzado com setores</p>
+                <h1><i class="fas fa-radar"></i> Radar Logístico de Acervo</h1>
+                <p>Mapeamento visual global para localização de espaços ociosos próximos a setores</p>
             </div>
             <button class="btn btn-secondary" onclick="location.reload()">
                 <i class="fas fa-undo"></i> Reiniciar
@@ -179,14 +211,17 @@
 
             <div class="control-panel" id="controlPanel">
                 <div class="panel-info">
-                    <h3>Visão Geral de Disponibilidade</h3>
-                    <p>Mostrando apenas boxes que atendem à regra de espaço livre.</p>
-                    <div class="stats-badge" id="statsBadge">0 Boxes Disponíveis</div>
+                    <h3>Visão Geral do Arquivo Físico</h3>
+                    <div class="legend">
+                        <div class="legend-item"><div class="legend-color color-full"></div> Ocupado / Indisponível</div>
+                        <div class="legend-item"><div class="legend-color color-avail"></div> Espaço Livre / Vazio</div>
+                        <div class="legend-item"><div class="legend-color color-target"></div> Alvo (Setor Escolhido)</div>
+                    </div>
                 </div>
                 <div class="selector-group">
-                    <label>Localizar Setor na Matriz</label>
+                    <label>Localizar Setor (Radar)</label>
                     <select class="select-control" id="sectorSelect" onchange="highlightSector()">
-                        <option value="">-- Selecione um Setor para destacar --</option>
+                        <option value="">-- Ver arquivo completo (Sem radar) --</option>
                     </select>
                 </div>
             </div>
@@ -200,9 +235,8 @@
     <script>
         // --- ESTADO ---
         let datasets = { 1: [], 2: [], 3: [] };
-        let mergedBoxes = {}; // Dicionário: Chave = BOX
-        let eligibleBoxes = []; // Array final de boxes que passaram na regra
-        let uniqueSectors = new Set(); // Setores encontrados nos boxes elegíveis
+        let allBoxes = []; // Array de todos os boxes lidos (unificados)
+        let uniqueSectors = new Set(); // Todos os setores encontrados no sistema
 
         // --- 1. UPLOAD ---
         function handleFile(input, index) {
@@ -218,7 +252,6 @@
                 
                 datasets[index] = jsonData;
 
-                // UI
                 document.getElementById(`drop${index}`).classList.add('loaded');
                 document.getElementById(`icon${index}`).className = 'fas fa-check-circle upload-icon';
                 document.getElementById(`name${index}`).innerText = `${file.name} (${jsonData.length} linhas)`;
@@ -229,18 +262,16 @@
         }
 
         function checkReadyState() {
-            // Inicia o processamento quando as 3 planilhas estiverem carregadas
             if(datasets[1].length > 0 && datasets[2].length > 0 && datasets[3].length > 0) {
-                processAndFilterData();
+                processAndRenderAllData();
             }
         }
 
-        // --- 2. PROCESSAMENTO E FILTRAGEM ---
-        function processAndFilterData() {
-            mergedBoxes = {};
+        // --- 2. PROCESSAMENTO (JOIN E REGRAS) ---
+        function processAndRenderAllData() {
+            let tempBoxes = {};
             uniqueSectors.clear();
 
-            // Função para extrair a coluna Box independentemente da variação de nome
             const getBoxKey = (row) => {
                 for (let key in row) {
                     let k = key.toUpperCase().trim();
@@ -255,72 +286,65 @@
                     let boxVal = String(getBoxKey(row)).trim().toUpperCase();
                     if (!boxVal || boxVal === "UNDEFINED" || boxVal === "") return;
 
-                    if (!mergedBoxes[boxVal]) {
-                        mergedBoxes[boxVal] = { id: boxVal, setores: new Set(), total: null, espaco: null, reservado: null };
+                    if (!tempBoxes[boxVal]) {
+                        tempBoxes[boxVal] = { id: boxVal, setores: new Set(), total: null, espaco: null, reservado: null, isAvail: false };
                     }
 
-                    // Varre as colunas buscando os dados chave
                     for (let key in row) {
                         let k = key.toUpperCase().trim();
                         let val = row[key];
 
                         if (k === 'COD_SETOR' && val) {
-                            mergedBoxes[boxVal].setores.add(String(val).trim().toUpperCase());
+                            tempBoxes[boxVal].setores.add(String(val).trim().toUpperCase());
+                            uniqueSectors.add(String(val).trim().toUpperCase());
                         }
                         if (k === 'TOTAL' && val !== "") {
-                            mergedBoxes[boxVal].total = parseFloat(val);
+                            tempBoxes[boxVal].total = parseFloat(val);
                         }
-                        // Trata variações de nome da coluna Espaço Livre
                         if ((k.includes('ESPAÇO LIVRE') || k.includes('ESPACO LIVRE')) && val !== "") {
-                            mergedBoxes[boxVal].espaco = parseFloat(val);
+                            tempBoxes[boxVal].espaco = parseFloat(val);
                         }
                         if (k === 'RESERVADO' && val !== "") {
-                            mergedBoxes[boxVal].reservado = String(val).trim().toUpperCase();
+                            tempBoxes[boxVal].reservado = String(val).trim().toUpperCase();
                         }
                     }
                 });
             });
 
-            // 2.2 APLICAÇÃO DA REGRA DE DISPONIBILIDADE
-            eligibleBoxes = [];
-            
-            for (let boxId in mergedBoxes) {
-                let mb = mergedBoxes[boxId];
+            // 2.2 CALCULAR DISPONIBILIDADE (Mantendo todos os boxes na lista final)
+            allBoxes = [];
+            for (let boxId in tempBoxes) {
+                let mb = tempBoxes[boxId];
                 
-                // Trata valores nulos ou vazios para não quebrar a lógica
                 let total = mb.total !== null ? mb.total : -1; 
                 let espaco = mb.espaco !== null ? mb.espaco : -1;
                 let reservado = mb.reservado !== null ? mb.reservado : "";
 
-                // Regra 1: Total = 0
+                // Regras de Disponibilidade
                 let condicao1 = (total === 0);
-                
-                // Regra 2: Espaço Livre > 0 E < 14 E Reservado = "Não"
                 let condicao2 = (espaco > 0 && espaco < 14 && (reservado === "NÃO" || reservado === "NAO"));
 
-                if (condicao1 || condicao2) {
-                    eligibleBoxes.push(mb);
-                    // Adiciona os setores deste box à lista global de setores para o Dropdown
-                    mb.setores.forEach(s => uniqueSectors.add(s));
-                }
+                // Marca se o box atende à regra, mas não o exclui se não atender
+                mb.isAvail = (condicao1 || condicao2);
+                
+                allBoxes.push(mb);
             }
 
-            // Ordena os boxes para exibição
-            eligibleBoxes.sort((a, b) => a.id.localeCompare(b.id, undefined, {numeric: true}));
+            // Ordena alfanumericamente para manter a sequência física dos boxes no galpão
+            allBoxes.sort((a, b) => a.id.localeCompare(b.id, undefined, {numeric: true}));
 
             // 2.3 ATUALIZA INTERFACE
             document.getElementById('uploadSection').style.display = 'none';
             document.getElementById('controlPanel').classList.add('show');
-            document.getElementById('statsBadge').innerText = `${eligibleBoxes.length} Boxes Disponíveis`;
             
             populateSectorDropdown();
             renderMatrices();
         }
 
-        // --- 3. RENDERIZAÇÃO ---
+        // --- 3. RENDERIZAÇÃO MATRIZES ---
         function populateSectorDropdown() {
             const select = document.getElementById('sectorSelect');
-            select.innerHTML = '<option value="">-- Ver todos (Sem destaque) --</option>';
+            select.innerHTML = '<option value="">-- Ver arquivo completo (Sem radar) --</option>';
             
             let sortedSectors = Array.from(uniqueSectors).sort();
             sortedSectors.forEach(sector => {
@@ -333,22 +357,27 @@
             container.style.display = 'grid';
             container.innerHTML = '';
 
-            // Divide em chunks de 49 (7x7)
             const chunkSize = 49;
-            for (let i = 0; i < eligibleBoxes.length; i += chunkSize) {
-                const chunk = eligibleBoxes.slice(i, i + chunkSize);
+            for (let i = 0; i < allBoxes.length; i += chunkSize) {
+                const chunk = allBoxes.slice(i, i + chunkSize);
                 const blocoId = Math.floor(i / chunkSize) + 1;
                 
                 let gridHTML = '';
                 
-                // Preenche os boxes reais
                 chunk.forEach(box => {
-                    // Guarda os setores em um atributo data para facilitar o filtro CSS/JS
+                    const statusClass = box.isAvail ? 'is-avail' : 'is-full';
                     const setoresStr = Array.from(box.setores).join(',');
-                    gridHTML += `<div class="box-cell" data-box="${box.id}" data-setores="${setoresStr}" title="Box: ${box.id}\nSetores: ${setoresStr || 'Nenhum'}">${box.id}</div>`;
+                    
+                    gridHTML += `
+                        <div class="box-cell ${statusClass}" 
+                             data-box="${box.id}" 
+                             data-setores="${setoresStr}" 
+                             title="Box: ${box.id}\nStatus: ${box.isAvail ? 'Disponível' : 'Ocupado'}\nSetores: ${setoresStr || 'Nenhum'}">
+                            ${box.id}
+                        </div>`;
                 });
 
-                // Preenche as células "fantasmas" se o bloco não der 49
+                // Células vazias para completar o quadrado 7x7 no último bloco
                 const emptyCellsCount = chunkSize - chunk.length;
                 for (let j = 0; j < emptyCellsCount; j++) {
                     gridHTML += `<div class="box-cell empty"></div>`;
@@ -358,7 +387,6 @@
                     <div class="block-7x7">
                         <div class="block-header">
                             <span>Bloco ${blocoId}</span>
-                            <span style="color:var(--text-sub); font-size:12px;">${chunk.length} boxes</span>
                         </div>
                         <div class="grid-layout">
                             ${gridHTML}
@@ -368,20 +396,19 @@
             }
         }
 
-        // --- 4. DESTAQUE (HIGHLIGHT) ---
+        // --- 4. DESTAQUE E RADAR ---
         function highlightSector() {
             const selectedSector = document.getElementById('sectorSelect').value;
             const allCells = document.querySelectorAll('.box-cell:not(.empty)');
 
             allCells.forEach(cell => {
-                // Remove destaque anterior
-                cell.classList.remove('highlight');
+                // Limpa destaque anterior
+                cell.classList.remove('sector-match');
                 
                 if (selectedSector) {
-                    // Verifica se o setor selecionado está na lista de setores deste box
                     const cellSectors = cell.getAttribute('data-setores').split(',');
                     if (cellSectors.includes(selectedSector)) {
-                        cell.classList.add('highlight');
+                        cell.classList.add('sector-match');
                     }
                 }
             });
