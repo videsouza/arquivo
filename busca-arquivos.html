@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Script de Busca - Hub</title>
+    <style>
+        /* Tipografia limpa e moderna, semelhante à imagem */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        :root {
+            --bg-body: #f3f4f6;
+            --bg-card: #ffffff;
+            --bg-dashed: #fafafb;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --border-dashed: #d1d5db;
+            --primary-blue: #2563eb;
+            --primary-blue-hover: #1d4ed8;
+            --focus-ring: rgba(37, 99, 235, 0.2);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .card-modulo {
+            background-color: var(--bg-card);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            width: 100%;
+            max-width: 900px;
+        }
+
+        /* Cabeçalho */
+        .cabecalho-modulo {
+            padding: 24px 32px;
+        }
+
+        .titulo-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .titulo-wrapper svg {
+            color: var(--primary-blue);
+            width: 24px;
+            height: 24px;
+        }
+
+        .titulo-wrapper h2 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .cabecalho-modulo p {
+            margin: 0;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* Divisória fina igual a da imagem */
+        .separador {
+            height: 1px;
+            background-color: var(--border-color);
+            width: 100%;
+        }
+
+        /* Área de Conteúdo */
+        .conteudo-modulo {
+            padding: 32px;
+        }
+
+        /* Contêiner Tracejado */
+        .area-tracejada {
+            border: 2px dashed var(--border-dashed);
+            border-radius: 8px;
+            background-color: var(--bg-dashed);
+            padding: 40px 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Grid do formulário para aproveitar o espaço horizontal */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            width: 100%;
+            margin-bottom: 32px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .form-group input {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            color: var(--text-primary);
+            transition: all 0.2s;
+            background-color: #ffffff;
+        }
+
+        .form-group input::placeholder {
+            color: #9ca3af;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px var(--focus-ring);
+        }
+
+        .dica {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+        }
+
+        /* Botão estilizado idêntico ao da imagem */
+        .btn-acao {
+            background-color: var(--primary-blue);
+            color: #ffffff;
+            border: none;
+            padding: 10px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .btn-acao:hover {
+            background-color: var(--primary-blue-hover);
+        }
+
+        .btn-acao svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Responsividade para telas menores */
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr; /* Coluna única no celular */
+            }
+            .area-tracejada {
+                padding: 24px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card-modulo">
+        
+        <div class="cabecalho-modulo">
+            <div class="titulo-wrapper">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="4 17 10 11 4 5"></polyline>
+                    <line x1="12" y1="19" x2="20" y2="19"></line>
+                </svg>
+                <h2>Gerador de Script de Busca</h2>
+            </div>
+            <p>Mapeamento de arquivos locais com geração de script PowerShell</p>
+        </div>
+
+        <div class="separador"></div>
+
+        <div class="conteudo-modulo">
+            <div class="area-tracejada">
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="dirOrigem">Diretório a ser analisado</label>
+                        <input type="text" id="dirOrigem" placeholder="Ex: G:\Arquivo" required>
+                    </div>
+            
+                    <div class="form-group">
+                        <label for="termosBusca">Palavras ou Termos a buscar</label>
+                        <input type="text" id="termosBusca" placeholder="Ex: SFX, Francisco Xavier, 133" required>
+                        <span class="dica">Separe os termos de busca por vírgula.</span>
+                    </div>
+            
+                    <div class="form-group">
+                        <label for="dirDestino">Diretório de destino (Resultados)</label>
+                        <input type="text" id="dirDestino" placeholder="Ex: G:\Arquivo\05_VINICIUS" required>
+                        <span class="dica">Onde a planilha final será salva.</span>
+                    </div>
+            
+                    <div class="form-group">
+                        <label for="nomeArquivo">Nome da planilha gerada</label>
+                        <input type="text" id="nomeArquivo" placeholder="Ex: Resultados_Busca" required>
+                        <span class="dica">O formato .csv será adicionado automaticamente.</span>
+                    </div>
+                </div>
+
+               <button class="btn-acao" onclick="gerarScript()">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="7 10 12 15 17 10"></polyline>
+        <line x1="12" y1="15" x2="12" y2="3"></line>
+    </svg>
+    Gerar Executável (.cmd)
+</button>
+                
+            </div>
+        </div>
+    </div>
+
+   <script>
+    function gerarScript() {
+        // Captura e validação dos dados
+        const dirOrigem = document.getElementById('dirOrigem').value.trim();
+        const termosInput = document.getElementById('termosBusca').value.trim();
+        const dirDestino = document.getElementById('dirDestino').value.trim();
+        let nomeArquivo = document.getElementById('nomeArquivo').value.trim();
+
+        if (!dirOrigem || !termosInput || !dirDestino || !nomeArquivo) {
+            alert("Por favor, preencha todos os campos antes de gerar o script.");
+            return;
+        }
+
+        if (!nomeArquivo.toLowerCase().endsWith('.csv')) {
+            nomeArquivo += '.csv';
+        }
+
+        const termosFormatados = termosInput.split(',')
+            .map(termo => termo.trim())
+            .filter(termo => termo.length > 0)
+            .join('|');
+
+        // Template do script (A primeira linha é o truque Polyglot para duplo clique)
+        const scriptCMD = `
+# # 2>NUL & @cls & powershell -NoProfile -ExecutionPolicy Bypass -Command "Invoke-Expression (Get-Content '%~f0' -Raw)" & pause & exit /b
+# ====================================================================
+# SCRIPT DE BUSCA GERADO PELO HUB
+# ====================================================================
+
+\$diretorio = "${dirOrigem}"
+\$caminhoCSV = Join-Path "${dirDestino}" "${nomeArquivo}"
+\$termos = "${termosFormatados}"
+
+if (!(Test-Path "${dirDestino}")) {
+    New-Item -ItemType Directory -Force -Path "${dirDestino}" | Out-Null
+}
+
+if (Test-Path \$diretorio) {
+    Write-Host "Iniciando a busca em: \$diretorio" -ForegroundColor Cyan
+    Write-Host "Buscando pelos termos: ${termosInput}" -ForegroundColor Cyan
+    Write-Host "Isso pode levar alguns minutos...\`n" -ForegroundColor DarkGray
+
+    \$resultados = Get-ChildItem -Path \$diretorio -Recurse -ErrorAction SilentlyContinue | 
+        Where-Object { \$_.Name -match "(?i)\$termos" }
+
+    if (\$resultados) {
+        \$dadosFormatados = \$resultados | Select-Object \`
+            @{Name="Tipo"; Expression={if (\$_.PSIsContainer) {"Pasta"} else {"Arquivo"}}},
+            @{Name="Nome"; Expression={\$_.Name}},
+            @{Name="Caminho Completo"; Expression={\$_.FullName}},
+            @{Name="Tamanho (MB)"; Expression={if (\$_.PSIsContainer) {""} else {[math]::round(\$_.Length / 1MB, 2)}}},
+            @{Name="Ultima Modificacao"; Expression={\$_.LastWriteTime}}
+            
+        \$dadosFormatados | Format-Table -AutoSize
+        \$dadosFormatados | Export-Csv -Path \$caminhoCSV -NoTypeInformation -Delimiter ";" -Encoding UTF8
+
+        Write-Host "\`nBusca concluída! Foram encontrados \$(\$resultados.Count) itens." -ForegroundColor Green
+        Write-Host "Planilha gerada em: \$caminhoCSV" -ForegroundColor Green
+    } else {
+        Write-Host "\`nNenhum arquivo ou pasta correspondente foi encontrado." -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "O diretório '\$diretorio' não foi encontrado ou está inacessível." -ForegroundColor Red
+}
+# ====================================================================
+        `.trim();
+
+        // Lógica de download (Agora salva como .cmd usando encoding nativo da web)
+        // O array do Blob recebe um enter extra no começo para garantir que o script funcione redondinho
+        const blob = new Blob(["\r\n" + scriptCMD], { type: 'text/plain;charset=utf-8' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'Busca_Acervo_Parametrizada.cmd';
+        
+        document.body.appendChild(link);
+        link.click();
+        
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+    }
+</script>
+</body>
+</html>
