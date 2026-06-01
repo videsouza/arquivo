@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hub de Etiquetas - ARQUIVO / SEC</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-body: #f4f5f7;
+            --border-color: #e5e7eb;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --primary-blue: #2563eb;
+            --gov-blue: #1351b4; 
+            --font-family: 'Inter', sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .app-container { 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            width: 100%; 
+            display: flex; 
+            flex-direction: column; 
+            flex: 1; 
+        }
+
+        /* Cabeçalho do Hub */
+        .hub-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .hub-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--gov-blue);
+            margin-bottom: 10px;
+        }
+
+        .hub-header p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+        }
+
+        .sec-badge { 
+            display: inline-block;
+            background-color: #e0e7ff; 
+            padding: 6px 16px; 
+            border-radius: 20px; 
+            font-size: 0.9rem; 
+            font-weight: 600; 
+            color: var(--gov-blue); 
+            margin-bottom: 20px;
+        }
+
+        /* Grid de Cartões */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        /* Estilo Individual dos Cartões */
+        .card-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .card {
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 30px 25px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            transition: all 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(19, 81, 180, 0.1);
+            border-color: var(--gov-blue);
+        }
+
+        .card-icon {
+            background-color: #f3f4f6;
+            color: var(--gov-blue);
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            transition: background-color 0.3s ease;
+        }
+
+        .card:hover .card-icon {
+            background-color: #e0e7ff;
+        }
+
+        .card h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-main);
+        }
+
+        .card p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* Rodapé */
+        .app-footer { 
+            text-align: center; 
+            padding-top: 40px; 
+            margin-top: auto;
+            font-size: 0.85rem; 
+            color: var(--text-muted); 
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <header class="hub-header">
+            <div class="sec-badge">ARQUIVO / SEC</div>
+            <h1>Central de Etiquetas</h1>
+            <p>Selecione o modelo de etiqueta que deseja gerar e imprimir</p>
+        </header>
+
+        <main class="cards-grid">
+            
+            <a href="etiquetas-triagem.html" class="card-link">
+                <div class="card">
+                    <div class="card-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                    </div>
+                    <h2>Triagem Corrente</h2>
+                    <p>Etiquetas detalhadas contendo código, descrição, tipo e informações completas de temporalidade (6 por página).</p>
+                </div>
+            </a>
+
+            <a href="etiquetas-permanente.html" class="card-link">
+                <div class="card">
+                    <div class="card-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                    </div>
+                    <h2>Guarda Permanente</h2>
+                    <p>Etiquetas para acervo histórico ou amostragem, com destaque para a situação documental de preservação (6 por página).</p>
+                </div>
+            </a>
+
+            <a href="etiquetas-chegada.html" class="card-link">
+                <div class="card">
+                    <div class="card-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                        </svg>
+                    </div>
+                    <h2>Chegada de Box</h2>
+                    <p>Identificação ágil e minimalista para recepção de novas caixas, com fontes grandes para fácil leitura à distância.</p>
+                </div>
+            </a>
+
+        </main>
+        
+        <footer class="app-footer">
+            Desenvolvido por Vinicius A. de Souza
+        </footer>
+    </div>
+
+</body>
+</html>
