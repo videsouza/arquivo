@@ -64,22 +64,22 @@
         .area-preview { flex: 1; background: #fafafa; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 20px; overflow-y: auto; max-height: calc(100vh - 250px); }
         .grid-etiquetas { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 
-        /* Estrutura Minimalista da Etiqueta de Chegada */
+        /* Estrutura Minimalista da Etiqueta de Chegada (FONTES AUMENTADAS) */
         .etiqueta { 
             background-color: #fff; 
             display: flex; 
             flex-direction: column; 
-            justify-content: center; /* Centraliza tudo verticalmente */
-            align-items: center;     /* Centraliza tudo horizontalmente */
+            justify-content: center; 
+            align-items: center;     
             width: 100%; 
             height: 100%;
             border: 2px solid #000;
-            padding: 15px;
+            padding: 10px; /* Reduzi levemente o padding para dar mais espaço ao texto */
             text-align: center;
         }
 
         .etiqueta .codigo {
-            font-size: 3.5rem; /* Número bem grande */
+            font-size: 4.5rem; /* Aumentado de 3.5rem para 4.5rem */
             font-weight: 800;
             line-height: 1;
             margin-bottom: 5px;
@@ -87,23 +87,24 @@
         }
 
         .etiqueta .nome-setor {
-            font-size: 1.1rem;
+            font-size: 1.3rem; /* Aumentado de 1.1rem para 1.3rem */
             font-weight: 700;
             text-transform: uppercase;
-            margin-bottom: 25px; /* Espaço maior antes da data */
+            margin-bottom: 20px;
             color: #000;
             line-height: 1.2;
+            width: 90%; /* Evita que o texto encoste totalmente nas bordas se for muito longo */
         }
 
         .etiqueta .texto-fixo {
-            font-size: 1rem;
+            font-size: 1.15rem; /* Aumentado de 1rem para 1.15rem */
             font-weight: 400;
             color: #000;
             margin-bottom: 5px;
         }
 
         .etiqueta .data {
-            font-size: 1.6rem;
+            font-size: 1.9rem; /* Aumentado de 1.6rem para 1.9rem */
             font-weight: 700;
             color: #000;
         }
@@ -120,7 +121,9 @@
             .area-preview { border: none; padding: 0; background: transparent; max-height: none; overflow: visible; }
             
             .grid-etiquetas { display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: 88mm; gap: 5mm; }
-            .etiqueta { page-break-inside: avoid; overflow: hidden; border: 1px solid #000; } /* Borda ligeiramente mais fina na impressão para corte perfeito */
+            
+            /* overflow: hidden garante que se o texto for gigante, ele não quebre a folha A4 */
+            .etiqueta { page-break-inside: avoid; overflow: hidden; border: 1px solid #000; } 
         }
     </style>
 </head>
@@ -829,7 +832,6 @@ Código,Descrição
     </div>
 
     <script>
-        // O mesmo motor robusto para popular o autocomplete
         function inicializarAutocomplete() {
             try {
                 const datalist = document.getElementById('lista-setores');
@@ -852,7 +854,6 @@ Código,Descrição
                     }
                 });
                 
-                // Preenche a data de hoje automaticamente como sugestão ao abrir a página
                 const hoje = new Date();
                 const dataFormatada = hoje.toLocaleDateString('pt-BR');
                 document.getElementById('data-chegada').value = dataFormatada;
@@ -864,7 +865,6 @@ Código,Descrição
 
         document.addEventListener('DOMContentLoaded', inicializarAutocomplete);
 
-        // Lógica de Geração da Etiqueta Simples
         function adicionarEtiqueta() {
             const setorInput = document.getElementById('setor').value || 'S/N';
             const data = document.getElementById('data-chegada').value || '___/___/______';
@@ -872,13 +872,11 @@ Código,Descrição
             let codigoFormatado = '';
             let nomeFormatado = '';
 
-            // Se o usuário usou a busca e o padrão for "6 - ANA BERLING", dividimos em duas variáveis
             if (setorInput.includes(' - ')) {
                 const partes = setorInput.split(' - ');
                 codigoFormatado = partes[0].trim();
                 nomeFormatado = partes.slice(1).join(' - ').trim();
             } else {
-                // Caso ele apenas digite um texto livre
                 codigoFormatado = '-';
                 nomeFormatado = setorInput;
             }
