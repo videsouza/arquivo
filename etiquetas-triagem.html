@@ -145,7 +145,7 @@
         
         .btn-clear:hover { background-color: #c82333; }
 
-        /* Área de Visualização (Folha A4) */
+        /* Área de Visualização na Tela */
         .area-preview {
             flex: 1;
             background: #fff;
@@ -158,25 +158,27 @@
         .grid-etiquetas {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px; /* Espaçamento entre as etiquetas */
+            gap: 15px; 
         }
 
-        /* Estrutura da Etiqueta replicando o Word */
+        /* Estrutura da Etiqueta */
         .etiqueta {
             border: 1px solid #000;
             padding: 10px;
-            font-size: 11px; /* Tamanho reduzido para caber os dados */
+            font-size: 11px; 
             background-color: #fff;
-            break-inside: avoid;
+            display: flex;
+            flex-direction: column;
         }
 
         .etiqueta table {
             width: 100%;
             border-collapse: collapse;
+            margin-bottom: 5px;
         }
 
         .etiqueta td {
-            padding: 3px 5px;
+            padding: 2px 4px;
             vertical-align: top;
         }
 
@@ -189,23 +191,30 @@
         .etiqueta .descricao-box {
             border: 1px solid #000;
             padding: 5px;
-            min-height: 60px;
-            margin-top: 5px;
+            flex-grow: 1; /* Faz a descrição ocupar o espaço restante na altura */
+            min-height: 40px;
+            margin-top: 2px;
             margin-bottom: 5px;
         }
 
         .etiqueta .quant-elim-row {
             display: flex;
             justify-content: space-between;
-            margin-top: 5px;
+            border-top: 1px dashed #ccc;
+            padding-top: 5px;
         }
 
         .etiqueta .quant-elim-row div {
             flex: 1;
         }
 
-        /* Configurações de Impressão */
+        /* Configurações rigorosas de Impressão (A4) */
         @media print {
+            @page {
+                size: A4 portrait;
+                margin: 10mm; /* Margem padrão da impressora */
+            }
+
             .no-print {
                 display: none !important;
             }
@@ -231,12 +240,19 @@
             }
 
             .grid-etiquetas {
-                gap: 10px;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                /* Altura fixa de 88mm por etiqueta permite 3 linhas (264mm) + espaço de margens = A4 perfeito */
+                grid-auto-rows: 88mm; 
+                gap: 5mm; /* Espaço entre as etiquetas */
             }
 
             .etiqueta {
                 border: 1px solid #000;
                 page-break-inside: avoid;
+                height: 100%;
+                width: 100%;
+                overflow: hidden; /* Evita que o texto quebre o tamanho do grid se for muito longo */
             }
         }
     </style>
@@ -300,7 +316,7 @@
                 </div>
                 <div class="form-group">
                     <label for="eliminacao">Eliminação</label>
-                    <input type="text" id="eliminacao" placeholder="DD/MM/AAAA">
+                    <input type="text" id="eliminacao" placeholder="___/___/______">
                 </div>
             </div>
 
@@ -323,7 +339,6 @@
 
     <script>
         function adicionarEtiqueta() {
-            // Captura os valores
             const doc = document.getElementById('doc').value || 'S/N';
             const data = document.getElementById('data').value || '___/___/______';
             const portador = document.getElementById('portador').value || '';
@@ -335,7 +350,6 @@
             const quantidade = document.getElementById('quantidade').value || '______ cm';
             const eliminacao = document.getElementById('eliminacao').value || '___/___/______';
 
-            // Cria o HTML da etiqueta replicando a tabela original
             const etiquetaHTML = `
                 <div class="etiqueta">
                     <table>
@@ -379,10 +393,8 @@
                 </div>
             `;
 
-            // Injeta no grid
             document.getElementById('grid-render').insertAdjacentHTML('beforeend', etiquetaHTML);
             
-            // Limpa o campo de descrição e tipo para facilitar a próxima inserção, mantendo os fixos
             document.getElementById('descricao').value = '';
             document.getElementById('tipo').value = '';
             document.getElementById('codigo').value = '';
