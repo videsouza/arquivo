@@ -7,7 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        /* [O CSS FOI MANTIDO EXATAMENTE IGUAL AO ANTERIOR] */
         :root {
             --bg-body: #f4f5f7;
             --border-color: #e5e7eb;
@@ -16,6 +15,7 @@
             --primary-blue: #2563eb;
             --primary-hover: #1d4ed8;
             --font-family: 'Inter', sans-serif;
+            --gov-blue: #1351b4; /* Cor institucional GOV.BR */
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -35,7 +35,7 @@
         
         .card-header { padding: 24px 30px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; }
         .header-title { display: flex; align-items: center; gap: 12px; }
-        .header-icon { color: var(--primary-blue); }
+        .header-icon { color: var(--gov-blue); }
         .header-title h1 { font-size: 1.25rem; font-weight: 600; color: var(--text-main); }
         .header-title p { font-size: 0.875rem; color: var(--text-muted); margin-top: 4px; }
         .sec-badge { background-color: #f3f4f6; padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); border: 1px solid var(--border-color); }
@@ -46,12 +46,11 @@
         .form-group { margin-bottom: 16px; flex: 1; }
         .form-group label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 0.875rem; color: var(--text-main); }
         
-        /* Ajuste visual para indicar que é um campo de busca */
         .form-group input, .form-group textarea {
             width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 6px;
             font-family: var(--font-family); font-size: 0.9rem; color: var(--text-main); transition: border-color 0.2s;
         }
-        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--primary-blue); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--gov-blue); box-shadow: 0 0 0 3px rgba(19, 81, 180, 0.1); }
         .form-group textarea { resize: vertical; min-height: 80px; }
 
         .botoes-acao { display: flex; gap: 10px; margin-top: 24px; }
@@ -60,8 +59,8 @@
         .btn-add:hover { background-color: #e5e7eb; }
         .btn-clear { background-color: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
         .btn-clear:hover { background-color: #fee2e2; }
-        .btn-print { background-color: var(--primary-blue); color: white; }
-        .btn-print:hover { background-color: var(--primary-hover); }
+        .btn-print { background-color: var(--gov-blue); color: white; }
+        .btn-print:hover { background-color: #0f4090; }
 
         .area-preview { flex: 1; background: #fafafa; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 20px; overflow-y: auto; max-height: calc(100vh - 250px); }
         .grid-etiquetas { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
@@ -95,116 +94,9 @@
 </head>
 <body>
 
-    <div class="app-container">
-        <main class="main-card">
-            <header class="card-header no-print">
-                <div class="header-title">
-                    <svg class="header-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                        <line x1="3" y1="9" x2="21" y2="9"></line>
-                        <line x1="9" y1="21" x2="9" y2="9"></line>
-                    </svg>
-                    <div>
-                        <h1>Gerador de Etiquetas</h1>
-                        <p>Preenchimento automatizado para caixas e pacotes</p>
-                    </div>
-                </div>
-                <div class="sec-badge">
-                    ARQUIVO / SEC
-                </div>
-            </header>
-
-            <div class="card-body">
-                <section class="painel-controle no-print">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="doc">Nº DOCUMENTO</label>
-                            <input type="text" id="doc" value="S/N">
-                        </div>
-                        <div class="form-group">
-                            <label for="data">Data</label>
-                            <input type="text" id="data" placeholder="DD/MM/AAAA">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="portador">Portador/Produtor</label>
-                        <input type="text" id="portador" list="lista-setores" placeholder="Digite para buscar o setor...">
-                        <datalist id="lista-setores">
-                            </datalist>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="destinatario">Destinatário</label>
-                        <input type="text" id="destinatario" value="1344 – SEC. MUNICIPAL DE EDUCAÇÃO">
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="codigo">Código</label>
-                            <input type="text" id="codigo">
-                        </div>
-                        <div class="form-group">
-                            <label for="situacao">Sit. Doc.</label>
-                            <input type="text" id="situacao" value="AGUARDANDO PLANILHA">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="tipo">Tipo</label>
-                        <input type="text" id="tipo">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="descricao">Descrição</label>
-                        <textarea id="descricao" placeholder="Detalhes do conteúdo..."></textarea>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="quantidade">Quantidade</label>
-                            <input type="text" id="quantidade" placeholder="______ cm">
-                        </div>
-                        <div class="form-group">
-                            <label for="eliminacao">Eliminação</label>
-                            <input type="text" id="eliminacao" placeholder="___/___/_______">
-                        </div>
-                    </div>
-
-                    <div class="botoes-acao">
-                        <button class="btn btn-add" onclick="adicionarEtiqueta()">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                            Adicionar
-                        </button>
-                        <button class="btn btn-clear" onclick="limparEtiquetas()">
-                            Limpar
-                        </button>
-                        <button class="btn btn-print" onclick="window.print()">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-                            Imprimir
-                        </button>
-                    </div>
-                </section>
-
-                <section class="area-preview no-print-bg">
-                    <div class="grid-etiquetas" id="grid-render"></div>
-                </section>
-            </div>
-        </main>
-        
-        <footer class="app-footer no-print">
-            Desenvolvido por Vinicius A. de Souza
-        </footer>
-    </div>
-
-    <script>
-        // =========================================================
-        // BANCO DE DADOS DE SETORES (PORTADOR/PRODUTOR)
-        // =========================================================
-        // Você pode copiar todas as linhas e colunas do seu arquivo
-        // "Setores.xlsx" ou ".csv" e colar aqui dentro das crases (``).
-        // Não se preocupe com formatação, o script limpará sozinho.
-        const dadosSetoresBrutos = `1,SE - DAF - COORDENADORIA DE INFORMÁTICA (ASSESSORIA DE INFORMÁTIC
+    <script type="text/csv" id="dados-csv">
+Código,Descrição
+1,SE - DAF - COORDENADORIA DE INFORMÁTICA (ASSESSORIA DE INFORMÁTIC
 2,CORPO DE BOMBEIROS
 3,CRECHE JARDIM CASTANHEIRAS
 4,CRECHE JARDIM FLAMBOYANT
@@ -843,17 +735,218 @@
 2325,EMEI PROF MARIA CLARA FERNANDES CORREIA FRANÇA (FOI EMEI JD MORUM
 2327,EMEI DIRCE SALONI PIRES (2022 - 2025) ANTIGA PADRE BONAFÉ
 9999,SETOR NÃO DEFINIDO
-    `;
+</script>
+    <div class="app-container">
+        <main class="main-card">
+            <header class="card-header no-print">
+                <div class="header-title">
+                    <svg class="header-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="3" y1="9" x2="21" y2="9"></line>
+                        <line x1="9" y1="21" x2="9" y2="9"></line>
+                    </svg>
+                    <div>
+                        <h1>Gerador de Etiquetas</h1>
+                        <p>Preenchimento automatizado para caixas e pacotes</p>
+                    </div>
+                </div>
+                <div class="sec-badge">
+                    ARQUIVO / SEC
+                </div>
+            </header>
 
+            <div class="card-body">
+                <section class="painel-controle no-print">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="doc">Nº DOCUMENTO</label>
+                            <input type="text" id="doc" value="S/N">
+                        </div>
+                        <div class="form-group">
+                            <label for="data">Data</label>
+                            <input type="text" id="data" placeholder="DD/MM/AAAA">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="portador">Portador/Produtor</label>
+                        <input type="text" id="portador" list="lista-setores" placeholder="Digite para buscar o setor...">
+                        <datalist id="lista-setores">
+                            </datalist>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="destinatario">Destinatário</label>
+                        <input type="text" id="destinatario" value="1344 – SEC. MUNICIPAL DE EDUCAÇÃO">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="codigo">Código</label>
+                            <input type="text" id="codigo">
+                        </div>
+                        <div class="form-group">
+                            <label for="situacao">Sit. Doc.</label>
+                            <input type="text" id="situacao" value="AGUARDANDO PLANILHA">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tipo">Tipo</label>
+                        <input type="text" id="tipo">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="descricao">Descrição</label>
+                        <textarea id="descricao" placeholder="Detalhes do conteúdo..."></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="quantidade">Quantidade</label>
+                            <input type="text" id="quantidade" placeholder="______ cm">
+                        </div>
+                        <div class="form-group">
+                            <label for="eliminacao">Eliminação</label>
+                            <input type="text" id="eliminacao" placeholder="___/___/_______">
+                        </div>
+                    </div>
+
+                    <div class="botoes-acao">
+                        <button class="btn btn-add" onclick="adicionarEtiqueta()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            Adicionar
+                        </button>
+                        <button class="btn btn-clear" onclick="limparEtiquetas()">
+                            Limpar
+                        </button>
+                        <button class="btn btn-print" onclick="window.print()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                            Imprimir
+                        </button>
+                    </div>
+                </section>
+
+                <section class="area-preview no-print-bg">
+                    <div class="grid-etiquetas" id="grid-render"></div>
+                </section>
+            </div>
+        </main>
+        
+        <footer class="app-footer no-print">
+            Desenvolvido por Vinicius A. de Souza
+        </footer>
+    </div>
+
+    <script>
+        // Lógica à prova de falhas para carregar o Autocomplete
         function inicializarAutocomplete() {
-            const datalist = document.getElementById('lista-setores');
-            const linhas = dadosSetoresBrutos.trim().split('\n');
+            try {
+                const datalist = document.getElementById('lista-setores');
+                // Puxa os dados com segurança da tag HTML, imune a aspas e quebras de código
+                const dadosBrutos = document.getElementById('dados-csv').textContent;
+                const linhas = dadosBrutos.trim().split('\n');
+                
+                linhas.forEach(linha => {
+                    if(linha.trim() !== '' && linha.toUpperCase().indexOf('CÓDIGO') === -1) {
+                        const separador = linha.includes('\t') ? '\t' : ',';
+                        const partes = linha.split(separador);
+                        
+                        if(partes.length >= 2) {
+                            const codigo = partes[0].trim();
+                            const descricao = partes.slice(1).join(separador).trim(); 
+                            
+                            const option = document.createElement('option');
+                            option.value = `${codigo} - ${descricao}`;
+                            datalist.appendChild(option);
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("Erro ao carregar lista de setores:", error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', inicializarAutocomplete);
+
+        // Funções da Etiqueta
+        function adicionarEtiqueta() {
+            const doc = document.getElementById('doc').value || 'S/N';
+            const data = document.getElementById('data').value || '___/___/______';
+            const portador = document.getElementById('portador').value || '';
+            const destinatario = document.getElementById('destinatario').value || '';
+            const codigo = document.getElementById('codigo').value || '';
+            const situacao = document.getElementById('situacao').value || '';
+            const tipo = document.getElementById('tipo').value || '';
+            const descricao = document.getElementById('descricao').value || '';
+            const quantidade = document.getElementById('quantidade').value || '______ cm';
+            const eliminacao = document.getElementById('eliminacao').value || '___/___/_______';
+
+            const etiquetaHTML = `
+                <div class="etiqueta">
+                    <table class="tabela-etiqueta">
+                        <tr>
+                            <td class="rotulo">Nº DOCUMENTO:</td>
+                            <td>${doc}</td>
+                        </tr>
+                        <tr>
+                            <td class="rotulo">Data:</td>
+                            <td>${data}</td>
+                        </tr>
+                        <tr>
+                            <td class="rotulo">Portador/Produtor:</td>
+                            <td>${portador}</td>
+                        </tr>
+                        <tr>
+                            <td class="rotulo">Destinatário:</td>
+                            <td>${destinatario}</td>
+                        </tr>
+                        <tr>
+                            <td class="rotulo">Código:</td>
+                            <td>${codigo}</td>
+                        </tr>
+                        <tr>
+                            <td class="rotulo">Sit. Doc.:</td>
+                            <td>${situacao}</td>
+                        </tr>
+                        <tr>
+                            <td class="rotulo">Tipo:</td>
+                            <td>${tipo}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="border-bottom: none;"><strong>Descrição</strong></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="caixa-descricao" style="border-top: none;">${descricao}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="celula-dupla">
+                                <div class="container-metades">
+                                    <div class="coluna-metade">
+                                        <strong>Quantidade</strong><br>${quantidade}
+                                    </div>
+                                    <div class="coluna-metade">
+                                        <strong>Eliminação</strong><br>${eliminacao}
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            `;
+
+            document.getElementById('grid-render').insertAdjacentHTML('beforeend', etiquetaHTML);
             
-            linhas.forEach(linha => {
-                if(linha.trim() !== '' && linha.toUpperCase().indexOf('CÓDIGO') === -1) {
-                    // O script identifica automaticamente se os dados vieram separados por Vírgula (CSV) ou Tabulação (Cópia direta do Excel)
-                    const separador = linha.includes('\t') ? '\t' : ',';
-                    const partes = linha.split(separador);
-                    
-                    if(partes.length >= 2) {
-                        const codigo = partes[0].trim();
+            document.getElementById('descricao').value = '';
+            document.getElementById('tipo').value = '';
+            document.getElementById('codigo').value = '';
+        }
+
+        function limparEtiquetas() {
+            if(confirm('Tem certeza que deseja apagar todas as etiquetas geradas?')) {
+                document.getElementById('grid-render').innerHTML = '';
+            }
+        }
+    </script>
+</body>
+</html>
