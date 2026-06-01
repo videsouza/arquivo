@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Etiquetas de Triagem - ARQUIVO / SEC</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --gov-blue: #1351b4;
+            --bg-color: #f4f4f4;
+            --text-color: #333;
+            --font-family: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Cabeçalho e Rodapé */
+        .header, .footer {
+            background-color: var(--gov-blue);
+            color: #ffffff;
+            padding: 15px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .footer {
+            font-size: 0.9rem;
+            margin-top: auto;
+        }
+
+        /* Layout Principal */
+        .container {
+            display: flex;
+            gap: 30px;
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            flex: 1;
+        }
+
+        /* Painel de Controle (Formulário) */
+        .painel-controle {
+            background: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            flex: 0 0 400px;
+            height: fit-content;
+        }
+
+        .painel-controle h2 {
+            margin-bottom: 20px;
+            color: var(--gov-blue);
+            font-size: 1.2rem;
+            border-bottom: 2px solid var(--gov-blue);
+            padding-bottom: 5px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            flex: 1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: var(--font-family);
+            font-size: 0.9rem;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .botoes-acao {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 4px;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.2s;
+        }
+
+        .btn-add {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn-add:hover { background-color: #218838; }
+
+        .btn-print {
+            background-color: var(--gov-blue);
+            color: white;
+        }
+
+        .btn-print:hover { background-color: #0f4090; }
+
+        .btn-clear {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-clear:hover { background-color: #c82333; }
+
+        /* Área de Visualização (Folha A4) */
+        .area-preview {
+            flex: 1;
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            max-height: calc(100vh - 160px);
+        }
+
+        .grid-etiquetas {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px; /* Espaçamento entre as etiquetas */
+        }
+
+        /* Estrutura da Etiqueta replicando o Word */
+        .etiqueta {
+            border: 1px solid #000;
+            padding: 10px;
+            font-size: 11px; /* Tamanho reduzido para caber os dados */
+            background-color: #fff;
+            break-inside: avoid;
+        }
+
+        .etiqueta table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .etiqueta td {
+            padding: 3px 5px;
+            vertical-align: top;
+        }
+
+        .etiqueta td:first-child {
+            font-weight: bold;
+            width: 35%;
+            white-space: nowrap;
+        }
+        
+        .etiqueta .descricao-box {
+            border: 1px solid #000;
+            padding: 5px;
+            min-height: 60px;
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+
+        .etiqueta .quant-elim-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+        }
+
+        .etiqueta .quant-elim-row div {
+            flex: 1;
+        }
+
+        /* Configurações de Impressão */
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            
+            body {
+                background-color: white;
+                margin: 0;
+                padding: 0;
+            }
+
+            .container {
+                padding: 0;
+                margin: 0;
+                max-width: 100%;
+                display: block;
+            }
+
+            .area-preview {
+                padding: 0;
+                box-shadow: none;
+                max-height: none;
+                overflow: visible;
+            }
+
+            .grid-etiquetas {
+                gap: 10px;
+            }
+
+            .etiqueta {
+                border: 1px solid #000;
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header no-print">
+        <h1>ARQUIVO / SEC</h1>
+    </header>
+
+    <main class="container">
+        <section class="painel-controle no-print">
+            <h2>Dados da Triagem</h2>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="doc">Nº DOCUMENTO</label>
+                    <input type="text" id="doc" value="S/N">
+                </div>
+                <div class="form-group">
+                    <label for="data">Data</label>
+                    <input type="text" id="data" placeholder="DD/MM/AAAA">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="portador">Portador/Produtor</label>
+                <input type="text" id="portador">
+            </div>
+
+            <div class="form-group">
+                <label for="destinatario">Destinatário</label>
+                <input type="text" id="destinatario" value="1344 – SEC. MUNICIPAL DE EDUCAÇÃO">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="codigo">Código</label>
+                    <input type="text" id="codigo">
+                </div>
+                <div class="form-group">
+                    <label for="situacao">Sit. Doc.</label>
+                    <input type="text" id="situacao" value="AGUARDANDO PLANILHA">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="tipo">Tipo</label>
+                <input type="text" id="tipo">
+            </div>
+
+            <div class="form-group">
+                <label for="descricao">Descrição</label>
+                <textarea id="descricao" placeholder="Detalhes do conteúdo..."></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="quantidade">Quantidade</label>
+                    <input type="text" id="quantidade" placeholder="___ cm">
+                </div>
+                <div class="form-group">
+                    <label for="eliminacao">Eliminação</label>
+                    <input type="text" id="eliminacao" placeholder="DD/MM/AAAA">
+                </div>
+            </div>
+
+            <div class="botoes-acao">
+                <button class="btn btn-add" onclick="adicionarEtiqueta()">+ Adicionar</button>
+                <button class="btn btn-clear" onclick="limparEtiquetas()">Limpar</button>
+                <button class="btn btn-print" onclick="window.print()">Imprimir</button>
+            </div>
+        </section>
+
+        <section class="area-preview">
+            <div class="grid-etiquetas" id="grid-render">
+                </div>
+        </section>
+    </main>
+
+    <footer class="footer no-print">
+        Desenvolvido por Vinicius A. de Souza
+    </footer>
+
+    <script>
+        function adicionarEtiqueta() {
+            // Captura os valores
+            const doc = document.getElementById('doc').value || 'S/N';
+            const data = document.getElementById('data').value || '___/___/______';
+            const portador = document.getElementById('portador').value || '';
+            const destinatario = document.getElementById('destinatario').value || '';
+            const codigo = document.getElementById('codigo').value || '';
+            const situacao = document.getElementById('situacao').value || '';
+            const tipo = document.getElementById('tipo').value || '';
+            const descricao = document.getElementById('descricao').value || '';
+            const quantidade = document.getElementById('quantidade').value || '______ cm';
+            const eliminacao = document.getElementById('eliminacao').value || '___/___/______';
+
+            // Cria o HTML da etiqueta replicando a tabela original
+            const etiquetaHTML = `
+                <div class="etiqueta">
+                    <table>
+                        <tr>
+                            <td>Nº DOCUMENTO:</td>
+                            <td>${doc}</td>
+                        </tr>
+                        <tr>
+                            <td>Data:</td>
+                            <td>${data}</td>
+                        </tr>
+                        <tr>
+                            <td>Portador/Produtor:</td>
+                            <td>${portador}</td>
+                        </tr>
+                        <tr>
+                            <td>Destinatário:</td>
+                            <td>${destinatario}</td>
+                        </tr>
+                        <tr>
+                            <td>Código:</td>
+                            <td>${codigo}</td>
+                        </tr>
+                        <tr>
+                            <td>Sit. Doc.:</td>
+                            <td>${situacao}</td>
+                        </tr>
+                        <tr>
+                            <td>Tipo:</td>
+                            <td>${tipo}</td>
+                        </tr>
+                    </table>
+                    
+                    <div><strong>Descrição</strong></div>
+                    <div class="descricao-box">${descricao}</div>
+                    
+                    <div class="quant-elim-row">
+                        <div><strong>Quantidade</strong><br>${quantidade}</div>
+                        <div><strong>Eliminação</strong><br>${eliminacao}</div>
+                    </div>
+                </div>
+            `;
+
+            // Injeta no grid
+            document.getElementById('grid-render').insertAdjacentHTML('beforeend', etiquetaHTML);
+            
+            // Limpa o campo de descrição e tipo para facilitar a próxima inserção, mantendo os fixos
+            document.getElementById('descricao').value = '';
+            document.getElementById('tipo').value = '';
+            document.getElementById('codigo').value = '';
+        }
+
+        function limparEtiquetas() {
+            if(confirm('Tem certeza que deseja apagar todas as etiquetas geradas?')) {
+                document.getElementById('grid-render').innerHTML = '';
+            }
+        }
+    </script>
+</body>
+</html>
