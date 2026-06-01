@@ -124,25 +124,13 @@
             transition: background-color 0.2s;
         }
 
-        .btn-add {
-            background-color: #28a745;
-            color: white;
-        }
-
+        .btn-add { background-color: #28a745; color: white; }
         .btn-add:hover { background-color: #218838; }
 
-        .btn-print {
-            background-color: var(--gov-blue);
-            color: white;
-        }
-
+        .btn-print { background-color: var(--gov-blue); color: white; }
         .btn-print:hover { background-color: #0f4090; }
 
-        .btn-clear {
-            background-color: #dc3545;
-            color: white;
-        }
-        
+        .btn-clear { background-color: #dc3545; color: white; }
         .btn-clear:hover { background-color: #c82333; }
 
         /* Área de Visualização na Tela */
@@ -161,58 +149,64 @@
             gap: 15px; 
         }
 
-        /* Estrutura da Etiqueta */
+        /* Estrutura da Etiqueta 100% em Tabela (Grades Visíveis) */
         .etiqueta {
-            border: 1px solid #000;
-            padding: 10px;
-            font-size: 11px; 
             background-color: #fff;
             display: flex;
             flex-direction: column;
-        }
-
-        .etiqueta table {
             width: 100%;
+            height: 100%;
+        }
+
+        .tabela-etiqueta {
+            width: 100%;
+            height: 100%;
             border-collapse: collapse;
-            margin-bottom: 5px;
+            border: 2px solid #000; /* Borda externa um pouco mais grossa para destacar a etiqueta */
         }
 
-        .etiqueta td {
-            padding: 2px 4px;
+        .tabela-etiqueta td {
+            border: 1px solid #000; /* As grades internas separando todos os campos */
+            padding: 3px 5px;
             vertical-align: top;
+            font-size: 11px;
         }
 
-        .etiqueta td:first-child {
+        .tabela-etiqueta .rotulo {
             font-weight: bold;
             width: 35%;
             white-space: nowrap;
         }
-        
-        .etiqueta .descricao-box {
-            border: 1px solid #000;
-            padding: 5px;
-            flex-grow: 1; /* Faz a descrição ocupar o espaço restante na altura */
-            min-height: 40px;
-            margin-top: 2px;
-            margin-bottom: 5px;
+
+        .tabela-etiqueta .caixa-descricao {
+            height: 100%; /* Faz o campo de descrição expandir e empurrar o resto */
         }
 
-        .etiqueta .quant-elim-row {
+        /* Container interno para dividir Quantidade e Eliminação sem quebrar a tabela */
+        .celula-dupla {
+            padding: 0 !important; 
+        }
+
+        .container-metades {
             display: flex;
-            justify-content: space-between;
-            border-top: 1px dashed #ccc;
-            padding-top: 5px;
+            width: 100%;
+            height: 100%;
         }
 
-        .etiqueta .quant-elim-row div {
+        .coluna-metade {
             flex: 1;
+            padding: 3px 5px;
+        }
+
+        .coluna-metade:first-child {
+            border-right: 1px solid #000;
         }
 
         /* Configurações rigorosas de Impressão (A4) */
         @media print {
             @page {
                 size: A4 portrait;
-                margin: 10mm; /* Margem padrão da impressora */
+                margin: 10mm;
             }
 
             .no-print {
@@ -242,17 +236,13 @@
             .grid-etiquetas {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
-                /* Altura fixa de 88mm por etiqueta permite 3 linhas (264mm) + espaço de margens = A4 perfeito */
-                grid-auto-rows: 88mm; 
-                gap: 5mm; /* Espaço entre as etiquetas */
+                grid-auto-rows: 88mm; /* Mantém as 6 etiquetas certinhas no A4 */
+                gap: 5mm; 
             }
 
             .etiqueta {
-                border: 1px solid #000;
                 page-break-inside: avoid;
-                height: 100%;
-                width: 100%;
-                overflow: hidden; /* Evita que o texto quebre o tamanho do grid se for muito longo */
+                overflow: hidden; 
             }
         }
     </style>
@@ -312,11 +302,11 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="quantidade">Quantidade</label>
-                    <input type="text" id="quantidade" placeholder="___ cm">
+                    <input type="text" id="quantidade" placeholder="______ cm">
                 </div>
                 <div class="form-group">
                     <label for="eliminacao">Eliminação</label>
-                    <input type="text" id="eliminacao" placeholder="___/___/______">
+                    <input type="text" id="eliminacao" placeholder="30/12/_______">
                 </div>
             </div>
 
@@ -348,48 +338,59 @@
             const tipo = document.getElementById('tipo').value || '';
             const descricao = document.getElementById('descricao').value || '';
             const quantidade = document.getElementById('quantidade').value || '______ cm';
-            const eliminacao = document.getElementById('eliminacao').value || '___/___/______';
+            const eliminacao = document.getElementById('eliminacao').value || '___/___/_______';
 
+            // Agora a etiqueta é gerada como uma Tabela Completa com grades (bordas)
             const etiquetaHTML = `
                 <div class="etiqueta">
-                    <table>
+                    <table class="tabela-etiqueta">
                         <tr>
-                            <td>Nº DOCUMENTO:</td>
+                            <td class="rotulo">Nº DOCUMENTO:</td>
                             <td>${doc}</td>
                         </tr>
                         <tr>
-                            <td>Data:</td>
+                            <td class="rotulo">Data:</td>
                             <td>${data}</td>
                         </tr>
                         <tr>
-                            <td>Portador/Produtor:</td>
+                            <td class="rotulo">Portador/Produtor:</td>
                             <td>${portador}</td>
                         </tr>
                         <tr>
-                            <td>Destinatário:</td>
+                            <td class="rotulo">Destinatário:</td>
                             <td>${destinatario}</td>
                         </tr>
                         <tr>
-                            <td>Código:</td>
+                            <td class="rotulo">Código:</td>
                             <td>${codigo}</td>
                         </tr>
                         <tr>
-                            <td>Sit. Doc.:</td>
+                            <td class="rotulo">Sit. Doc.:</td>
                             <td>${situacao}</td>
                         </tr>
                         <tr>
-                            <td>Tipo:</td>
+                            <td class="rotulo">Tipo:</td>
                             <td>${tipo}</td>
                         </tr>
+                        <tr>
+                            <td colspan="2" style="border-bottom: none;"><strong>Descrição</strong></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="caixa-descricao" style="border-top: none;">${descricao}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="celula-dupla">
+                                <div class="container-metades">
+                                    <div class="coluna-metade">
+                                        <strong>Quantidade</strong><br>${quantidade}
+                                    </div>
+                                    <div class="coluna-metade">
+                                        <strong>Eliminação</strong><br>${eliminacao}
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
                     </table>
-                    
-                    <div><strong>Descrição</strong></div>
-                    <div class="descricao-box">${descricao}</div>
-                    
-                    <div class="quant-elim-row">
-                        <div><strong>Quantidade</strong><br>${quantidade}</div>
-                        <div><strong>Eliminação</strong><br>${eliminacao}</div>
-                    </div>
                 </div>
             `;
 
