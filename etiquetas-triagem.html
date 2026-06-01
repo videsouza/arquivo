@@ -3,14 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Etiquetas de Triagem - ARQUIVO / SEC</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Gerador de Etiquetas - ARQUIVO / SEC</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --gov-blue: #1351b4;
-            --bg-color: #f4f4f4;
-            --text-color: #333;
+            --bg-body: #f4f5f7;
+            --border-color: #e5e7eb;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --primary-blue: #2563eb;
+            --primary-hover: #1d4ed8;
             --font-family: 'Inter', sans-serif;
         }
 
@@ -22,125 +25,169 @@
 
         body {
             font-family: var(--font-family);
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            background-color: var(--bg-body);
+            color: var(--text-main);
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            padding: 40px 20px;
         }
 
-        /* Cabeçalho e Rodapé */
-        .header, .footer {
-            background-color: var(--gov-blue);
-            color: #ffffff;
-            padding: 15px 20px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-
-        .footer {
-            font-size: 0.9rem;
-            margin-top: auto;
-        }
-
-        /* Layout Principal */
-        .container {
-            display: flex;
-            gap: 30px;
-            padding: 30px;
+        /* Container e Card Principal estilo "Visualizador de Boxes" */
+        .app-container {
             max-width: 1400px;
             margin: 0 auto;
             width: 100%;
+            display: flex;
+            flex-direction: column;
             flex: 1;
         }
 
-        /* Painel de Controle (Formulário) */
-        .painel-controle {
-            background: #fff;
-            padding: 25px;
+        .main-card {
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
             border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            flex: 0 0 400px;
-            height: fit-content;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            flex: 1;
         }
 
-        .painel-controle h2 {
-            margin-bottom: 20px;
-            color: var(--gov-blue);
-            font-size: 1.2rem;
-            border-bottom: 2px solid var(--gov-blue);
-            padding-bottom: 5px;
+        /* Cabeçalho do Card */
+        .card-header {
+            padding: 24px 30px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-icon {
+            color: var(--primary-blue);
+        }
+
+        .header-title h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .header-title p {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .sec-badge {
+            background-color: #f3f4f6;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+        }
+
+        /* Corpo do Card (Divisão Painel / Preview) */
+        .card-body {
+            display: flex;
+            padding: 30px;
+            gap: 40px;
+            flex: 1;
+        }
+
+        /* Formulário */
+        .painel-controle {
+            flex: 0 0 400px;
         }
 
         .form-row {
             display: flex;
-            gap: 10px;
+            gap: 15px;
         }
 
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 16px;
             flex: 1;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            font-size: 0.85rem;
+            margin-bottom: 6px;
+            font-weight: 500;
+            font-size: 0.875rem;
+            color: var(--text-main);
         }
 
         .form-group input, .form-group textarea {
             width: 100%;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
             font-family: var(--font-family);
             font-size: 0.9rem;
+            color: var(--text-main);
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
         .form-group textarea {
             resize: vertical;
-            min-height: 60px;
+            min-height: 80px;
         }
 
+        /* Botões padrão moderno */
         .botoes-acao {
             display: flex;
             gap: 10px;
-            margin-top: 20px;
+            margin-top: 24px;
         }
 
         .btn {
             flex: 1;
-            padding: 10px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            border-radius: 4px;
+            padding: 10px 16px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border-radius: 6px;
             cursor: pointer;
             border: none;
-            transition: background-color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
         }
 
-        .btn-add { background-color: #28a745; color: white; }
-        .btn-add:hover { background-color: #218838; }
+        .btn-add { background-color: #f3f4f6; color: var(--text-main); border: 1px solid var(--border-color); }
+        .btn-add:hover { background-color: #e5e7eb; }
 
-        .btn-print { background-color: var(--gov-blue); color: white; }
-        .btn-print:hover { background-color: #0f4090; }
+        .btn-clear { background-color: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+        .btn-clear:hover { background-color: #fee2e2; }
 
-        .btn-clear { background-color: #dc3545; color: white; }
-        .btn-clear:hover { background-color: #c82333; }
+        .btn-print { background-color: var(--primary-blue); color: white; }
+        .btn-print:hover { background-color: var(--primary-hover); }
 
-        /* Área de Visualização na Tela */
+        /* Área do Preview com estilo Dashed */
         .area-preview {
             flex: 1;
-            background: #fff;
+            background: #fafafa;
+            border: 1px dashed #cbd5e1;
+            border-radius: 8px;
             padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             overflow-y: auto;
-            max-height: calc(100vh - 160px);
+            max-height: calc(100vh - 250px);
         }
 
         .grid-etiquetas {
@@ -149,7 +196,7 @@
             gap: 15px; 
         }
 
-        /* Estrutura da Etiqueta 100% em Tabela (Grades Visíveis) */
+        /* Estrutura da Etiqueta (Tabela do Word) */
         .etiqueta {
             background-color: #fff;
             display: flex;
@@ -162,170 +209,155 @@
             width: 100%;
             height: 100%;
             border-collapse: collapse;
-            border: 2px solid #000; /* Borda externa um pouco mais grossa para destacar a etiqueta */
+            border: 2px solid #000;
         }
 
         .tabela-etiqueta td {
-            border: 1px solid #000; /* As grades internas separando todos os campos */
+            border: 1px solid #000;
             padding: 3px 5px;
             vertical-align: top;
             font-size: 11px;
+            color: #000;
         }
 
-        .tabela-etiqueta .rotulo {
-            font-weight: bold;
-            width: 35%;
-            white-space: nowrap;
-        }
+        .tabela-etiqueta .rotulo { font-weight: bold; width: 35%; white-space: nowrap; }
+        .tabela-etiqueta .caixa-descricao { height: 100%; }
+        
+        .celula-dupla { padding: 0 !important; }
+        .container-metades { display: flex; width: 100%; height: 100%; }
+        .coluna-metade { flex: 1; padding: 3px 5px; }
+        .coluna-metade:first-child { border-right: 1px solid #000; }
 
-        .tabela-etiqueta .caixa-descricao {
-            height: 100%; /* Faz o campo de descrição expandir e empurrar o resto */
-        }
-
-        /* Container interno para dividir Quantidade e Eliminação sem quebrar a tabela */
-        .celula-dupla {
-            padding: 0 !important; 
-        }
-
-        .container-metades {
-            display: flex;
-            width: 100%;
-            height: 100%;
-        }
-
-        .coluna-metade {
-            flex: 1;
-            padding: 3px 5px;
-        }
-
-        .coluna-metade:first-child {
-            border-right: 1px solid #000;
+        /* Rodapé do App */
+        .app-footer {
+            text-align: center;
+            padding-top: 20px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
         }
 
         /* Configurações rigorosas de Impressão (A4) */
         @media print {
-            @page {
-                size: A4 portrait;
-                margin: 10mm;
-            }
-
-            .no-print {
-                display: none !important;
-            }
+            @page { size: A4 portrait; margin: 10mm; }
+            .no-print { display: none !important; }
+            body { background-color: white; margin: 0; padding: 0; }
+            .app-container { max-width: 100%; margin: 0; display: block; }
+            .main-card { border: none; box-shadow: none; border-radius: 0; }
+            .card-body { padding: 0; display: block; }
+            .area-preview { border: none; padding: 0; background: transparent; max-height: none; overflow: visible; }
             
-            body {
-                background-color: white;
-                margin: 0;
-                padding: 0;
-            }
-
-            .container {
-                padding: 0;
-                margin: 0;
-                max-width: 100%;
-                display: block;
-            }
-
-            .area-preview {
-                padding: 0;
-                box-shadow: none;
-                max-height: none;
-                overflow: visible;
-            }
-
             .grid-etiquetas {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
-                grid-auto-rows: 88mm; /* Mantém as 6 etiquetas certinhas no A4 */
+                grid-auto-rows: 88mm; 
                 gap: 5mm; 
             }
-
-            .etiqueta {
-                page-break-inside: avoid;
-                overflow: hidden; 
-            }
+            .etiqueta { page-break-inside: avoid; overflow: hidden; }
         }
     </style>
 </head>
 <body>
 
-    <header class="header no-print">
-        <h1>ARQUIVO / SEC</h1>
-    </header>
-
-    <main class="container">
-        <section class="painel-controle no-print">
-            <h2>Dados da Triagem</h2>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="doc">Nº DOCUMENTO</label>
-                    <input type="text" id="doc" value="S/N">
+    <div class="app-container">
+        <main class="main-card">
+            <header class="card-header no-print">
+                <div class="header-title">
+                    <svg class="header-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="3" y1="9" x2="21" y2="9"></line>
+                        <line x1="9" y1="21" x2="9" y2="9"></line>
+                    </svg>
+                    <div>
+                        <h1>Gerador de Etiquetas</h1>
+                        <p>Preenchimento automatizado para caixas e pacotes</p>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="data">Data</label>
-                    <input type="text" id="data" placeholder="DD/MM/AAAA">
+                <div class="sec-badge">
+                    ARQUIVO / SEC
                 </div>
+            </header>
+
+            <div class="card-body">
+                <section class="painel-controle no-print">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="doc">Nº DOCUMENTO</label>
+                            <input type="text" id="doc" value="S/N">
+                        </div>
+                        <div class="form-group">
+                            <label for="data">Data</label>
+                            <input type="text" id="data" placeholder="DD/MM/AAAA">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="portador">Portador/Produtor</label>
+                        <input type="text" id="portador">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="destinatario">Destinatário</label>
+                        <input type="text" id="destinatario" value="1344 – SEC. MUNICIPAL DE EDUCAÇÃO">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="codigo">Código</label>
+                            <input type="text" id="codigo">
+                        </div>
+                        <div class="form-group">
+                            <label for="situacao">Sit. Doc.</label>
+                            <input type="text" id="situacao" value="AGUARDANDO PLANILHA">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tipo">Tipo</label>
+                        <input type="text" id="tipo">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="descricao">Descrição</label>
+                        <textarea id="descricao" placeholder="Detalhes do conteúdo..."></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="quantidade">Quantidade</label>
+                            <input type="text" id="quantidade" placeholder="______ cm">
+                        </div>
+                        <div class="form-group">
+                            <label for="eliminacao">Eliminação</label>
+                            <input type="text" id="eliminacao" placeholder="___/___/_______">
+                        </div>
+                    </div>
+
+                    <div class="botoes-acao">
+                        <button class="btn btn-add" onclick="adicionarEtiqueta()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            Adicionar
+                        </button>
+                        <button class="btn btn-clear" onclick="limparEtiquetas()">
+                            Limpar
+                        </button>
+                        <button class="btn btn-print" onclick="window.print()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                            Imprimir
+                        </button>
+                    </div>
+                </section>
+
+                <section class="area-preview no-print-bg">
+                    <div class="grid-etiquetas" id="grid-render">
+                        </div>
+                </section>
             </div>
-
-            <div class="form-group">
-                <label for="portador">Portador/Produtor</label>
-                <input type="text" id="portador">
-            </div>
-
-            <div class="form-group">
-                <label for="destinatario">Destinatário</label>
-                <input type="text" id="destinatario" value="1344 – SEC. MUNICIPAL DE EDUCAÇÃO">
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="codigo">Código</label>
-                    <input type="text" id="codigo">
-                </div>
-                <div class="form-group">
-                    <label for="situacao">Sit. Doc.</label>
-                    <input type="text" id="situacao" value="AGUARDANDO PLANILHA">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="tipo">Tipo</label>
-                <input type="text" id="tipo">
-            </div>
-
-            <div class="form-group">
-                <label for="descricao">Descrição</label>
-                <textarea id="descricao" placeholder="Detalhes do conteúdo..."></textarea>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="quantidade">Quantidade</label>
-                    <input type="text" id="quantidade" placeholder="______ cm">
-                </div>
-                <div class="form-group">
-                    <label for="eliminacao">Eliminação</label>
-                    <input type="text" id="eliminacao" placeholder="30/12/_______">
-                </div>
-            </div>
-
-            <div class="botoes-acao">
-                <button class="btn btn-add" onclick="adicionarEtiqueta()">+ Adicionar</button>
-                <button class="btn btn-clear" onclick="limparEtiquetas()">Limpar</button>
-                <button class="btn btn-print" onclick="window.print()">Imprimir</button>
-            </div>
-        </section>
-
-        <section class="area-preview">
-            <div class="grid-etiquetas" id="grid-render">
-                </div>
-        </section>
-    </main>
-
-    <footer class="footer no-print">
-        Desenvolvido por Vinicius A. de Souza
-    </footer>
+        </main>
+        
+        <footer class="app-footer no-print">
+            Desenvolvido por Vinicius A. de Souza
+        </footer>
+    </div>
 
     <script>
         function adicionarEtiqueta() {
@@ -340,7 +372,6 @@
             const quantidade = document.getElementById('quantidade').value || '______ cm';
             const eliminacao = document.getElementById('eliminacao').value || '___/___/_______';
 
-            // Agora a etiqueta é gerada como uma Tabela Completa com grades (bordas)
             const etiquetaHTML = `
                 <div class="etiqueta">
                     <table class="tabela-etiqueta">
