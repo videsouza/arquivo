@@ -287,10 +287,11 @@ if (Test-Path \$diretorio) {
     \$resultados = Get-ChildItem -Path \$diretorio -Recurse -ErrorAction SilentlyContinue | 
         Where-Object { \$_.Name -match "(?i)\$termos" }
 
-    if (\$resultados) {
+   if (\$resultados) {
         \$dadosFormatados = \$resultados | Select-Object \`
             @{Name="Tipo"; Expression={if (\$_.PSIsContainer) {"Pasta"} else {"Arquivo"}}},
             @{Name="Nome"; Expression={\$_.Name}},
+            @{Name="Link Direto"; Expression={'=HIPERLINK("' + \$_.FullName + '";"Abrir")'}},
             @{Name="Caminho Completo"; Expression={\$_.FullName}},
             @{Name="Tamanho (MB)"; Expression={if (\$_.PSIsContainer) {""} else {[math]::round(\$_.Length / 1MB, 2)}}},
             @{Name="Ultima Modificacao"; Expression={\$_.LastWriteTime}}
