@@ -241,7 +241,6 @@
 
     <script>
         // --- ESTADO ---
-        // Vamos armazenar os dados crus (Array de Arrays) para indexação precisa
         let rawData = { 1: null, 2: null, 3: null };
         let allBoxes = []; 
         let uniqueSectors = new Set();
@@ -257,7 +256,6 @@
                 const workbook = XLSX.read(data, {type: 'array'});
                 const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
                 
-                // Usando header: 1 para ler como matriz exata de linhas/colunas (ignora nomes de cabeçalho)
                 const rows = XLSX.utils.sheet_to_json(firstSheet, {header: 1, blankrows: false});
                 
                 rawData[index] = rows;
@@ -272,7 +270,6 @@
         }
 
         function checkReadyState() {
-            // Habilita o botão apenas se Planilha 1 e Planilha 2 estiverem carregadas
             if(rawData[1] && rawData[2]) {
                 document.getElementById('btnProcess').disabled = false;
             }
@@ -285,16 +282,13 @@
 
             // ==========================================
             // PLANILHA 1: GUARDA PERMANENTE
-            // Estrutura: Linha 0 (Lixo), Col E (4) = Setor, Col K (10) = Box
-            // Fim: Col A tem "impresso em"
             // ==========================================
             let sheet1 = rawData[1];
-            for(let i = 1; i < sheet1.length; i++) { // Começa do index 1 (pula primeira linha)
+            for(let i = 1; i < sheet1.length; i++) { 
                 let row = sheet1[i] || [];
                 
-                // Verifica marca de fim
                 let colA = String(row[0] || "").trim().toLowerCase();
-                if(colA.includes("impresso em")) break; // Para a leitura
+                if(colA.includes("impresso em")) break; 
                 
                 let setor = String(row[4] || "").trim().toUpperCase(); // Coluna E
                 let boxRaw = row[10]; // Coluna K
@@ -311,37 +305,49 @@
 
             // ==========================================
             // PLANILHA 2: TOTAIS POR STATUS
-            // Estrutura: Linhas 0, 1 (Lixo), Linha 2 (Cabeçalhos B3 a I3), Dados a partir da 3 (A4 = Box)
-            // Fim: Col A tem "Total"
             // ==========================================
             let sheet2 = rawData[2];
-            let headerRow = sheet2[2] || [];
             let totalColIdx = -1;
             
-            // Procura onde está a coluna "Total" no cabeçalho
-            for(let c = 0; c < headerRow.length; c++) {
-                if(String(headerRow[c]).toUpperCase().trim() === "TOTAL") {
-                    totalColIdx = c;
-                    break;
+            // BUSCA INTELIGENTE: Procura a palavra TOTAL nas 5 primeiras linhas para achar a coluna certa
+            for(let r = 0; r < Math.min(5, sheet2.length); r++) {
+                let row = sheet2[r] || [];
+                for(let c = 0; c < row.length; c++) {
+                    let cellVal = String(row[c] || "").toUpperCase().trim();
+                    if(cellVal === "TOTAL" || cellVal === "TOTAIS") {
+                        totalColIdx = c;
+                        break;
+                    }
                 }
+                if(totalColIdx !== -1) break;
             }
 
-            for(let i = 3; i < sheet2.length; i++) { // Começa do index 3 (A4)
+            // Fallback caso o cabeçalho esteja invisível ou mesclado: assume coluna I (índice 8)
+            if (totalColIdx === -1) totalColIdx = 8; 
+
+            for(let i = 3; i < sheet2.length; i++) { 
                 let row = sheet2[i] || [];
                 
-                // Verifica marca de fim
-                let colA = String(row[0] || "").trim().toLowerCase();
-                if(colA === "total") break; // Para a leitura
+                let colA = String(row[0] || "").trim().toUpperCase();
+                if(colA === "TOTAL" || colA.startsWith("TOTAL")) break; 
                 
                 let boxRaw = row[0]; // Coluna A
                 let totalRaw = row[totalColIdx];
                 
-                if (boxRaw !== undefined && boxRaw !== null) {
+                if (boxRaw !== undefined && boxRaw !== null && boxRaw !== "") {
                     let boxId = extractBoxNumber(boxRaw);
                     if (boxId !== null) {
                         if (!tempBoxes[boxId]) initBox(tempBoxes, boxId);
-                        if (totalRaw !== undefined && totalRaw !== "") {
-                            tempBoxes[boxId].total = parseFloat(totalRaw);
+                        
+                        // BLINDAGEM DE VALOR: Trata o '0', vazios e strings numéricas
+                        if (totalRaw !== undefined && totalRaw !== null && String(totalRaw).trim() !== "") {
+                            // Substitui possível vírgula por ponto
+                            let cleanVal = String(totalRaw).replace(',', '.');
+                            let parsedTotal = parseFloat(cleanVal);
+                            
+                            if (!isNaN(parsedTotal)) {
+                                tempBoxes[boxId].total = parsedTotal;
+                            }
                         }
                     }
                 }
@@ -349,11 +355,10 @@
 
             // ==========================================
             // PLANILHA 3: MEDIDAS EM CM (OPCIONAL)
-            // Estrutura: Col A (0) = Box, Col B (1) = Medida
             // ==========================================
             if (rawData[3]) {
                 let sheet3 = rawData[3];
-                for(let i = 1; i < sheet3.length; i++) { // Assumindo cabeçalho na linha 0
+                for(let i = 1; i < sheet3.length; i++) { 
                     let row = sheet3[i] || [];
                     let boxRaw = row[0];
                     let cmRaw = row[1];
@@ -362,7 +367,12 @@
                         let boxId = extractBoxNumber(boxRaw);
                         if (boxId !== null) {
                             if (!tempBoxes[boxId]) initBox(tempBoxes, boxId);
-                            tempBoxes[boxId].espaco = parseFloat(cmRaw);
+                            // Substitui vírgula por ponto
+                            let cleanCm = String(cmRaw).replace(',', '.');
+                            let parsedCm = parseFloat(cleanCm);
+                            if (!isNaN(parsedCm)) {
+                                tempBoxes[boxId].espaco = parsedCm;
+                            }
                         }
                     }
                 }
@@ -375,26 +385,20 @@
             for (let boxId in tempBoxes) {
                 let mb = tempBoxes[boxId];
                 
-                // Prioridades de cor:
-                // 1. Amarelo (Prioridade se Planilha 3 enviada): espaco > 0 E espaco < 14
-                // 2. Verde: total === 0
-                // 3. Cinza: default
-                
-                mb.colorClass = "box-gray"; // Padrão
+                mb.colorClass = "box-gray"; 
                 
                 if (mb.espaco !== null && mb.espaco > 0 && mb.espaco < 14) {
                     mb.colorClass = "box-yellow";
-                } else if (mb.total === 0) {
+                } else if (mb.total === 0) { // Regra do Verde travada com sucesso
                     mb.colorClass = "box-green";
                 }
 
                 allBoxes.push(mb);
             }
 
-            // Ordenação Numérica Inteligente
             allBoxes.sort((a, b) => a.id - b.id);
 
-            // Interface Update
+            // Atualiza UI
             document.getElementById('uploadContainer').style.display = 'none';
             document.getElementById('controlPanel').classList.add('show');
             
@@ -423,7 +427,7 @@
             });
             
             sortedSectors.forEach(sector => {
-                select.innerHTML += `<option value="${sector}">${sector}</option>`; // Só setores da Planilha 1
+                select.innerHTML += `<option value="${sector}">${sector}</option>`;
             });
         }
 
@@ -432,7 +436,7 @@
             container.style.display = 'grid';
             container.innerHTML = '';
 
-            const chunkSize = 49; // 7x7
+            const chunkSize = 49; 
             for (let i = 0; i < allBoxes.length; i += chunkSize) {
                 const chunk = allBoxes.slice(i, i + chunkSize);
                 const blocoId = Math.floor(i / chunkSize) + 1;
