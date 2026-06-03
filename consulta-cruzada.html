@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Radar Logístico de Acervo | Hub de Serviços</title>
+    <title>Radar Logístico Avançado | Hub de Serviços</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -22,13 +22,17 @@
             --border: #d1d5db;
             
             /* Status Colors */
-            --box-available-bg: #d1fae5;
-            --box-available-text: #065f46;
-            --box-available-border: #34d399;
+            --box-green-bg: #d1fae5;
+            --box-green-text: #065f46;
+            --box-green-border: #34d399;
+
+            --box-yellow-bg: #fef08a;
+            --box-yellow-text: #854d0e;
+            --box-yellow-border: #fde047;
             
-            --box-full-bg: #f1f5f9;
-            --box-full-text: #94a3b8;
-            --box-full-border: #e2e8f0;
+            --box-gray-bg: #f1f5f9;
+            --box-gray-text: #94a3b8;
+            --box-gray-border: #e2e8f0;
             
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
        }
@@ -66,7 +70,7 @@
         .content { padding: 40px; }
 
         /* UPLOAD GRID */
-        .upload-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
+        .upload-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px; }
         .upload-area {
             background: #f9fafb; border: 2px dashed var(--border); border-radius: 12px;
             padding: 30px 15px; text-align: center; cursor: pointer; transition: all 0.3s; position: relative;
@@ -81,6 +85,8 @@
         }
         .file-name { font-size: 12px; font-weight: 600; color: var(--primary); margin-top: 10px; word-break: break-all; }
 
+        .action-bar { display: flex; justify-content: flex-end; margin-bottom: 30px; }
+
         /* CONTROLES E FILTROS */
         .control-panel {
             background: white; border: 1px solid var(--border); border-radius: 12px;
@@ -94,11 +100,12 @@
         .panel-info h3 { font-size: 18px; font-weight: 700; color: var(--text-main); margin-bottom: 10px; }
         
         /* Legenda */
-        .legend { display: flex; gap: 15px; font-size: 12px; font-weight: 600; color: var(--text-sub); }
+        .legend { display: flex; flex-wrap: wrap; gap: 15px; font-size: 12px; font-weight: 600; color: var(--text-sub); }
         .legend-item { display: flex; align-items: center; gap: 6px; }
         .legend-color { width: 14px; height: 14px; border-radius: 4px; }
-        .color-avail { background: var(--box-available-bg); border: 1px solid var(--box-available-border); }
-        .color-full { background: var(--box-full-bg); border: 1px solid var(--box-full-border); }
+        .color-green { background: var(--box-green-bg); border: 1px solid var(--box-green-border); }
+        .color-yellow { background: var(--box-yellow-bg); border: 1px solid var(--box-yellow-border); }
+        .color-gray { background: var(--box-gray-bg); border: 1px solid var(--box-gray-border); }
         .color-target { background: transparent; border: 3px solid var(--primary); border-radius: 4px; }
 
         .selector-group { flex: 1; max-width: 400px; min-width: 300px; }
@@ -110,23 +117,15 @@
         }
         .select-control:focus { border-color: var(--primary); outline: none; }
 
-        /* GRID 7x7 - AJUSTADO PARA 4 BLOCOS POR LINHA */
+        /* GRID 7x7 (4 por linha) */
         .matrices-container { 
             display: grid; 
-            /* Fixa exatamente 4 colunas de tamanhos iguais */
             grid-template-columns: repeat(4, 1fr); 
             gap: 20px; 
             display: none; 
         }
-        
-        /* Em telas menores que 1200px, cai para 2 blocos para não quebrar o layout */
-        @media (max-width: 1200px) {
-            .matrices-container { grid-template-columns: repeat(2, 1fr); }
-        }
-        /* Em telas de celular, cai para 1 bloco */
-        @media (max-width: 768px) {
-            .matrices-container { grid-template-columns: 1fr; }
-        }
+        @media (max-width: 1200px) { .matrices-container { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 768px) { .matrices-container { grid-template-columns: 1fr; } }
         
         .block-7x7 {
             background: white; border: 1px solid var(--border); border-radius: 12px; padding: 15px;
@@ -137,9 +136,7 @@
             display: flex; justify-content: space-between; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;
         }
         
-        .grid-layout {
-            display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;
-        }
+        .grid-layout { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
         
         .box-cell {
             aspect-ratio: 1 / 1; border-radius: 4px;
@@ -149,14 +146,12 @@
             position: relative;
         }
         
-        .box-cell.is-full {
-            background: var(--box-full-bg); border: 1px solid var(--box-full-border); color: var(--box-full-text);
-        }
+        /* Status Cores */
+        .box-green { background: var(--box-green-bg); border: 1px solid var(--box-green-border); color: var(--box-green-text); }
+        .box-yellow { background: var(--box-yellow-bg); border: 1px solid var(--box-yellow-border); color: var(--box-yellow-text); }
+        .box-gray { background: var(--box-gray-bg); border: 1px solid var(--box-gray-border); color: var(--box-gray-text); }
         
-        .box-cell.is-avail {
-            background: var(--box-available-bg); border: 1px solid var(--box-available-border); color: var(--box-available-text);
-        }
-        
+        /* Destaque Setor (Borda Azul) */
         .box-cell.sector-match {
             box-shadow: 0 0 0 3px var(--primary);
             transform: scale(1.15);
@@ -165,16 +160,12 @@
             font-weight: 800;
         }
         
-        .box-cell.sector-match.is-avail {
-            box-shadow: 0 0 0 3px var(--primary), 0 0 10px rgba(37, 99, 235, 0.5);
-            background: #a7f3d0; 
-        }
-        
-        .box-cell.empty {
-            background: transparent; border: 1px dashed #cbd5e1; color: transparent; pointer-events: none;
-        }
+        .box-cell.empty { background: transparent; border: 1px dashed #cbd5e1; color: transparent; pointer-events: none; }
 
-        .btn { padding: 10px 20px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; transition: 0.2s; }
+        .btn { padding: 12px 24px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 15px; transition: 0.2s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); }
+        .btn-primary:disabled { background: #9ca3af; cursor: not-allowed; transform: none; }
         .btn-secondary { background: white; border: 1px solid var(--border); color: var(--text-main); }
         .btn-secondary:hover { background: #f9fafb; }
 
@@ -186,53 +177,58 @@
     <div class="container">
         <div class="header">
             <div>
-                <h1><i class="fas fa-radar"></i> Radar Logístico de Acervo - v4</h1>
-                <p>Mapeamento visual global para localização de espaços vazios próximos a setores</p>
+                <h1><i class="fas fa-layer-group"></i> Radar Logístico Avançado</h1>
+                <p>Mapeamento visual integrado com extração de dados brutos</p>
             </div>
             <button class="btn btn-secondary" onclick="location.reload()">
-                <i class="fas fa-undo"></i> Reiniciar
+                <i class="fas fa-undo"></i> Nova Análise
             </button>
         </div>
 
         <div class="content">
             
-            <div class="upload-grid" id="uploadSection">
-                <div class="upload-area" id="drop1" onclick="document.getElementById('file1').click()">
-                    <span class="step-badge">Fonte 1</span>
-                    <input type="file" id="file1" accept=".xlsx,.xls,.csv" hidden onchange="handleFile(this, 1)">
-                    <i class="fas fa-file-excel upload-icon" id="icon1"></i>
-                    <h3 style="font-size:15px; font-weight:700;">Planilha 1</h3>
-                    <div class="file-name" id="name1">Nenhum arquivo</div>
+            <div id="uploadContainer">
+                <div class="upload-grid">
+                    <div class="upload-area" id="drop1" onclick="document.getElementById('file1').click()">
+                        <span class="step-badge">1. Guarda Permanente (Obrigatório)</span>
+                        <input type="file" id="file1" accept=".xlsx,.xls,.csv" hidden onchange="handleFile(this, 1)">
+                        <i class="fas fa-archive upload-icon" id="icon1"></i>
+                        <div class="file-name" id="name1">Nenhum arquivo</div>
+                    </div>
+                    <div class="upload-area" id="drop2" onclick="document.getElementById('file2').click()">
+                        <span class="step-badge">2. Totais por Status (Obrigatório)</span>
+                        <input type="file" id="file2" accept=".xlsx,.xls,.csv" hidden onchange="handleFile(this, 2)">
+                        <i class="fas fa-chart-pie upload-icon" id="icon2"></i>
+                        <div class="file-name" id="name2">Nenhum arquivo</div>
+                    </div>
+                    <div class="upload-area" id="drop3" onclick="document.getElementById('file3').click()">
+                        <span class="step-badge">3. Medidas em CM (Opcional)</span>
+                        <input type="file" id="file3" accept=".xlsx,.xls,.csv" hidden onchange="handleFile(this, 3)">
+                        <i class="fas fa-ruler upload-icon" id="icon3"></i>
+                        <div class="file-name" id="name3">Nenhum arquivo</div>
+                    </div>
                 </div>
-                <div class="upload-area" id="drop2" onclick="document.getElementById('file2').click()">
-                    <span class="step-badge">Fonte 2</span>
-                    <input type="file" id="file2" accept=".xlsx,.xls,.csv" hidden onchange="handleFile(this, 2)">
-                    <i class="fas fa-file-excel upload-icon" id="icon2"></i>
-                    <h3 style="font-size:15px; font-weight:700;">Planilha 2</h3>
-                    <div class="file-name" id="name2">Nenhum arquivo</div>
-                </div>
-                <div class="upload-area" id="drop3" onclick="document.getElementById('file3').click()">
-                    <span class="step-badge">Fonte 3</span>
-                    <input type="file" id="file3" accept=".xlsx,.xls,.csv" hidden onchange="handleFile(this, 3)">
-                    <i class="fas fa-file-excel upload-icon" id="icon3"></i>
-                    <h3 style="font-size:15px; font-weight:700;">Planilha 3</h3>
-                    <div class="file-name" id="name3">Nenhum arquivo</div>
+                <div class="action-bar">
+                    <button class="btn btn-primary" id="btnProcess" disabled onclick="processarDados()">
+                        <i class="fas fa-cogs"></i> Gerar Mapa Logístico
+                    </button>
                 </div>
             </div>
 
             <div class="control-panel" id="controlPanel">
                 <div class="panel-info">
-                    <h3>Visão Geral do Arquivo Físico</h3>
+                    <h3>Mapa Físico do Acervo</h3>
                     <div class="legend">
-                        <div class="legend-item"><div class="legend-color color-full"></div> Ocupado / Indisponível</div>
-                        <div class="legend-item"><div class="legend-color color-avail"></div> Espaço Livre / Vazio</div>
-                        <div class="legend-item"><div class="legend-color color-target"></div> Alvo (Setor Escolhido)</div>
+                        <div class="legend-item"><div class="legend-color color-green"></div> Total = 0 (Vazio)</div>
+                        <div class="legend-item"><div class="legend-color color-yellow"></div> Espaço &gt; 0 e &lt; 14cm</div>
+                        <div class="legend-item"><div class="legend-color color-gray"></div> Sem espaço livre</div>
+                        <div class="legend-item"><div class="legend-color color-target"></div> Borda: Setor Escolhido</div>
                     </div>
                 </div>
                 <div class="selector-group">
-                    <label>Localizar Setor (Radar)</label>
+                    <label>Localizar Setor (Borda Azul)</label>
                     <select class="select-control" id="sectorSelect" onchange="highlightSector()">
-                        <option value="">-- Ver arquivo completo (Sem radar) --</option>
+                        <option value="">-- Ver todos (Sem borda de destaque) --</option>
                     </select>
                 </div>
             </div>
@@ -245,7 +241,8 @@
 
     <script>
         // --- ESTADO ---
-        let datasets = { 1: [], 2: [], 3: [] };
+        // Vamos armazenar os dados crus (Array de Arrays) para indexação precisa
+        let rawData = { 1: null, 2: null, 3: null };
         let allBoxes = []; 
         let uniqueSectors = new Set();
 
@@ -259,13 +256,15 @@
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, {type: 'array'});
                 const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = XLSX.utils.sheet_to_json(firstSheet, {defval: ""});
                 
-                datasets[index] = jsonData;
+                // Usando header: 1 para ler como matriz exata de linhas/colunas (ignora nomes de cabeçalho)
+                const rows = XLSX.utils.sheet_to_json(firstSheet, {header: 1, blankrows: false});
+                
+                rawData[index] = rows;
 
                 document.getElementById(`drop${index}`).classList.add('loaded');
                 document.getElementById(`icon${index}`).className = 'fas fa-check-circle upload-icon';
-                document.getElementById(`name${index}`).innerText = `${file.name} (${jsonData.length} linhas)`;
+                document.getElementById(`name${index}`).innerText = `${file.name} (${rows.length} linhas)`;
 
                 checkReadyState();
             };
@@ -273,103 +272,158 @@
         }
 
         function checkReadyState() {
-            if(datasets[1].length > 0 && datasets[2].length > 0 && datasets[3].length > 0) {
-                processAndRenderAllData();
+            // Habilita o botão apenas se Planilha 1 e Planilha 2 estiverem carregadas
+            if(rawData[1] && rawData[2]) {
+                document.getElementById('btnProcess').disabled = false;
             }
         }
 
-        // --- 2. PROCESSAMENTO ---
-        function processAndRenderAllData() {
+        // --- 2. EXTRAÇÃO E REGRAS ---
+        function processarDados() {
             let tempBoxes = {};
             uniqueSectors.clear();
 
-            const getBoxKey = (row) => {
-                for (let key in row) {
-                    let k = key.toUpperCase().trim();
-                    if (k === 'BOX' || k === 'BOX ID' || k === 'ID BOX') return row[key];
+            // ==========================================
+            // PLANILHA 1: GUARDA PERMANENTE
+            // Estrutura: Linha 0 (Lixo), Col E (4) = Setor, Col K (10) = Box
+            // Fim: Col A tem "impresso em"
+            // ==========================================
+            let sheet1 = rawData[1];
+            for(let i = 1; i < sheet1.length; i++) { // Começa do index 1 (pula primeira linha)
+                let row = sheet1[i] || [];
+                
+                // Verifica marca de fim
+                let colA = String(row[0] || "").trim().toLowerCase();
+                if(colA.includes("impresso em")) break; // Para a leitura
+                
+                let setor = String(row[4] || "").trim().toUpperCase(); // Coluna E
+                let boxRaw = row[10]; // Coluna K
+                
+                if (boxRaw !== undefined && boxRaw !== null && setor) {
+                    let boxId = extractBoxNumber(boxRaw);
+                    if (boxId !== null) {
+                        if (!tempBoxes[boxId]) initBox(tempBoxes, boxId);
+                        tempBoxes[boxId].setores.add(setor);
+                        uniqueSectors.add(setor);
+                    }
                 }
-                return null;
-            };
+            }
 
-            // 2.1 FUSÃO (JOIN)
-            [1, 2, 3].forEach(idx => {
-                datasets[idx].forEach(row => {
-                    let rawBoxVal = getBoxKey(row);
-                    if (rawBoxVal === null || rawBoxVal === undefined || rawBoxVal === "") return;
+            // ==========================================
+            // PLANILHA 2: TOTAIS POR STATUS
+            // Estrutura: Linhas 0, 1 (Lixo), Linha 2 (Cabeçalhos B3 a I3), Dados a partir da 3 (A4 = Box)
+            // Fim: Col A tem "Total"
+            // ==========================================
+            let sheet2 = rawData[2];
+            let headerRow = sheet2[2] || [];
+            let totalColIdx = -1;
+            
+            // Procura onde está a coluna "Total" no cabeçalho
+            for(let c = 0; c < headerRow.length; c++) {
+                if(String(headerRow[c]).toUpperCase().trim() === "TOTAL") {
+                    totalColIdx = c;
+                    break;
+                }
+            }
+
+            for(let i = 3; i < sheet2.length; i++) { // Começa do index 3 (A4)
+                let row = sheet2[i] || [];
+                
+                // Verifica marca de fim
+                let colA = String(row[0] || "").trim().toLowerCase();
+                if(colA === "total") break; // Para a leitura
+                
+                let boxRaw = row[0]; // Coluna A
+                let totalRaw = row[totalColIdx];
+                
+                if (boxRaw !== undefined && boxRaw !== null) {
+                    let boxId = extractBoxNumber(boxRaw);
+                    if (boxId !== null) {
+                        if (!tempBoxes[boxId]) initBox(tempBoxes, boxId);
+                        if (totalRaw !== undefined && totalRaw !== "") {
+                            tempBoxes[boxId].total = parseFloat(totalRaw);
+                        }
+                    }
+                }
+            }
+
+            // ==========================================
+            // PLANILHA 3: MEDIDAS EM CM (OPCIONAL)
+            // Estrutura: Col A (0) = Box, Col B (1) = Medida
+            // ==========================================
+            if (rawData[3]) {
+                let sheet3 = rawData[3];
+                for(let i = 1; i < sheet3.length; i++) { // Assumindo cabeçalho na linha 0
+                    let row = sheet3[i] || [];
+                    let boxRaw = row[0];
+                    let cmRaw = row[1];
                     
-                    let boxIdStr = String(rawBoxVal).trim().toUpperCase();
-
-                    if (!tempBoxes[boxIdStr]) {
-                        tempBoxes[boxIdStr] = { 
-                            id: boxIdStr, 
-                            setores: new Set(), 
-                            total: null, 
-                            espaco: null, 
-                            reservado: null, 
-                            isAvail: false 
-                        };
-                    }
-
-                    for (let key in row) {
-                        let k = key.toUpperCase().trim();
-                        let val = row[key];
-
-                        if (k === 'COD_SETOR' && val !== "") {
-                            let setorStr = String(val).trim();
-                            tempBoxes[boxIdStr].setores.add(setorStr);
-                            uniqueSectors.add(setorStr);
-                        }
-                        if (k === 'TOTAL' && val !== "") {
-                            tempBoxes[boxIdStr].total = parseFloat(val);
-                        }
-                        if ((k.includes('ESPAÇO LIVRE') || k.includes('ESPACO LIVRE')) && val !== "") {
-                            tempBoxes[boxIdStr].espaco = parseFloat(val);
-                        }
-                        if (k === 'RESERVADO' && val !== "") {
-                            tempBoxes[boxIdStr].reservado = String(val).trim().toUpperCase();
+                    if (boxRaw !== undefined && boxRaw !== null && cmRaw !== undefined && cmRaw !== "") {
+                        let boxId = extractBoxNumber(boxRaw);
+                        if (boxId !== null) {
+                            if (!tempBoxes[boxId]) initBox(tempBoxes, boxId);
+                            tempBoxes[boxId].espaco = parseFloat(cmRaw);
                         }
                     }
-                });
-            });
+                }
+            }
 
-            // 2.2 CALCULAR DISPONIBILIDADE
+            // ==========================================
+            // APLICAÇÃO DE CORES (REGRAS DE NEGÓCIO)
+            // ==========================================
             allBoxes = [];
             for (let boxId in tempBoxes) {
                 let mb = tempBoxes[boxId];
                 
-                let total = mb.total !== null ? mb.total : -1; 
-                let espaco = mb.espaco !== null ? mb.espaco : -1;
-                let reservado = mb.reservado !== null ? mb.reservado : "";
+                // Prioridades de cor:
+                // 1. Amarelo (Prioridade se Planilha 3 enviada): espaco > 0 E espaco < 14
+                // 2. Verde: total === 0
+                // 3. Cinza: default
+                
+                mb.colorClass = "box-gray"; // Padrão
+                
+                if (mb.espaco !== null && mb.espaco > 0 && mb.espaco < 14) {
+                    mb.colorClass = "box-yellow";
+                } else if (mb.total === 0) {
+                    mb.colorClass = "box-green";
+                }
 
-                let condicao1 = (total === 0);
-                let condicao2 = (espaco > 0 && espaco < 14 && (reservado === "NÃO" || reservado === "NAO"));
-
-                mb.isAvail = (condicao1 || condicao2);
                 allBoxes.push(mb);
             }
 
-            // --- ORDENAÇÃO INTELIGENTE PARA BOXES ---
-            allBoxes.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' }));
+            // Ordenação Numérica Inteligente
+            allBoxes.sort((a, b) => a.id - b.id);
 
-            // 2.3 ATUALIZA INTERFACE
-            document.getElementById('uploadSection').style.display = 'none';
+            // Interface Update
+            document.getElementById('uploadContainer').style.display = 'none';
             document.getElementById('controlPanel').classList.add('show');
             
             populateSectorDropdown();
             renderMatrices();
         }
 
-        // --- 3. RENDERIZAÇÃO MATRIZES ---
+        // Helpers
+        function extractBoxNumber(rawVal) {
+            let numStr = String(rawVal).replace(/[^0-9]/g, '');
+            let parsed = parseInt(numStr, 10);
+            return isNaN(parsed) ? null : parsed;
+        }
+
+        function initBox(dict, boxId) {
+            dict[boxId] = { id: boxId, setores: new Set(), total: null, espaco: null, colorClass: "" };
+        }
+
+        // --- 3. RENDERIZAÇÃO MATRIZES E DROPDOWN ---
         function populateSectorDropdown() {
             const select = document.getElementById('sectorSelect');
-            select.innerHTML = '<option value="">-- Ver arquivo completo (Sem radar) --</option>';
+            select.innerHTML = '<option value="">-- Ver todos (Sem borda de destaque) --</option>';
             
             let sortedSectors = Array.from(uniqueSectors).sort((a, b) => {
                 return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
             });
             
             sortedSectors.forEach(sector => {
-                select.innerHTML += `<option value="${sector}">Setor: ${sector}</option>`;
+                select.innerHTML += `<option value="${sector}">${sector}</option>`; // Só setores da Planilha 1
             });
         }
 
@@ -389,14 +443,13 @@
                 let gridHTML = '';
                 
                 chunk.forEach(box => {
-                    const statusClass = box.isAvail ? 'is-avail' : 'is-full';
                     const setoresStr = Array.from(box.setores).join(',');
                     
                     gridHTML += `
-                        <div class="box-cell ${statusClass}" 
+                        <div class="box-cell ${box.colorClass}" 
                              data-box="${box.id}" 
                              data-setores="${setoresStr}" 
-                             title="Box: ${box.id}\nStatus: ${box.isAvail ? 'Disponível' : 'Ocupado'}\nSetores: ${setoresStr || 'Nenhum'}">
+                             title="Box: ${box.id}\nSetores: ${setoresStr || 'Nenhum'}\nTotal (Plan2): ${box.total !== null ? box.total : '-'}\nMedida (Plan3): ${box.espaco !== null ? box.espaco + ' cm' : '-'}">
                             ${box.id}
                         </div>`;
                 });
@@ -420,7 +473,7 @@
             }
         }
 
-        // --- 4. DESTAQUE E RADAR ---
+        // --- 4. DESTAQUE (BORDA AZUL) ---
         function highlightSector() {
             const selectedSector = document.getElementById('sectorSelect').value;
             const allCells = document.querySelectorAll('.box-cell:not(.empty)');
