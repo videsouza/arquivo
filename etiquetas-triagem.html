@@ -886,6 +886,8 @@ Código,Descrição
             const quantidade = document.getElementById('quantidade').value || '______ cm';
             const eliminacao = document.getElementById('eliminacao').value || '___/___/_______';
 
+            const situacaoDoc = document.getElementById('situacao-doc').value;
+
             const etiquetaHTML = `
                 <div class="etiqueta">
                     <table class="tabela-etiqueta">
@@ -911,7 +913,7 @@ Código,Descrição
                         </tr>
                         <tr>
                             <td class="rotulo">Sit. Doc.:</td>
-                            <td>${situacao}</td>
+                            <td>${situacaoDoc}</td>
                         </tr>
                         <tr>
                             <td class="rotulo">Tipo:</td>
