@@ -787,11 +787,7 @@ Código,Descrição
                         </div>
                         <div class="form-group">
                             <label for="situacao">Sit. Doc.</label>
-                            <!-- <input type="text" id="situacao" value="AGUARDANDO PLANILHA">-->
-                            <select id="situacao-doc">
-                                <option value="GUARDA PERMANENTE">GUARDA PERMANENTE</option>
-                                <option value="GUARDA PERMANENTE POR AMOSTRAGEM">GUARDA PERMANENTE POR AMOSTRAGEM</option>
-                            </select>
+                            <input type="text" id="situacao" value="AGUARDANDO PLANILHA">
                         </div>
                     </div>
 
@@ -886,8 +882,7 @@ Código,Descrição
             const quantidade = document.getElementById('quantidade').value || '______ cm';
             const eliminacao = document.getElementById('eliminacao').value || '___/___/_______';
 
-            const situacaoDoc = document.getElementById('situacao-doc').value;
-
+          
             const etiquetaHTML = `
                 <div class="etiqueta">
                     <table class="tabela-etiqueta">
@@ -913,7 +908,7 @@ Código,Descrição
                         </tr>
                         <tr>
                             <td class="rotulo">Sit. Doc.:</td>
-                            <td>${situacaoDoc}</td>
+                            <td>${situacao}</td>
                         </tr>
                         <tr>
                             <td class="rotulo">Tipo:</td>
