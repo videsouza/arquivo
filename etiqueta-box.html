@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Etiquetas - Nº de Box Oficial - ARQUIVO / SEC</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400,600,700,800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-body: #f4f5f7;
+            --border-color: #e5e7eb;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --primary-blue: #2563eb;
+            --primary-hover: #1d4ed8;
+            --font-family: 'Inter', sans-serif;
+            --gov-blue: #1351b4; 
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .app-container { max-width: 1400px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; flex: 1; }
+        .main-card { background-color: #ffffff; border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; overflow: hidden; flex: 1; }
+        
+        .card-header { padding: 24px 30px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; }
+        .header-title { display: flex; align-items: center; gap: 12px; }
+        .header-icon { color: var(--gov-blue); }
+        .header-title h1 { font-size: 1.25rem; font-weight: 600; color: var(--text-main); }
+        .header-title p { font-size: 0.875rem; color: var(--text-muted); margin-top: 4px; }
+        .sec-badge { background-color: #f3f4f6; padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); border: 1px solid var(--border-color); }
+
+        .card-body { display: flex; padding: 30px; gap: 40px; flex: 1; }
+        .painel-controle { flex: 0 0 400px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 0.875rem; color: var(--text-main); }
+        
+        .form-group textarea {
+            width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px;
+            font-family: var(--font-family); font-size: 0.95rem; color: var(--text-main); transition: border-color 0.2s;
+            resize: vertical; min-height: 120px;
+        }
+        .form-group textarea:focus { outline: none; border-color: var(--gov-blue); box-shadow: 0 0 0 3px rgba(19, 81, 180, 0.1); }
+        .form-text { font-size: 0.8rem; color: var(--text-muted); margin-top: 6px; line-height: 1.4; }
+
+        .botoes-acao { display: flex; gap: 10px; margin-top: 20px; }
+        .btn { flex: 1; padding: 12px 16px; font-size: 0.9rem; font-weight: 500; border-radius: 6px; cursor: pointer; border: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
+        .btn-add { background-color: #f3f4f6; color: var(--text-main); border: 1px solid var(--border-color); }
+        .btn-add:hover { background-color: #e5e7eb; }
+        .btn-clear { background-color: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+        .btn-clear:hover { background-color: #fee2e2; }
+        .btn-print { background-color: var(--gov-blue); color: white; }
+        .btn-print:hover { background-color: #0f4090; }
+
+        .area-preview { flex: 1; background: #fafafa; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 20px; overflow-y: auto; max-height: calc(100vh - 250px); }
+        .grid-etiquetas { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+        /* Estilo da Etiqueta Baseado no Modelo Oficial do Carimbo */
+        .etiqueta { 
+            background-color: #fff; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center;     
+            width: 100%; 
+            height: 100%;
+            border: 2px solid #000;
+            padding: 15px;
+            text-align: center;
+        }
+
+        /* Simulação elegante do carimbo circular institucional */
+        .carimbo-circulo {
+            width: 140px;
+            height: 140px;
+            border: 2px dashed #3b82f6; /* Tom azulado remetendo ao carimbo físico */
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            margin-bottom: 15px;
+            background-color: #f8fafc;
+        }
+
+        .carimbo-circulo .texto-sup {
+            font-size: 0.55rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #1e3a8a;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+
+        .carimbo-circulo .texto-central {
+            font-size: 0.95rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #1e3a8a;
+            text-align: center;
+            line-height: 1.1;
+            margin: 4px 0;
+        }
+
+        .etiqueta .rotulo-box {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 2px;
+        }
+
+        .etiqueta .numero-box {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1;
+            color: #000;
+        }
+
+        .app-footer { text-align: center; padding-top: 20px; font-size: 0.85rem; color: var(--text-muted); }
+
+        @media print {
+            @page { size: A4 portrait; margin: 10mm; }
+            .no-print { display: none !important; }
+            body { background-color: white; margin: 0; padding: 0; }
+            .app-container { max-width: 100%; margin: 0; display: block; }
+            .main-card { border: none; box-shadow: none; border-radius: 0; }
+            .card-body { padding: 0; display: block; }
+            .area-preview { border: none; padding: 0; background: transparent; max-height: none; overflow: visible; }
+            
+            .grid-etiquetas { display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: 88mm; gap: 5mm; }
+            .etiqueta { page-break-inside: avoid; overflow: hidden; border: 1px solid #000; } 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <main class="main-card">
+            <header class="card-header no-print">
+                <div class="header-title">
+                    <svg class="header-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M12 8v8"></path>
+                        <path d="M8 12h8"></path>
+                    </svg>
+                    <div>
+                        <h1>Gerador de Etiquetas - Nº de Box Oficial</h1>
+                        <p>Geração automatizada baseada no carimbo do Arquivo Geral</p>
+                    </div>
+                </div>
+                <div class="sec-badge">
+                    ARQUIVO / SEC
+                </div>
+            </header>
+
+            <div class="card-body">
+                <section class="painel-controle no-print">
+                    <div class="form-group">
+                        <label for="entrada-numeros">Informe os Números ou Intervalos</label>
+                        <textarea id="entrada-numeros" placeholder="Exemplos:&#10;1031, 1033&#10;6974-6985&#10;100, 200-205, 300"></textarea>
+                        <div class="form-text">
+                            • Números separados por vírgula (ex: <i>1031, 1033</i>)<br>
+                            • Intervalos com hífen (ex: <i>6974-6985</i>)<br>
+                            • Ou misture ambos livremente.
+                        </div>
+                    </div>
+
+                    <div class="botoes-acao">
+                        <button class="btn btn-add" onclick="processarEAdicionarEtiquetas()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            Gerar Etiquetas
+                        </button>
+                        <button class="btn btn-clear" onclick="limparEtiquetas()">
+                            Limpar
+                        </button>
+                        <button class="btn btn-print" onclick="window.print()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                            Imprimir
+                        </button>
+                    </div>
+                </section>
+
+                <section class="area-preview no-print-bg">
+                    <div class="grid-etiquetas" id="grid-render"></div>
+                </section>
+            </div>
+        </main>
+        
+        <footer class="app-footer no-print">
+            Desenvolvido por Vinicius A. de Souza
+        </footer>
+    </div>
+
+    <script>
+        function processarEAdicionarEtiquetas() {
+            const texto = document.getElementById('entrada-numeros').value.trim();
+            if (!texto) {
+                alert('Por favor, informe ao menos um número ou intervalo.');
+                return;
+            }
+
+            const partes = texto.split(',');
+            let numerosProcessados = [];
+
+            partes.forEach(parte => {
+                parte = parte.trim();
+                if (parte.includes('-')) {
+                    // É um intervalo (ex: 6974-6985)
+                    const limites = parte.split('-');
+                    if (limites.length === 2) {
+                        const inicio = parseInt(limites[0].trim(), 10);
+                        const fim = parseInt(limites[1].trim(), 10);
+                        if (!isNaN(inicio) && !isNaN(fim) && inicio <= fim) {
+                            for (let i = inicio; i <= fim; i++) {
+                                numerosProcessados.push(i);
+                            }
+                        }
+                    }
+                } else {
+                    // É um número avulso
+                    const num = parseInt(parte, 10);
+                    if (!isNaN(num)) {
+                        numerosProcessados.push(num);
+                    }
+                }
+            });
+
+            if (numerosProcessados.length === 0) {
+                alert('Nenhum número válido foi identificado. Verifique o formato inserido.');
+                return;
+            }
+
+            // Gera o HTML para cada número processado
+            numerosProcessados.forEach(num => {
+                const etiquetaHTML = `
+                    <div class="etiqueta">
+                        <div class="carimbo-circulo">
+                            <div class="texto-sup">Secretaria Municipal de Educação</div>
+                            <div class="texto-central">Arquivo Geral</div>
+                        </div>
+                        <div class="rotulo-box">Nº DO BOX</div>
+                        <div class="numero-box">${num}</div>
+                    </div>
+                `;
+                document.getElementById('grid-render').insertAdjacentHTML('beforeend', etiquetaHTML);
+            });
+
+            // Limpa a caixa de texto após gerar
+            document.getElementById('entrada-numeros').value = '';
+        }
+
+        function limparEtiquetas() {
+            if(confirm('Tem certeza que deseja apagar todas as etiquetas geradas?')) {
+                document.getElementById('grid-render').innerHTML = '';
+            }
+        }
+    </script>
+</body>
+</html>
