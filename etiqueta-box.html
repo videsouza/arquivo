@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Etiquetas - Box Oficial - ARQUIVO / SEC</title>
+    <title>Gerador de Etiquetas - Nº Box Oficial</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
@@ -63,48 +63,55 @@
         .btn-print:hover { background-color: #0f4090; }
 
         .area-preview { flex: 1; background: #fafafa; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 20px; overflow-y: auto; max-height: calc(100vh - 250px); }
-        .grid-etiquetas { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .grid-etiquetas { display: grid; grid-template-columns: 10cm 10cm; gap: 0; justify-content: center; }
 
-        /* Dimensões da etiqueta: 10cm x 3.5cm */
+        /* Estrutura exata da Etiqueta: 10cm x 3.5cm */
         .etiqueta { 
             background-color: #fff; 
-            position: relative; /* FUNDAMENTAL: Cria a âncora para os elementos absolutos internos */
-            width: 9.5cm; 
-            height: 3.6cm;
+            position: relative; 
+            width: 10cm; 
+            height: 3.5cm;
             border: 1px solid #000;
             overflow: hidden;
         }
 
-        /* Imagem alinhada à esquerda dentro da etiqueta */
+        /* Imagem alinhada à esquerda */
         .etiqueta .carimbo-img {
             position: absolute;
             left: 4mm;
             top: 50%;
-            transform: translateY(-50%); /* Centraliza verticalmente a imagem */
+            transform: translateY(-50%);
             height: 2.8cm; 
             width: auto;
             object-fit: contain;
         }
 
-        /* O número se sobrepõe e fica perfeitamente centralizado */
+        /* Número em Times New Roman 105 centralizado sobrepondo a imagem */
         .etiqueta .numero-box {
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%); /* Centraliza de forma absoluta no meio exato da etiqueta */
+            transform: translate(-50%, -50%);
             font-family: 'Times New Roman', Times, serif;
-            font-size: 105px; /* Tamanho exato solicitado */
+            font-size: 105px;
             font-weight: bold;
             color: #000;
             line-height: 1;
             white-space: nowrap;
-            z-index: 2; /* Garante que o número fique por cima da imagem se houver sobreposição */
+            z-index: 2;
         }
 
         .app-footer { text-align: center; padding-top: 20px; font-size: 0.85rem; color: var(--text-muted); }
 
         @media print {
-            @page { size: A4 portrait; margin: 15mm; }
+            @page { 
+                size: A4 portrait; 
+                /* Margens laterais definidas exatamente em 5.5mm (0,55 cm) */
+                margin-top: 10mm;
+                margin-bottom: 10mm;
+                margin-left: 5.5mm;
+                margin-right: 5.5mm;
+            }
             .no-print { display: none !important; }
             body { background-color: white; margin: 0; padding: 0; }
             .app-container { max-width: 100%; margin: 0; display: block; }
@@ -112,7 +119,14 @@
             .card-body { padding: 0; display: block; }
             .area-preview { border: none; padding: 0; background: transparent; max-height: none; overflow: visible; }
             
-            .grid-etiquetas { display: grid; grid-template-columns: 10cm 10cm; grid-auto-rows: 3.5cm; gap: 5mm; justify-content: center; }
+            /* Grid exato para 2 colunas de 10cm sem espaçamento intermediário */
+            .grid-etiquetas { 
+                display: grid; 
+                grid-template-columns: 10cm 10cm; 
+                grid-auto-rows: 3.5cm; 
+                gap: 0; 
+                justify-content: flex-start; 
+            }
             .etiqueta { page-break-inside: avoid; border: 1px solid #000; } 
         }
     </style>
@@ -130,7 +144,7 @@
                     </svg>
                     <div>
                         <h1>Gerador de Etiquetas - Box Oficial</h1>
-                        <p>Dimensões: 10cm x 3.5cm | Times New Roman Tamanho 105</p>
+                        <p>Dimensões: 10cm x 3.5cm | Margens: 0,55cm | Sem espaçamento entre blocos</p>
                     </div>
                 </div>
                 <div class="sec-badge">
@@ -177,7 +191,7 @@
     </div>
 
     <script>
-        const caminhoImagemCarimbo = "carimbo.png"; // Certifique-se de que a imagem está na mesma pasta
+        const caminhoImagemCarimbo = "carimbo.png";
 
         function processarEAdicionarEtiquetas() {
             const texto = document.getElementById('entrada-numeros').value.trim();
