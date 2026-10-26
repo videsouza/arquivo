@@ -65,37 +65,40 @@
         .area-preview { flex: 1; background: #fafafa; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 20px; overflow-y: auto; max-height: calc(100vh - 250px); }
         .grid-etiquetas { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 
-        /* Estrutura exata da Etiqueta: 10cm de largura x 3.5cm de altura */
+        /* Dimensões da etiqueta: 10cm x 3.5cm */
         .etiqueta { 
             background-color: #fff; 
-            display: flex; 
-            flex-direction: row; 
-            align-items: center;     
+            position: relative; /* FUNDAMENTAL: Cria a âncora para os elementos absolutos internos */
             width: 10cm; 
             height: 3.5cm;
             border: 1px solid #000;
-            padding: 4mm;
-            position: relative;
             overflow: hidden;
         }
 
-        /* Imagem do carimbo alinhada à esquerda */
+        /* Imagem alinhada à esquerda dentro da etiqueta */
         .etiqueta .carimbo-img {
-            height: 2.8cm; /* Proporcional à altura de 3.5cm da etiqueta */
+            position: absolute;
+            left: 4mm;
+            top: 50%;
+            transform: translateY(-50%); /* Centraliza verticalmente a imagem */
+            height: 2.8cm; 
             width: auto;
             object-fit: contain;
-            flex-shrink: 0;
         }
 
-        /* Número centralizado no espaço restante */
+        /* O número se sobrepõe e fica perfeitamente centralizado */
         .etiqueta .numero-box {
-            flex-grow: 1;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); /* Centraliza de forma absoluta no meio exato da etiqueta */
             font-family: 'Times New Roman', Times, serif;
-            font-size: 105px; /* Tamanho proporcional correspondente ao visual desejado */
+            font-size: 105px; /* Tamanho exato solicitado */
             font-weight: bold;
-            text-align: center;
             color: #000;
             line-height: 1;
+            white-space: nowrap;
+            z-index: 2; /* Garante que o número fique por cima da imagem se houver sobreposição */
         }
 
         .app-footer { text-align: center; padding-top: 20px; font-size: 0.85rem; color: var(--text-muted); }
@@ -109,7 +112,6 @@
             .card-body { padding: 0; display: block; }
             .area-preview { border: none; padding: 0; background: transparent; max-height: none; overflow: visible; }
             
-            /* Grade para 6 etiquetas por página (3 linhas x 2 colunas) */
             .grid-etiquetas { display: grid; grid-template-columns: 10cm 10cm; grid-auto-rows: 3.5cm; gap: 5mm; justify-content: center; }
             .etiqueta { page-break-inside: avoid; border: 1px solid #000; } 
         }
@@ -128,7 +130,7 @@
                     </svg>
                     <div>
                         <h1>Gerador de Etiquetas - Box Oficial</h1>
-                        <p>Dimensões: 10cm x 3.5cm | Times New Roman</p>
+                        <p>Dimensões: 10cm x 3.5cm | Times New Roman Tamanho 105</p>
                     </div>
                 </div>
                 <div class="sec-badge">
@@ -175,8 +177,7 @@
     </div>
 
     <script>
-        // Substitua abaixo pelo link da sua imagem ou use o arquivo local "carimbo.png" na mesma pasta
-        const caminhoImagemCarimbo = "carimbo.png";
+        const caminhoImagemCarimbo = "carimbo.png"; // Certifique-se de que a imagem está na mesma pasta
 
         function processarEAdicionarEtiquetas() {
             const texto = document.getElementById('entrada-numeros').value.trim();
