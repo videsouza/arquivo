@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Etiquetas - Nº de Box Oficial - ARQUIVO / SEC</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400,600,700,800&display=swap" rel="stylesheet">
+    <title>Gerador de Etiquetas - Box Oficial - ARQUIVO / SEC</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
@@ -65,68 +65,37 @@
         .area-preview { flex: 1; background: #fafafa; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 20px; overflow-y: auto; max-height: calc(100vh - 250px); }
         .grid-etiquetas { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 
-        /* Estilo da Etiqueta Baseado no Modelo Oficial do Carimbo */
+        /* Estrutura exata da Etiqueta: 10cm de largura x 3.5cm de altura */
         .etiqueta { 
             background-color: #fff; 
             display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
+            flex-direction: row; 
             align-items: center;     
-            width: 100%; 
-            height: 100%;
-            border: 2px solid #000;
-            padding: 15px;
-            text-align: center;
+            width: 10cm; 
+            height: 3.5cm;
+            border: 1px solid #000;
+            padding: 4mm;
+            position: relative;
+            overflow: hidden;
         }
 
-        /* Simulação elegante do carimbo circular institucional */
-        .carimbo-circulo {
-            width: 140px;
-            height: 140px;
-            border: 2px dashed #3b82f6; /* Tom azulado remetendo ao carimbo físico */
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 10px;
-            margin-bottom: 15px;
-            background-color: #f8fafc;
+        /* Imagem do carimbo alinhada à esquerda */
+        .etiqueta .carimbo-img {
+            height: 2.8cm; /* Proporcional à altura de 3.5cm da etiqueta */
+            width: auto;
+            object-fit: contain;
+            flex-shrink: 0;
         }
 
-        .carimbo-circulo .texto-sup {
-            font-size: 0.55rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: #1e3a8a;
-            text-align: center;
-            letter-spacing: 0.5px;
-        }
-
-        .carimbo-circulo .texto-central {
-            font-size: 0.95rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            color: #1e3a8a;
-            text-align: center;
-            line-height: 1.1;
-            margin: 4px 0;
-        }
-
-        .etiqueta .rotulo-box {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 2px;
-        }
-
+        /* Número centralizado no espaço restante */
         .etiqueta .numero-box {
-            font-size: 3.5rem;
-            font-weight: 800;
-            line-height: 1;
+            flex-grow: 1;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 75px; /* Tamanho proporcional correspondente ao visual desejado */
+            font-weight: bold;
+            text-align: center;
             color: #000;
+            line-height: 1;
         }
 
         .app-footer { text-align: center; padding-top: 20px; font-size: 0.85rem; color: var(--text-muted); }
@@ -140,8 +109,9 @@
             .card-body { padding: 0; display: block; }
             .area-preview { border: none; padding: 0; background: transparent; max-height: none; overflow: visible; }
             
-            .grid-etiquetas { display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: 88mm; gap: 5mm; }
-            .etiqueta { page-break-inside: avoid; overflow: hidden; border: 1px solid #000; } 
+            /* Grade para 6 etiquetas por página (3 linhas x 2 colunas) */
+            .grid-etiquetas { display: grid; grid-template-columns: 10cm 10cm; grid-auto-rows: 3.5cm; gap: 5mm; justify-content: center; }
+            .etiqueta { page-break-inside: avoid; border: 1px solid #000; } 
         }
     </style>
 </head>
@@ -157,8 +127,8 @@
                         <path d="M8 12h8"></path>
                     </svg>
                     <div>
-                        <h1>Gerador de Etiquetas - Nº de Box Oficial</h1>
-                        <p>Geração automatizada baseada no carimbo do Arquivo Geral</p>
+                        <h1>Gerador de Etiquetas - Box Oficial</h1>
+                        <p>Dimensões: 10cm x 3.5cm | Times New Roman</p>
                     </div>
                 </div>
                 <div class="sec-badge">
@@ -170,11 +140,11 @@
                 <section class="painel-controle no-print">
                     <div class="form-group">
                         <label for="entrada-numeros">Informe os Números ou Intervalos</label>
-                        <textarea id="entrada-numeros" placeholder="Exemplos:&#10;1031, 1033&#10;6974-6985&#10;100, 200-205, 300"></textarea>
+                        <textarea id="entrada-numeros" placeholder="Exemplos:&#10;1031, 1033&#10;6974-6985&#10;100, 200-205"></textarea>
                         <div class="form-text">
-                            • Números separados por vírgula (ex: <i>1031, 1033</i>)<br>
-                            • Intervalos com hífen (ex: <i>6974-6985</i>)<br>
-                            • Ou misture ambos livremente.
+                            • Números avulsos separados por vírgula<br>
+                            • Intervalos utilizando hífen (ex: 6974-6985)<br>
+                            • Ou combinações de ambos.
                         </div>
                     </div>
 
@@ -205,6 +175,9 @@
     </div>
 
     <script>
+        // Substitua abaixo pelo link da sua imagem ou use o arquivo local "carimbo.png" na mesma pasta
+        const caminhoImagemCarimbo = "carimbo.png";
+
         function processarEAdicionarEtiquetas() {
             const texto = document.getElementById('entrada-numeros').value.trim();
             if (!texto) {
@@ -218,7 +191,6 @@
             partes.forEach(parte => {
                 parte = parte.trim();
                 if (parte.includes('-')) {
-                    // É um intervalo (ex: 6974-6985)
                     const limites = parte.split('-');
                     if (limites.length === 2) {
                         const inicio = parseInt(limites[0].trim(), 10);
@@ -230,7 +202,6 @@
                         }
                     }
                 } else {
-                    // É um número avulso
                     const num = parseInt(parte, 10);
                     if (!isNaN(num)) {
                         numerosProcessados.push(num);
@@ -243,22 +214,16 @@
                 return;
             }
 
-            // Gera o HTML para cada número processado
             numerosProcessados.forEach(num => {
                 const etiquetaHTML = `
                     <div class="etiqueta">
-                        <div class="carimbo-circulo">
-                            <div class="texto-sup">Secretaria Municipal de Educação</div>
-                            <div class="texto-central">Arquivo Geral</div>
-                        </div>
-                        <div class="rotulo-box">Nº DO BOX</div>
+                        <img src="${caminhoImagemCarimbo}" alt="Carimbo" class="carimbo-img" onerror="this.style.display='none'">
                         <div class="numero-box">${num}</div>
                     </div>
                 `;
                 document.getElementById('grid-render').insertAdjacentHTML('beforeend', etiquetaHTML);
             });
 
-            // Limpa a caixa de texto após gerar
             document.getElementById('entrada-numeros').value = '';
         }
 
