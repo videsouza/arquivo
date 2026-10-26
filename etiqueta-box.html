@@ -3,9 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Etiquetas - Nº Box Oficial</title>
+    <title>Gerador de Etiquetas - Box Oficial - ARQUIVO / SEC</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- Bibliotecas externas para geração do arquivo .DOCX via navegador -->
+    <script src="https://unpkg.com/docx@8.2.2/build/index.umd.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
     <style>
         :root {
             --bg-body: #f4f5f7;
@@ -53,12 +57,14 @@
         .form-group textarea:focus { outline: none; border-color: var(--gov-blue); box-shadow: 0 0 0 3px rgba(19, 81, 180, 0.1); }
         .form-text { font-size: 0.8rem; color: var(--text-muted); margin-top: 6px; line-height: 1.4; }
 
-        .botoes-acao { display: flex; gap: 10px; margin-top: 20px; }
-        .btn { flex: 1; padding: 12px 16px; font-size: 0.9rem; font-weight: 500; border-radius: 6px; cursor: pointer; border: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
+        .botoes-acao { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+        .btn { flex: 1; min-width: 110px; padding: 12px 14px; font-size: 0.85rem; font-weight: 500; border-radius: 6px; cursor: pointer; border: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; }
         .btn-add { background-color: #f3f4f6; color: var(--text-main); border: 1px solid var(--border-color); }
         .btn-add:hover { background-color: #e5e7eb; }
         .btn-clear { background-color: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
         .btn-clear:hover { background-color: #fee2e2; }
+        .btn-docx { background-color: #2b579a; color: white; } /* Azul escuro estilo Word */
+        .btn-docx:hover { background-color: #1e3e6d; }
         .btn-print { background-color: var(--gov-blue); color: white; }
         .btn-print:hover { background-color: #0f4090; }
 
@@ -70,12 +76,11 @@
             background-color: #fff; 
             position: relative; 
             width: 10cm; 
-            height: 3.6cm;
+            height: 3.5cm;
             border: 1px solid #000;
             overflow: hidden;
         }
 
-        /* Imagem alinhada à esquerda */
         .etiqueta .carimbo-img {
             position: absolute;
             left: 4mm;
@@ -86,7 +91,6 @@
             object-fit: contain;
         }
 
-        /* Número em Times New Roman 105 centralizado sobrepondo a imagem */
         .etiqueta .numero-box {
             position: absolute;
             top: 50%;
@@ -106,11 +110,10 @@
         @media print {
             @page { 
                 size: A4 portrait; 
-                /* Margens laterais definidas exatamente em 5.5mm (0,55 cm) */
                 margin-top: 10mm;
                 margin-bottom: 10mm;
-                margin-left: 5mm;
-                margin-right: 5mm;
+                margin-left: 5.5mm;
+                margin-right: 5.5mm;
             }
             .no-print { display: none !important; }
             body { background-color: white; margin: 0; padding: 0; }
@@ -119,11 +122,10 @@
             .card-body { padding: 0; display: block; }
             .area-preview { border: none; padding: 0; background: transparent; max-height: none; overflow: visible; }
             
-            /* Grid exato para 2 colunas de 10cm sem espaçamento intermediário */
             .grid-etiquetas { 
                 display: grid; 
                 grid-template-columns: 10cm 10cm; 
-                grid-auto-rows: 3.6cm; 
+                grid-auto-rows: 3.5cm; 
                 gap: 0; 
                 justify-content: flex-start; 
             }
@@ -144,7 +146,7 @@
                     </svg>
                     <div>
                         <h1>Gerador de Etiquetas - Box Oficial</h1>
-                        <p>Dimensões: 10cm x 3.5cm | Margens: 0,55cm | Sem espaçamento entre blocos</p>
+                        <p>Dimensões: 10cm x 3.5cm | Margens: 0,55cm | Exportação em .DOCX</p>
                     </div>
                 </div>
                 <div class="sec-badge">
@@ -167,7 +169,11 @@
                     <div class="botoes-acao">
                         <button class="btn btn-add" onclick="processarEAdicionarEtiquetas()">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                            Gerar Etiquetas
+                            Gerar
+                        </button>
+                        <button class="btn btn-docx" onclick="baixarDocx()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+                            Baixar .DOCX
                         </button>
                         <button class="btn btn-clear" onclick="limparEtiquetas()">
                             Limpar
@@ -192,6 +198,7 @@
 
     <script>
         const caminhoImagemCarimbo = "carimbo.png";
+        let listaNumerosEtiquetas = [];
 
         function processarEAdicionarEtiquetas() {
             const texto = document.getElementById('entrada-numeros').value.trim();
@@ -201,7 +208,7 @@
             }
 
             const partes = texto.split(',');
-            let numerosProcessados = [];
+            let novosNumeros = [];
 
             partes.forEach(parte => {
                 parte = parte.trim();
@@ -212,24 +219,25 @@
                         const fim = parseInt(limites[1].trim(), 10);
                         if (!isNaN(inicio) && !isNaN(fim) && inicio <= fim) {
                             for (let i = inicio; i <= fim; i++) {
-                                numerosProcessados.push(i);
+                                novosNumeros.push(i);
                             }
                         }
                     }
                 } else {
                     const num = parseInt(parte, 10);
                     if (!isNaN(num)) {
-                        numerosProcessados.push(num);
+                        novosNumeros.push(num);
                     }
                 }
             });
 
-            if (numerosProcessados.length === 0) {
-                alert('Nenhum número válido foi identificado. Verifique o formato inserido.');
+            if (novosNumeros.length === 0) {
+                alert('Nenhum número válido foi identificado.');
                 return;
             }
 
-            numerosProcessados.forEach(num => {
+            novosNumeros.forEach(num => {
+                listaNumerosEtiquetas.push(num);
                 const etiquetaHTML = `
                     <div class="etiqueta">
                         <img src="${caminhoImagemCarimbo}" alt="Carimbo" class="carimbo-img" onerror="this.style.display='none'">
@@ -245,7 +253,138 @@
         function limparEtiquetas() {
             if(confirm('Tem certeza que deseja apagar todas as etiquetas geradas?')) {
                 document.getElementById('grid-render').innerHTML = '';
+                listaNumerosEtiquetas = [];
             }
+        }
+
+        // =========================================================================
+        // FUNÇÃO DE EXPORTAÇÃO PARA .DOCX
+        // =========================================================================
+        async function baixarDocx() {
+            if (listaNumerosEtiquetas.length === 0) {
+                alert('Gere pelo menos uma etiqueta antes de baixar o documento.');
+                return;
+            }
+
+            const { Document, Packer, Paragraph, Table, TableRow, TableCell, WidthType, AlignmentType, HeightRule, TextRun, ImageRun } = docx;
+
+            // Carrega a imagem local carimbo.png em formato ArrayBuffer para embutir no Word
+            let imageBuffer = null;
+            try {
+                const response = await fetch(caminhoImagemCarimbo);
+                imageBuffer = await response.arrayBuffer();
+            } catch (e) {
+                console.warn("Não foi possível carregar carimbo.png para o Word:", e);
+            }
+
+            // Conversão de dimensões para DXA/Twips (padrão do Word)
+            // 1 cm = 566.929 DXA
+            const cmToDxa = (cm) => Math.round(cm * 566.929);
+
+            const larguraEtiqueta = cmToDxa(10);
+            const alturaEtiqueta = cmToDxa(3.5);
+
+            // Constrói a tabela em pares (2 colunas por linha)
+            const rows = [];
+            for (let i = 0; i < listaNumerosEtiquetas.length; i += 2) {
+                const num1 = listaNumerosEtiquetas[i];
+                const num2 = listaNumerosEtiquetas[i + 1];
+
+                const celulas = [];
+
+                // Célula 1
+                celulas.push(criarCelulaEtiqueta(num1, larguraEtiqueta, alturaEtiqueta, imageBuffer));
+
+                // Célula 2 (se houver número par)
+                if (num2 !== undefined) {
+                    celulas.push(criarCelulaEtiqueta(num2, larguraEtiqueta, alturaEtiqueta, imageBuffer));
+                } else {
+                    // Célula vazia para manter o alinhamento de 2 colunas
+                    celulas.push(new TableCell({
+                        children: [],
+                        width: { size: larguraEtiqueta, type: WidthType.DXA }
+                    }));
+                }
+
+                rows.push(new TableRow({
+                    children: celulas,
+                    height: { value: alturaEtiqueta, rule: HeightRule.EXACTLY }
+                }));
+            }
+
+            const doc = new Document({
+                sections: [{
+                    properties: {
+                        page: {
+                            size: {
+                                width: cmToDxa(21),  // A4 Largura
+                                height: cmToDxa(29.7) // A4 Altura
+                            },
+                            margin: {
+                                top: cmToDxa(1.0),
+                                bottom: cmToDxa(1.0),
+                                left: cmToDxa(0.55),
+                                right: cmToDxa(0.55)
+                            }
+                        }
+                    },
+                    children: [
+                        new Table({
+                            rows: rows,
+                            width: { size: cmToDxa(20), type: WidthType.DXA },
+                            alignment: AlignmentType.CENTER
+                        })
+                    ]
+                }]
+            });
+
+            // Gera o arquivo .docx e força o download no navegador
+            Packer.toBlob(doc).then(blob => {
+                saveAs(blob, "Etiquetas_Box_Oficial.docx");
+            });
+        }
+
+        // Função auxiliar para construir cada célula da tabela do Word
+        function criarCelulaEtiqueta(numero, largura, altura, imageBuffer) {
+            const { TableCell, Paragraph, TextRun, ImageRun, WidthType, AlignmentType } = docx;
+
+            const paragrafos = [];
+
+            // Se a imagem carimbo.png existir, embute no Word alinhada à esquerda
+            if (imageBuffer) {
+                paragrafos.push(new Paragraph({
+                    alignment: AlignmentType.LEFT,
+                    children: [
+                        new ImageRun({
+                            data: imageBuffer,
+                            transformation: {
+                                width: 80,  // Proporcional em pixels no Word
+                                height: 80
+                            }
+                        })
+                    ]
+                }));
+            }
+
+            // Adiciona o número centralizado em Times New Roman 105pt
+            paragrafos.push(new Paragraph({
+                alignment: AlignmentType.CENTER,
+                children: [
+                    new TextRun({
+                        text: String(numero),
+                        font: "Times New Roman",
+                        size: 105 * 2, // Na biblioteca docx, 1pt = 2 half-points (105pt = 210)
+                        bold: true,
+                        color: "000000"
+                    })
+                ]
+            }));
+
+            return new TableCell({
+                children: paragrafos,
+                width: { size: largura, type: WidthType.DXA },
+                margins: { top: 100, bottom: 100, left: 100, right: 100 }
+            });
         }
     </script>
 </body>
