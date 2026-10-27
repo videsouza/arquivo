@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Etiquetas - Box Oficial</title>
+    <title>Gerador de Etiquetas - Box Oficial - ARQUIVO / SEC</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Bibliotecas externas para geração do arquivo .DOCX via navegador -->
@@ -97,7 +97,7 @@
             left: 50%;
             transform: translate(-50%, -50%);
             font-family: 'Times New Roman', Times, serif;
-            font-size: 86px;
+            font-size: 105px;
             font-weight: bold;
             color: #000;
             line-height: 1;
@@ -110,10 +110,10 @@
         @media print {
             @page { 
                 size: A4 portrait; 
-                margin-top: 16mm;
-                margin-bottom: 15mm;
-                margin-left: 4.5mm;
-                margin-right: 3.5mm;
+                margin-top: 10mm;
+                margin-bottom: 10mm;
+                margin-left: 5.5mm;
+                margin-right: 5.5mm;
             }
             .no-print { display: none !important; }
             body { background-color: white; margin: 0; padding: 0; }
@@ -125,7 +125,7 @@
             .grid-etiquetas { 
                 display: grid; 
                 grid-template-columns: 10cm 10cm; 
-                grid-auto-rows: 3.8cm; 
+                grid-auto-rows: 3.5cm; 
                 gap: 0; 
                 justify-content: flex-start; 
             }
