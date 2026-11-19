@@ -23,6 +23,9 @@
             --border: #d1d5db;
             --success: #10b981;
             --success-bg: #ecfdf5;
+            --amber: #d97706;
+            --amber-light: #fffbeb;
+            --amber-border: #fde68a;
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
        }
 
@@ -63,9 +66,9 @@
 
         .content { padding: 40px; }
 
-        /* CONFIGURAÇÃO PRÉVIA DE SEMENTE + UPLOAD */
+        /* CONFIGURAÇÃO PRÉVIA DE SEMENTE + UPLOADS INICIAIS */
         .setup-panel {
-            max-width: 720px;
+            max-width: 820px;
             margin: 0 auto 30px auto;
             display: flex;
             flex-direction: column;
@@ -126,15 +129,26 @@
             font-weight: 400;
         }
 
+        .uploads-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        @media (max-width: 680px) { .uploads-grid { grid-template-columns: 1fr; } }
+
         .upload-area {
             background: #f9fafb;
             border: 2px dashed var(--border);
             border-radius: 12px;
-            padding: 36px 20px;
+            padding: 28px 18px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s;
             position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
         .upload-area:hover {
             border-color: var(--primary);
@@ -145,9 +159,26 @@
             border-color: var(--success);
             background: var(--success-bg);
         }
-        .upload-icon { font-size: 40px; color: var(--primary); margin-bottom: 12px; opacity: 0.85; }
+        .upload-icon { font-size: 34px; color: var(--primary); margin-bottom: 10px; opacity: 0.85; }
         .upload-area.loaded .upload-icon { color: var(--success); }
-        .file-name { font-size: 13px; font-weight: 600; color: var(--primary); margin-top: 10px; word-break: break-all; }
+        .upload-area h3 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+        .upload-area p { font-size: 12px; color: var(--text-sub); }
+        .file-name { font-size: 12px; font-weight: 600; color: var(--primary); margin-top: 10px; word-break: break-all; }
+        .upload-area.loaded .file-name { color: #065f46; }
+        .clear-db-btn {
+            margin-top: 8px;
+            background: #fff;
+            border: 1px solid #d1d5db;
+            color: #374151;
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            display: none;
+        }
+        .clear-db-btn.show { display: inline-flex; align-items: center; gap: 5px; }
+        .clear-db-btn:hover { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
 
         /* CARDS DE RESUMO */
         .kpi-grid {
@@ -224,6 +255,109 @@
         .btn-success:hover { background: #059669; transform: translateY(-1px); }
         .btn-secondary { background: white; border: 1px solid var(--border); color: var(--text-main); }
         .btn-secondary:hover { background: #f9fafb; }
+
+        /* CARD DE RESULTADO DA COMPARAÇÃO COM BANCO DE DADOS */
+        .compare-result-card {
+            display: none;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 25px;
+            animation: fadeIn 0.4s ease;
+        }
+        .compare-result-card.show { display: block; }
+        .compare-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .compare-header h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .compare-header h3 i {
+            color: var(--primary);
+            margin-right: 8px;
+        }
+        .compare-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 14px;
+        }
+        @media (max-width: 820px) { .compare-stats-grid { grid-template-columns: 1fr; } }
+
+        .stat-box-new {
+            background: var(--success-bg);
+            border: 1px solid #a7f3d0;
+            border-radius: 10px;
+            padding: 14px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+        .stat-box-existing {
+            background: var(--amber-light);
+            border: 1px solid var(--amber-border);
+            border-radius: 10px;
+            padding: 14px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+        .stat-box-total-pct {
+            background: var(--primary-light);
+            border: 1px solid #bfdbfe;
+            border-radius: 10px;
+            padding: 14px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+        .stat-label {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .stat-sub {
+            font-size: 11px;
+            color: var(--text-sub);
+            margin-top: 2px;
+        }
+        .stat-box-new .stat-label { color: #065f46; }
+        .stat-box-existing .stat-label { color: #92400e; }
+        .stat-box-total-pct .stat-label { color: var(--primary-dark); }
+        .stat-abs {
+            font-size: 22px;
+            font-weight: 800;
+        }
+        .stat-box-new .stat-abs { color: #047857; }
+        .stat-box-existing .stat-abs { color: #b45309; }
+        .stat-box-total-pct .stat-abs { color: var(--primary-dark); }
+        .stat-pct {
+            font-size: 16px;
+            font-weight: 800;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.85);
+            white-space: nowrap;
+        }
+        .stat-box-new .stat-pct { color: #065f46; }
+        .stat-box-existing .stat-pct { color: #92400e; }
+        .compare-meta {
+            font-size: 13px;
+            color: var(--text-sub);
+        }
 
         /* LISTA DE CÓDIGOS E Nº DE ANOS DISTINTOS */
         .codes-summary-card {
@@ -366,7 +500,7 @@
 
         <div class="content">
             
-            <!-- 1. ESCOLHA PRÉVIA DA SEMENTE + UPLOAD -->
+            <!-- 1. ESCOLHA PRÉVIA DA SEMENTE + UPLOADS INICIAIS -->
             <div class="setup-panel" id="uploadSection">
                 <div class="pre-seed-card">
                     <div class="pre-seed-top">
@@ -382,7 +516,6 @@
                             class="seed-input-large"
                             placeholder="Ex: AUDITORIA-2026-SEC ou 12345"
                             oninput="syncSeedLabel()"
-                            onkeydown="if(event.key==='Enter' && rawRows.length > 0){ event.preventDefault(); gerarAmostragem(); }"
                         >
                         <button type="button" class="btn btn-secondary" onclick="gerarNovaSemente()">
                             <i class="fas fa-sync-alt"></i> Gerar Semente
@@ -393,12 +526,25 @@
                     </div>
                 </div>
 
-                <div class="upload-area" id="dropArea" onclick="document.getElementById('fileInput').click()">
-                    <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" hidden onchange="handleFile(this)">
-                    <i class="fas fa-file-excel upload-icon" id="uploadIcon"></i>
-                    <h3 style="font-size:16px; font-weight:700; margin-bottom: 4px;">Selecionar Planilha de Entrada</h3>
-                    <p style="font-size:13px; color:var(--text-sub);">Dados a partir da linha 2 (A: Box, B: Ano, G: Código, H: Descrição)</p>
-                    <div class="file-name" id="fileName">Nenhum arquivo selecionado</div>
+                <div class="uploads-grid">
+                    <div class="upload-area" id="dropArea" onclick="document.getElementById('fileInput').click()">
+                        <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" hidden onchange="handleFile(this)">
+                        <i class="fas fa-file-excel upload-icon" id="uploadIcon"></i>
+                        <h3>1. Planilha de Entrada (Obrigatória)</h3>
+                        <p>A partir da linha 2 (A: Box, B: Ano, G: Código, H: Descrição)</p>
+                        <div class="file-name" id="fileName">Nenhum arquivo selecionado</div>
+                    </div>
+
+                    <div class="upload-area" id="dbDropArea" onclick="document.getElementById('initialDbInput').click()">
+                        <input type="file" id="initialDbInput" accept=".xlsx,.xls,.csv" hidden onchange="handleInitialDbFile(this)">
+                        <i class="fas fa-database upload-icon" id="dbUploadIcon"></i>
+                        <h3>2. Banco de Amostras (Opcional)</h3>
+                        <p>Se carregado, executa comparação e exibe estatísticas + download dividido</p>
+                        <div class="file-name" id="dbFileName">Nenhum banco carregado</div>
+                        <button type="button" class="clear-db-btn" id="clearDbBtn" onclick="event.stopPropagation(); clearInitialDb();">
+                            <i class="fas fa-times"></i> Remover banco
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -428,13 +574,48 @@
                     Ordenação: <strong>Box</strong> e <strong>Código</strong> • Semente em uso: <strong id="activeSeedLabel">aleatória (sem semente)</strong>
                 </div>
                 <div class="toolbar-actions">
-                    <button class="btn btn-secondary" onclick="gerarAmostragem()">
-                        <i class="fas fa-dice"></i> Sortear Novamente
-                    </button>
                     <button class="btn btn-success" onclick="exportarExcel()">
-                        <i class="fas fa-file-download"></i> Baixar Excel (2 Abas)
+                        <i class="fas fa-file-download"></i> Baixar Excel
                     </button>
                 </div>
+            </div>
+
+            <!-- RESULTADO DA COMPARAÇÃO COM BANCO DE DADOS -->
+            <div class="compare-result-card" id="compareResultCard">
+                <div class="compare-header">
+                    <h3><i class="fas fa-database"></i> Estatísticas da Comparação com Banco de Amostras</h3>
+                    <button type="button" class="btn btn-primary" id="downloadSplitBtn" onclick="exportarPlanilhaDividida()">
+                        <i class="fas fa-file-export"></i> Baixar Planilha Dividida (Novos / Já na Base)
+                    </button>
+                </div>
+                <div class="compare-stats-grid">
+                    <div class="stat-box-new">
+                        <div>
+                            <span class="stat-label">Registros Novos</span>
+                            <div class="stat-abs" id="absNewCount">0</div>
+                            <div class="stat-sub" id="subNewOverTotal">0,00% do total inicial</div>
+                        </div>
+                        <div class="stat-pct" id="pctNewOverSample">0,00% da amostra</div>
+                    </div>
+                    <div class="stat-box-existing">
+                        <div>
+                            <span class="stat-label">Registros Já na Base</span>
+                            <div class="stat-abs" id="absExistingCount">0</div>
+                            <div class="stat-sub" id="subExistingOverTotal">0,00% do total inicial</div>
+                        </div>
+                        <div class="stat-pct" id="pctExistingOverSample">0,00% da amostra</div>
+                    </div>
+                    <div class="stat-box-total-pct">
+                        <div>
+                            <span class="stat-label">% Novos / Total Inicial</span>
+                            <div class="stat-abs" id="pctNewOverTotalHighlight">0,00%</div>
+                            <div class="stat-sub" id="subTotalBaseContext">0 novos de 0 registros válidos</div>
+                        </div>
+                    </div>
+                </div>
+                <p class="compare-meta" id="compareMetaText">
+                    Aguardando comparação com o banco de dados.
+                </p>
             </div>
 
             <!-- 4. CÓDIGOS DISTINTOS E Nº DE ANOS DISTINTOS POR CÓDIGO -->
@@ -497,6 +678,14 @@
         let totalValidRecords = 0;
         let originalFileName = "amostra";
         let currentSeedUsed = "";
+
+        // Banco de amostras carregado opcionalmente no início
+        let initialDbFile = null;
+        let initialDbPairKeys = null;
+        let initialDbSheetsCount = 0;
+
+        // Resultado da última comparação para download sob demanda
+        let lastComparisonData = null;
 
         // --- PRNG REPRODUZÍVEL (xmur3 hash + mulberry32) ---
         function xmur3(str) {
@@ -586,6 +775,14 @@
             return str;
         }
 
+        function normalizeCodeKey(rawCode) {
+            return String(rawCode ?? "").trim().toUpperCase();
+        }
+
+        function makePairKey(codigo, ano) {
+            return `${normalizeCodeKey(codigo)}||${extractYearOnly(ano)}`;
+        }
+
         // --- DETECÇÃO DA COLUNA SN NO CABEÇALHO ---
         function findSnColumnIndex(header) {
             const normalizedHeaders = header.map(h =>
@@ -613,7 +810,81 @@
             return -1;
         }
 
-        // --- 1. LEITURA DO ARQUIVO ---
+        // --- LEITURA DO BANCO DE AMOSTRAS (ATÉ 2 ABAS: ABA 1 LINHA 2+, ABA 2 LINHA 1+; COD Q=16, DATA G=6) ---
+        function parseDatabaseWorkbook(arrayBuffer) {
+            const data = new Uint8Array(arrayBuffer);
+            const workbook = XLSX.read(data, { type: 'array' });
+
+            const dbPairKeys = new Set();
+            let sheetsProcessed = 0;
+
+            const maxSheets = Math.min(workbook.SheetNames.length, 2);
+
+            for (let sIdx = 0; sIdx < maxSheets; sIdx++) {
+                const sheetName = workbook.SheetNames[sIdx];
+                const sheet = workbook.Sheets[sheetName];
+                const matrix = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+                const startRow = sIdx === 0 ? 1 : 0;
+
+                if (matrix.length <= startRow) continue;
+                sheetsProcessed++;
+
+                for (let r = startRow; r < matrix.length; r++) {
+                    const row = matrix[r];
+                    if (!row || !row.some(cell => String(cell ?? "").trim() !== "")) continue;
+
+                    const rawCodigoQ = row[16]; // Coluna Q = índice 16
+                    const rawDataG = row[6];    // Coluna G = índice 6
+
+                    const codigoLimpo = String(rawCodigoQ ?? "").trim();
+                    const anoLimpo = extractYearOnly(rawDataG);
+
+                    if (codigoLimpo && anoLimpo) {
+                        dbPairKeys.add(makePairKey(codigoLimpo, anoLimpo));
+                    }
+                }
+            }
+
+            return { dbPairKeys, sheetsProcessed };
+        }
+
+        function handleInitialDbFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const parsed = parseDatabaseWorkbook(e.target.result);
+                initialDbFile = file;
+                initialDbPairKeys = parsed.dbPairKeys;
+                initialDbSheetsCount = parsed.sheetsProcessed;
+
+                document.getElementById('dbDropArea').classList.add('loaded');
+                document.getElementById('dbUploadIcon').className = 'fas fa-check-circle upload-icon';
+                document.getElementById('dbFileName').innerText = `${file.name} (${initialDbPairKeys.size.toLocaleString('pt-BR')} pares únicos)`;
+                document.getElementById('clearDbBtn').classList.add('show');
+
+                if (rawRows.length > 0) {
+                    executarComparacaoSemGerarArquivo(initialDbPairKeys, initialDbFile.name, initialDbSheetsCount);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function clearInitialDb() {
+            initialDbFile = null;
+            initialDbPairKeys = null;
+            initialDbSheetsCount = 0;
+            lastComparisonData = null;
+            document.getElementById('initialDbInput').value = "";
+            document.getElementById('dbDropArea').classList.remove('loaded');
+            document.getElementById('dbUploadIcon').className = 'fas fa-database upload-icon';
+            document.getElementById('dbFileName').innerText = "Nenhum banco carregado";
+            document.getElementById('clearDbBtn').classList.remove('show');
+            document.getElementById('compareResultCard').classList.remove('show');
+        }
+
+        // --- 1. LEITURA DO ARQUIVO DE ENTRADA ---
         function handleFile(input) {
             const file = input.files[0];
             if (!file) return;
@@ -749,6 +1020,14 @@
             document.getElementById('codesSummaryCard').classList.add('show');
 
             renderCodeYearsList();
+
+            // Se o banco de amostras estiver carregado, executa a comparação e exibe estatísticas sem gerar o arquivo automaticamente
+            if (initialDbFile && initialDbPairKeys) {
+                executarComparacaoSemGerarArquivo(initialDbPairKeys, initialDbFile.name, initialDbSheetsCount);
+            } else {
+                lastComparisonData = null;
+                document.getElementById('compareResultCard').classList.remove('show');
+            }
         }
 
         // --- 3. RENDERIZAÇÃO DA LISTA DE CÓDIGOS E Nº DE ANOS DISTINTOS ---
@@ -777,7 +1056,21 @@
                 .replace(/"/g, "&quot;");
         }
 
-        // --- 4. EXPORTAÇÃO PARA EXCEL (2 ABAS) ---
+        function formatSampleRowForExcel(item) {
+            return [
+                item.box,
+                item.codigo,
+                /^\d{4}$/.test(item.ano) ? parseInt(item.ano, 10) : item.ano,
+                item.sn,
+                item.descricao
+            ];
+        }
+
+        function formatPtPercent(val) {
+            return `${val.toFixed(2).replace('.', ',')}%`;
+        }
+
+        // --- 4. EXPORTAÇÃO PARA EXCEL DA AMOSTRA (2 ABAS) ---
         function exportarExcel() {
             if (selectedItems.length === 0) return;
 
@@ -786,13 +1079,7 @@
             // ABA 1: Listagem dos documentos selecionados (Box, Código, Ano, SN, Descrição)
             const listData = [
                 ["Box", "Código", "Ano", "SN", "Descrição"],
-                ...selectedItems.map(item => [
-                    item.box,
-                    item.codigo,
-                    /^\d{4}$/.test(item.ano) ? parseInt(item.ano, 10) : item.ano,
-                    item.sn,
-                    item.descricao
-                ])
+                ...selectedItems.map(formatSampleRowForExcel)
             ];
             const wsList = XLSX.utils.aoa_to_sheet(listData);
             XLSX.utils.book_append_sheet(wb, wsList, "Amostra_Documentos");
@@ -810,13 +1097,104 @@
                 ["Semente Utilizada", "", currentSeedUsed || "Aleatória (sem semente)"],
                 ["Total de Registros Válidos", "", totalValidRecords],
                 ["Total de Registros na Amostra", "", selectedItems.length],
-                ["Representatividade da Amostra (%)", "", `${(propRatio * 100).toFixed(2).replace('.', ',')}%`]
+                ["Representatividade da Amostra (%)", "", formatPtPercent(propRatio * 100)]
             ];
             const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
             XLSX.utils.book_append_sheet(wb, wsSummary, "Resumo_Codigos_Anos");
 
             const seedSuffix = currentSeedUsed ? `_${currentSeedUsed.replace(/[^a-zA-Z0-9_-]/g, "_")}` : "";
             XLSX.writeFile(wb, `${originalFileName}_Amostra_Codigo_Ano${seedSuffix}.xlsx`);
+        }
+
+        // --- 5. COMPARAÇÃO COM BANCO DE DADOS (EXIBE ESTATÍSTICAS; DOWNLOAD VIA BOTÃO DEDICADO) ---
+        function executarComparacaoSemGerarArquivo(dbPairKeys, dbFileName, sheetsProcessed) {
+            const novosRegistros = [];
+            const registrosExistentes = [];
+
+            selectedItems.forEach(item => {
+                const key = makePairKey(item.codigo, item.ano);
+                if (dbPairKeys.has(key)) {
+                    registrosExistentes.push(item);
+                } else {
+                    novosRegistros.push(item);
+                }
+            });
+
+            const totalSample = selectedItems.length;
+            const totalInitial = totalValidRecords;
+
+            const pctNewOverSample = totalSample > 0 ? (novosRegistros.length / totalSample) * 100 : 0;
+            const pctExistingOverSample = totalSample > 0 ? (registrosExistentes.length / totalSample) * 100 : 0;
+
+            const pctNewOverInitial = totalInitial > 0 ? (novosRegistros.length / totalInitial) * 100 : 0;
+            const pctExistingOverInitial = totalInitial > 0 ? (registrosExistentes.length / totalInitial) * 100 : 0;
+
+            lastComparisonData = {
+                novosRegistros,
+                registrosExistentes,
+                dbFileName,
+                pctNewOverSample,
+                pctExistingOverSample,
+                pctNewOverInitial,
+                pctExistingOverInitial
+            };
+
+            document.getElementById('absNewCount').innerText = novosRegistros.length.toLocaleString('pt-BR');
+            document.getElementById('pctNewOverSample').innerText = `${formatPtPercent(pctNewOverSample)} da amostra`;
+            document.getElementById('subNewOverTotal').innerText = `${formatPtPercent(pctNewOverInitial)} do total inicial`;
+
+            document.getElementById('absExistingCount').innerText = registrosExistentes.length.toLocaleString('pt-BR');
+            document.getElementById('pctExistingOverSample').innerText = `${formatPtPercent(pctExistingOverSample)} da amostra`;
+            document.getElementById('subExistingOverTotal').innerText = `${formatPtPercent(pctExistingOverInitial)} do total inicial`;
+
+            document.getElementById('pctNewOverTotalHighlight').innerText = formatPtPercent(pctNewOverInitial);
+            document.getElementById('subTotalBaseContext').innerText =
+                `${novosRegistros.length.toLocaleString('pt-BR')} novos de ${totalInitial.toLocaleString('pt-BR')} registros iniciais`;
+
+            document.getElementById('compareMetaText').innerText =
+                `Base: "${dbFileName}" (${sheetsProcessed} ${sheetsProcessed === 1 ? 'aba lida' : 'abas lidas'}, ${dbPairKeys.size.toLocaleString('pt-BR')} pares únicos Código [Col. Q] + Ano [Col. G]).`;
+            document.getElementById('compareResultCard').classList.add('show');
+        }
+
+        function exportarPlanilhaDividida() {
+            if (!lastComparisonData) return;
+
+            const {
+                novosRegistros,
+                registrosExistentes,
+                dbFileName,
+                pctNewOverSample,
+                pctExistingOverSample,
+                pctNewOverInitial,
+                pctExistingOverInitial
+            } = lastComparisonData;
+
+            const wb = XLSX.utils.book_new();
+            const headers = ["Box", "Código", "Ano", "SN", "Descrição"];
+            const dbFileBaseName = dbFileName.replace(/\.[^/.]+$/, "");
+
+            const wsNovos = XLSX.utils.aoa_to_sheet([
+                headers,
+                ...novosRegistros.map(formatSampleRowForExcel),
+                [],
+                ["Total de Registros Novos", novosRegistros.length],
+                ["% sobre a Amostra Selecionada", formatPtPercent(pctNewOverSample)],
+                ["% sobre o Total Inicial", formatPtPercent(pctNewOverInitial)]
+            ]);
+            XLSX.utils.book_append_sheet(wb, wsNovos, "Registros_Novos");
+
+            const wsExistentes = XLSX.utils.aoa_to_sheet([
+                headers,
+                ...registrosExistentes.map(formatSampleRowForExcel),
+                [],
+                ["Total Já na Base", registrosExistentes.length],
+                ["% sobre a Amostra Selecionada", formatPtPercent(pctExistingOverSample)],
+                ["% sobre o Total Inicial", formatPtPercent(pctExistingOverInitial)]
+            ]);
+            XLSX.utils.book_append_sheet(wb, wsExistentes, "Ja_Na_Base");
+
+            const cleanDbName = dbFileBaseName.replace(/[^a-zA-Z0-9_-]/g, "_");
+            XLSX.writeFile(wb, `${originalFileName}_Comparacao_${cleanDbName}.xlsx`);
         }
     </script>
 </body>
