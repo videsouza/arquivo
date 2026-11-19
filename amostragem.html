@@ -6,7 +6,7 @@
     <title>Amostragem Aleatória por Código e Ano | Hub de Serviços</title>
     
     <!-- Bibliotecas -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
@@ -1256,7 +1256,7 @@
 
             const ws = XLSX.utils.aoa_to_sheet([outHeader, ...outRows]);
 
-            // Aplica preenchimento pastel amarelo-âmbar nas células das linhas destacadas
+            // Aplica preenchimento verde suave nas células das linhas destacadas quando suportado pelo build
             const range = XLSX.utils.decode_range(ws['!ref'] || "A1");
             for (let r = 1; r <= range.e.r; r++) {
                 const sourceIdx = r - 1;
