@@ -596,6 +596,9 @@
                         <button type="button" class="btn btn-success" id="downloadHighlightedBtn" onclick="exportarPlanilhaDestacada()" style="display: none;">
                             <i class="fas fa-highlighter"></i> Planilha Destacada
                         </button>
+                        <button type="button" class="btn btn-secondary" id="downloadNeededPairsBtn" onclick="exportarSomenteParesNecessarios()" style="display: none;">
+                            <i class="fas fa-filter"></i> Somente Pares Necessários
+                        </button>
                     </div>
                 </div>
                 <div class="compare-stats-grid">
@@ -911,6 +914,7 @@
             document.getElementById('dbFileName').innerText = "Nenhum banco carregado";
             document.getElementById('clearDbBtn').classList.remove('show');
             document.getElementById('downloadHighlightedBtn').style.display = 'none';
+            document.getElementById('downloadNeededPairsBtn').style.display = 'none';
             document.getElementById('compareResultCard').classList.remove('show');
         }
 
@@ -1079,6 +1083,7 @@
             } else {
                 lastComparisonData = null;
                 document.getElementById('downloadHighlightedBtn').style.display = 'none';
+            document.getElementById('downloadNeededPairsBtn').style.display = 'none';
                 document.getElementById('compareResultCard').classList.remove('show');
             }
         }
@@ -1228,6 +1233,7 @@
             document.getElementById('compareMetaText').innerText =
                 `Base: "${dbFileName}" (${sheetsProcessed} ${sheetsProcessed === 1 ? 'aba lida' : 'abas lidas'}, ${dbPairKeys.size.toLocaleString('pt-BR')} chaves únicas Código [Col. Q] + Tipo [Col. U] + Ano [Col. G]).`;
             document.getElementById('downloadHighlightedBtn').style.display = 'inline-flex';
+            document.getElementById('downloadNeededPairsBtn').style.display = 'inline-flex';
             document.getElementById('compareResultCard').classList.add('show');
         }
 
@@ -1338,6 +1344,52 @@
             const cleanDbName = dbFileBaseName.replace(/[^a-zA-Z0-9_-]/g, "_");
             XLSX.writeFile(wb, `${originalFileName}_Comparacao_${cleanDbName}.xlsx`);
         }
+
+        function exportarSomenteParesNecessarios() {
+            if (!lastComparisonData) return;
+
+            const { novosRegistros, dbFileName } = lastComparisonData;
+            const seenTuples = new Set();
+            const neededTuples = [];
+
+            novosRegistros.forEach(item => {
+                const cod = String(item.codigo ?? "").trim();
+                const tipo = String(item.tipo ?? "").trim();
+                const anoStr = extractYearOnly(item.ano);
+                if (!cod || !anoStr) return;
+
+                const normKey = `${normalizeCodeKey(cod)}||${normalizeTypeKey(tipo)}||${anoStr}`;
+                if (!seenTuples.has(normKey)) {
+                    seenTuples.add(normKey);
+                    neededTuples.push({
+                        codigo: cod,
+                        tipo: tipo,
+                        ano: /^\d{4}$/.test(anoStr) ? parseInt(anoStr, 10) : anoStr
+                    });
+                }
+            });
+
+            neededTuples.sort((a, b) => {
+                const cmpCod = String(a.codigo).localeCompare(String(b.codigo), undefined, { numeric: true, sensitivity: 'base' });
+                if (cmpCod !== 0) return cmpCod;
+                const cmpTipo = String(a.tipo).localeCompare(String(b.tipo), undefined, { numeric: true, sensitivity: 'base' });
+                if (cmpTipo !== 0) return cmpTipo;
+                return String(a.ano).localeCompare(String(b.ano), undefined, { numeric: true, sensitivity: 'base' });
+            });
+
+            const wb = XLSX.utils.book_new();
+            const sheetData = [
+                ["COD", "TIPO", "ANO"],
+                ...neededTuples.map(p => [p.codigo, p.tipo, p.ano])
+            ];
+            const ws = XLSX.utils.aoa_to_sheet(sheetData);
+            XLSX.utils.book_append_sheet(wb, ws, "Pares_Necessarios");
+
+            const dbFileBaseName = dbFileName.replace(/\.[^/.]+$/, "");
+            const cleanDbName = dbFileBaseName.replace(/[^a-zA-Z0-9_-]/g, "_");
+            XLSX.writeFile(wb, `${originalFileName}_Pares_Necessarios_${cleanDbName}.xlsx`);
+        }
+
     </script>
 </body>
 </html>
