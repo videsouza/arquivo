@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amostragem Aleatória por Código e Ano | Hub de Serviços</title>
+    
+    <!-- Bibliotecas -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- DESIGN SYSTEM (AZUL HUB) --- */
+       :root {
+            --primary: #2563eb;
+            --primary-light: #eff6ff;
+            --primary-dark: #1e40af;
+            --text-main: #111827;
+            --text-sub: #6b7280;
+            --bg-body: #f3f4f6;
+            --bg-card: #ffffff;
+            --border: #d1d5db;
+            --success: #10b981;
+            --success-bg: #ecfdf5;
+            --amber: #d97706;
+            --amber-light: #fffbeb;
+            --amber-border: #fde68a;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+       }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 85vh;
+        }
+
+        /* HEADER */
+        .header {
+            background: #fff;
+            padding: 30px 40px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 { font-size: 24px; font-weight: 800; color: var(--text-main); }
+        .header h1 i { color: var(--primary); margin-right: 10px; }
+        .header p { color: var(--text-sub); font-size: 14px; margin-top: 5px; }
+
+        .content { padding: 40px; }
+
+        /* CONFIGURAÇÃO PRÉVIA DE SEMENTE + UPLOADS INICIAIS */
+        .setup-panel {
+            max-width: 1080px;
+            margin: 0 auto 30px auto;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        .pre-seed-card {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px 20px;
+        }
+        .pre-seed-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .pre-seed-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .pre-seed-title i { color: var(--primary); }
+        .pre-seed-hint {
+            font-size: 12px;
+            color: var(--text-sub);
+        }
+        .pre-seed-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .seed-input-large {
+            flex: 1;
+            min-width: 210px;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .seed-input-large:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+        .seed-input-large::placeholder {
+            color: #9ca3af;
+            font-weight: 400;
+        }
+
+        .uploads-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+        @media (max-width: 920px) { .uploads-grid { grid-template-columns: 1fr; } }
+
+        .upload-area {
+            background: #f9fafb;
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 28px 18px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+        .upload-area.loaded {
+            border-color: var(--success);
+            background: var(--success-bg);
+        }
+        .upload-icon { font-size: 34px; color: var(--primary); margin-bottom: 10px; opacity: 0.85; }
+        .upload-area.loaded .upload-icon { color: var(--success); }
+        .upload-area h3 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+        .upload-area p { font-size: 12px; color: var(--text-sub); }
+        .file-name { font-size: 12px; font-weight: 600; color: var(--primary); margin-top: 10px; word-break: break-all; }
+        .upload-area.loaded .file-name { color: #065f46; }
+        .clear-db-btn {
+            margin-top: 8px;
+            background: #fff;
+            border: 1px solid #d1d5db;
+            color: #374151;
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            display: none;
+        }
+        .clear-db-btn.show { display: inline-flex; align-items: center; gap: 5px; }
+        .clear-db-btn:hover { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
+
+        /* CARDS DE RESUMO */
+        .kpi-grid {
+            display: none;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            margin-bottom: 25px;
+            animation: fadeIn 0.4s ease;
+        }
+        @media (max-width: 1080px) { .kpi-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 760px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 560px) { .kpi-grid { grid-template-columns: 1fr; } }
+
+        .kpi-grid.show { display: grid; }
+        .kpi-card {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .kpi-card span {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 6px;
+        }
+        .kpi-card strong {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+        .kpi-card.highlight {
+            background: var(--primary-light);
+            border-color: #bfdbfe;
+        }
+        .kpi-card.highlight strong { color: var(--primary-dark); }
+
+        /* BARRA DE AÇÕES */
+        .toolbar {
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+            background: #f9fafb;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px 24px;
+            animation: fadeIn 0.4s ease;
+        }
+        .toolbar.show { display: flex; }
+        .toolbar-actions { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+
+        /* BOTÕES */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 14px;
+            transition: 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { background: #059669; transform: translateY(-1px); }
+        .btn-secondary { background: white; border: 1px solid var(--border); color: var(--text-main); }
+        .btn-secondary:hover { background: #f9fafb; }
+
+        /* CARD DE RESULTADO DA COMPARAÇÃO COM BANCO DE DADOS */
+        .compare-result-card {
+            display: none;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 25px;
+            animation: fadeIn 0.4s ease;
+        }
+        .compare-result-card.show { display: block; }
+        .compare-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .compare-header h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .compare-header h3 i {
+            color: var(--primary);
+            margin-right: 8px;
+        }
+        .compare-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 14px;
+        }
+        @media (max-width: 820px) { .compare-stats-grid { grid-template-columns: 1fr; } }
+
+        .stat-box-new {
+            background: var(--success-bg);
+            border: 1px solid #a7f3d0;
+            border-radius: 10px;
+            padding: 14px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+        .stat-box-existing {
+            background: var(--amber-light);
+            border: 1px solid var(--amber-border);
+            border-radius: 10px;
+            padding: 14px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+        .stat-box-total-pct {
+            background: var(--primary-light);
+            border: 1px solid #bfdbfe;
+            border-radius: 10px;
+            padding: 14px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+        .stat-label {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .stat-sub {
+            font-size: 11px;
+            color: var(--text-sub);
+            margin-top: 2px;
+        }
+        .stat-box-new .stat-label { color: #065f46; }
+        .stat-box-existing .stat-label { color: #92400e; }
+        .stat-box-total-pct .stat-label { color: var(--primary-dark); }
+        .stat-abs {
+            font-size: 22px;
+            font-weight: 800;
+        }
+        .stat-box-new .stat-abs { color: #047857; }
+        .stat-box-existing .stat-abs { color: #b45309; }
+        .stat-box-total-pct .stat-abs { color: var(--primary-dark); }
+        .stat-pct {
+            font-size: 16px;
+            font-weight: 800;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.85);
+            white-space: nowrap;
+        }
+        .stat-box-new .stat-pct { color: #065f46; }
+        .stat-box-existing .stat-pct { color: #92400e; }
+        .compare-meta {
+            font-size: 13px;
+            color: var(--text-sub);
+        }
+
+        /* LISTA DE CÓDIGOS E Nº DE ANOS DISTINTOS */
+        .codes-summary-card {
+            display: none;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 25px;
+            animation: fadeIn 0.4s ease;
+        }
+        .codes-summary-card.show { display: block; }
+        .codes-summary-header {
+            padding: 16px 24px;
+            background: #f8fafc;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .codes-summary-header h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .codes-summary-header p {
+            font-size: 12px;
+            color: var(--text-sub);
+        }
+
+        .codes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 12px;
+            padding: 20px 24px;
+        }
+        .code-item {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .code-item:hover {
+            border-color: #93c5fd;
+            background: var(--primary-light);
+        }
+        .code-label {
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--text-main);
+        }
+        .years-badge {
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            border: 1px solid #bfdbfe;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+
+        /* CAMPO EXPLICATIVO DAS FUNÇÕES DO SORTEIO */
+        .docs-card {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .docs-header {
+            padding: 16px 24px;
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+        .docs-header h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .docs-header h3 i {
+            color: var(--primary);
+            margin-right: 8px;
+        }
+        .docs-body {
+            padding: 20px 24px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 14px;
+        }
+        .func-box {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 14px 16px;
+        }
+        .func-name {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            background: var(--primary-light);
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+        .func-desc {
+            font-size: 13px;
+            color: var(--text-main);
+        }
+        .func-desc span {
+            color: var(--text-sub);
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1><i class="fas fa-random"></i> Amostragem Aleatória por Código e Ano</h1>
+                <p>Seleção estratificada de 1 registro por combinação de Código (Coluna G) + Tipo (Coluna F) e Ano (Coluna B)</p>
+            </div>
+            <button class="btn btn-secondary" onclick="location.reload()">
+                <i class="fas fa-undo"></i> Reiniciar
+            </button>
+        </div>
+
+        <div class="content">
+            
+            <!-- 1. ESCOLHA PRÉVIA DA SEMENTE + UPLOADS INICIAIS -->
+            <div class="setup-panel" id="uploadSection">
+                <div class="pre-seed-card">
+                    <div class="pre-seed-top">
+                        <div class="pre-seed-title">
+                            <i class="fas fa-key"></i> Semente do Sorteio (Opcional — definida antes do processo)
+                        </div>
+                        <span class="pre-seed-hint">Deixe em branco para sorteio não determinístico (<code>Math.random</code>)</span>
+                    </div>
+                    <div class="pre-seed-controls">
+                        <input
+                            type="text"
+                            id="seedInput"
+                            class="seed-input-large"
+                            placeholder="Ex: AUDITORIA-2026-SEC ou 12345"
+                            oninput="syncSeedLabel()"
+                        >
+                        <button type="button" class="btn btn-secondary" onclick="gerarNovaSemente()">
+                            <i class="fas fa-sync-alt"></i> Gerar Semente
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="limparSemente()">
+                            <i class="fas fa-times"></i> Limpar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="uploads-grid">
+                    <div class="upload-area" id="dropArea" onclick="document.getElementById('fileInput').click()">
+                        <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" hidden onchange="handleFile(this)">
+                        <i class="fas fa-file-excel upload-icon" id="uploadIcon"></i>
+                        <h3>1. Planilha de Entrada (Obrigatória)</h3>
+                        <p>A partir da linha 2 (A: Box, B: Ano, F: Tipo, G: Código, H: Descrição)</p>
+                        <div class="file-name" id="fileName">Nenhum arquivo selecionado</div>
+                    </div>
+
+                    <div class="upload-area" id="dbDropArea" onclick="document.getElementById('initialDbInput').click()">
+                        <input type="file" id="initialDbInput" accept=".xlsx,.xls,.csv" hidden onchange="handleInitialDbFile(this)">
+                        <i class="fas fa-database upload-icon" id="dbUploadIcon"></i>
+                        <h3>2. Banco de Amostras (Opcional)</h3>
+                        <p>Procura em uma ou ambas as bases carregadas (Q: Cód, U: Tipo, G: Ano)</p>
+                        <div class="file-name" id="dbFileName">Nenhum banco carregado</div>
+                        <button type="button" class="clear-db-btn" id="clearDbBtn" onclick="event.stopPropagation(); clearInitialDb();">
+                            <i class="fas fa-times"></i> Remover banco
+                        </button>
+                    </div>
+
+                    <div class="upload-area" id="permDropArea" onclick="document.getElementById('permDbInput').click()">
+                        <input type="file" id="permDbInput" accept=".xlsx,.xls,.csv" hidden onchange="handlePermDbFile(this)">
+                        <i class="fas fa-archive upload-icon" id="permUploadIcon"></i>
+                        <h3>3. Guarda Permanente (Opcional)</h3>
+                        <p>Segunda base de procura; pode ser usada sozinha ou junto ao banco de amostras</p>
+                        <div class="file-name" id="permFileName">Nenhuma base carregada</div>
+                        <button type="button" class="clear-db-btn" id="clearPermDbBtn" onclick="event.stopPropagation(); clearPermDb();">
+                            <i class="fas fa-times"></i> Remover base
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. KPIS -->
+            <div class="kpi-grid" id="kpiGrid">
+                <div class="kpi-card">
+                    <span>Registros Válidos Lidos</span>
+                    <strong id="kpiTotal">0</strong>
+                </div>
+                <div class="kpi-card highlight">
+                    <span>Pares Código+Tipo Distintos</span>
+                    <strong id="kpiDistinctCodes">0</strong>
+                </div>
+                <div class="kpi-card">
+                    <span>Amostra Selecionada</span>
+                    <strong id="kpiSelected">0</strong>
+                </div>
+                <div class="kpi-card">
+                    <span>% da Amostra / Total</span>
+                    <strong id="kpiPercent">0,00%</strong>
+                </div>
+                <div class="kpi-card highlight">
+                    <span>Boxes a Analisar (Amostra)</span>
+                    <strong id="kpiBoxesSample">0</strong>
+                </div>
+            </div>
+
+            <!-- 3. TOOLBAR -->
+            <div class="toolbar" id="toolbar">
+                <div style="font-size: 13px; font-weight: 600; color: var(--text-sub);">
+                    Ordenação: <strong>Box</strong> e <strong>Código</strong> • Semente em uso: <strong id="activeSeedLabel">aleatória (sem semente)</strong>
+                </div>
+                <div class="toolbar-actions">
+                    <button class="btn btn-success" onclick="exportarExcelUnificado()">
+                        <i class="fas fa-file-download"></i> Baixar Planilha Excel (2 Abas)
+                    </button>
+                </div>
+            </div>
+
+            <!-- RESULTADO DA COMPARAÇÃO COM BANCO DE DADOS -->
+            <div class="compare-result-card" id="compareResultCard">
+                <div class="compare-header">
+                    <h3><i class="fas fa-database"></i> Estatísticas da Comparação com Bases de Referência</h3>
+                    <div class="toolbar-actions">
+                        <button type="button" class="btn btn-success" onclick="exportarExcelUnificado()">
+                            <i class="fas fa-file-download"></i> Baixar Planilha Excel (2 Abas)
+                        </button>
+                    </div>
+                </div>
+                <div class="compare-stats-grid">
+                    <div class="stat-box-new">
+                        <div>
+                            <span class="stat-label">Registros Novos</span>
+                            <div class="stat-abs" id="absNewCount">0</div>
+                            <div class="stat-sub" id="subNewOverTotal">0,00% do total inicial</div>
+                        </div>
+                        <div class="stat-pct" id="pctNewOverSample">0,00% da amostra</div>
+                    </div>
+                    <div class="stat-box-existing">
+                        <div>
+                            <span class="stat-label">Registros Já na Base</span>
+                            <div class="stat-abs" id="absExistingCount">0</div>
+                            <div class="stat-sub" id="subExistingOverTotal">0,00% do total inicial</div>
+                        </div>
+                        <div class="stat-pct" id="pctExistingOverSample">0,00% da amostra</div>
+                    </div>
+                    <div class="stat-box-total-pct">
+                        <div>
+                            <span class="stat-label">% Novos / Total Inicial</span>
+                            <div class="stat-abs" id="pctNewOverTotalHighlight">0,00%</div>
+                            <div class="stat-sub" id="subTotalBaseContext">0 novos de 0 registros válidos</div>
+                        </div>
+                    </div>
+                </div>
+                <p class="compare-meta" id="compareBoxesText" style="font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
+                    Boxes a analisar: 0 na amostra total • 0 em registros novos • 0 em registros já na base.
+                </p>
+                <p class="compare-meta" id="compareMetaText">
+                    Aguardando comparação com o banco de dados.
+                </p>
+            </div>
+
+            <!-- 4. PARES (CÓDIGO + TIPO) DISTINTOS E Nº DE ANOS DISTINTOS -->
+            <div class="codes-summary-card" id="codesSummaryCard">
+                <div class="codes-summary-header">
+                    <div>
+                        <h3><i class="fas fa-list-ol" style="color: var(--primary); margin-right: 8px;"></i>Anos Distintos por Código e Tipo Documental</h3>
+                        <p>Cada par (Código [Col. G], Tipo [Col. F]) é tratado como um código distinto na estratificação</p>
+                    </div>
+                    <span id="distinctCodesCounterBadge" style="font-size: 12px; font-weight: 700; color: var(--primary-dark); background: var(--primary-light); padding: 6px 12px; border-radius: 999px; border: 1px solid #bfdbfe;">
+                        0 pares distintos
+                    </span>
+                </div>
+                <div class="codes-grid" id="codesGrid"></div>
+            </div>
+
+            <!-- 5. CAMPO EXPLICATIVO DAS FUNÇÕES UTILIZADAS PARA O SORTEIO -->
+            <div class="docs-card">
+                <div class="docs-header">
+                    <h3><i class="fas fa-book-open"></i> Como Funcionam as Funções do Sorteio</h3>
+                    <span style="font-size: 12px; color: var(--text-sub); font-weight: 600;">Transparência e Reprodutibilidade</span>
+                </div>
+                <div class="docs-body">
+                    <div class="func-box">
+                        <div class="func-name">xmur3(str)</div>
+                        <div class="func-desc">
+                            Converte o texto da semente informada pelo usuário em um <strong>hash numérico de 32 bits</strong> bem distribuído. Assim, sementes textuais ou numéricas (ex.: <code>SEC-2026</code>) viram um estado inicial consistente para o gerador.
+                        </div>
+                    </div>
+                    <div class="func-box">
+                        <div class="func-name">mulberry32(a)</div>
+                        <div class="func-desc">
+                            É o gerador pseudoaleatório (<strong>PRNG</strong>) determinístico. A partir do hash produzido por <code>xmur3</code>, devolve uma sequência reprodutível de números decimais no intervalo <code>[0, 1)</code>.
+                        </div>
+                    </div>
+                    <div class="func-box">
+                        <div class="func-name">createRng(seedStr)</div>
+                        <div class="func-desc">
+                            Decide qual fonte de aleatoriedade será usada: se houver <strong>semente preenchida</strong>, encadeia <code>xmur3</code> + <code>mulberry32</code>; se estiver vazia, retorna <code>Math.random</code> nativo do navegador.
+                        </div>
+                    </div>
+                    <div class="func-box">
+                        <div class="func-name">gerarAmostragem()</div>
+                        <div class="func-desc">
+                            Trata cada par <strong>(Código [Col. G], Tipo [Col. F])</strong> como um código distinto, agrupa por <strong>Ano (Coluna B)</strong>, calcula o índice via <code>Math.floor(rng() * qty)</code> para sortear <strong>1 registro por estrato</strong> e ordena o resultado final por <strong>Box</strong> e <strong>Código</strong>.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let rawHeader = [];
+        let rawRows = [];
+        let selectedItems = [];
+        let pairSummary = [];
+        let codeYearsSummary = [];
+        let totalValidRecords = 0;
+        let originalFileName = "amostra";
+        let currentSeedUsed = "";
+
+        // Banco de amostras carregado opcionalmente no início
+        let initialDbFile = null;
+        let initialDbPairKeys = null;
+        let initialDbSheetsCount = 0;
+
+        // Segunda base de dados: Guarda Permanente
+        let permDbFile = null;
+        let permDbPairKeys = null;
+        let permDbSheetsCount = 0;
+
+        // Resultado da última comparação
+        let lastComparisonData = null;
+
+        function getCombinedReferenceBases() {
+            const hasSampleDb = Boolean(initialDbFile && initialDbPairKeys);
+            const hasPermDb = Boolean(permDbFile && permDbPairKeys);
+            if (!hasSampleDb && !hasPermDb) return null;
+
+            const combinedKeys = new Set();
+            const sourcesUsed = [];
+
+            if (hasSampleDb) {
+                initialDbPairKeys.forEach(k => combinedKeys.add(k));
+                sourcesUsed.push(`Banco de Amostras: "${initialDbFile.name}" (${initialDbSheetsCount} ${initialDbSheetsCount === 1 ? 'aba' : 'abas'})`);
+            }
+            if (hasPermDb) {
+                permDbPairKeys.forEach(k => combinedKeys.add(k));
+                sourcesUsed.push(`Guarda Permanente: "${permDbFile.name}" (${permDbSheetsCount} ${permDbSheetsCount === 1 ? 'aba' : 'abas'})`);
+            }
+
+            const labelSummary = sourcesUsed.join(" + ");
+            const fileSlug = [
+                hasSampleDb ? initialDbFile.name.replace(/\.[^/.]+$/, "") : "",
+                hasPermDb ? permDbFile.name.replace(/\.[^/.]+$/, "") : ""
+            ].filter(Boolean).join("_e_");
+
+            return {
+                combinedKeys,
+                labelSummary,
+                fileSlug: fileSlug || "bases_referencia",
+                hasSampleDb,
+                hasPermDb
+            };
+        }
+
+        function refreshComparisonIfReady() {
+            if (rawRows.length === 0) return;
+            const ref = getCombinedReferenceBases();
+            if (ref) {
+                executarComparacaoSemGerarArquivo(ref.combinedKeys, ref.labelSummary, ref.fileSlug, ref.hasSampleDb, ref.hasPermDb);
+            } else {
+                lastComparisonData = null;
+                document.getElementById('compareResultCard').classList.remove('show');
+            }
+        }
+
+        // --- PRNG REPRODUZÍVEL (xmur3 hash + mulberry32) ---
+        function xmur3(str) {
+            let h = 1779033703 ^ str.length;
+            for (let i = 0; i < str.length; i++) {
+                h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+                h = (h << 13) | (h >>> 19);
+            }
+            return function() {
+                h = Math.imul(h ^ (h >>> 16), 2246822507);
+                h = Math.imul(h ^ (h >>> 13), 3266489909);
+                return (h ^= h >>> 16) >>> 0;
+            };
+        }
+
+        function mulberry32(a) {
+            return function() {
+                let t = a += 0x6D2B79F5;
+                t = Math.imul(t ^ (t >>> 15), t | 1);
+                t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+                return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+            };
+        }
+
+        function createRng(seedStr) {
+            if (seedStr && seedStr.trim() !== "") {
+                const seedFn = xmur3(seedStr.trim());
+                return mulberry32(seedFn());
+            }
+            return Math.random;
+        }
+
+        function syncSeedLabel() {
+            const val = document.getElementById('seedInput').value.trim();
+            document.getElementById('activeSeedLabel').innerText = val ? val : "aleatória (sem semente)";
+        }
+
+        function gerarNovaSemente() {
+            const randomPart = Math.floor(100000 + Math.random() * 900000);
+            const input = document.getElementById('seedInput');
+            input.value = `SEED-${randomPart}`;
+            syncSeedLabel();
+            if (rawRows.length > 0) {
+                gerarAmostragem();
+            }
+        }
+
+        function limparSemente() {
+            const input = document.getElementById('seedInput');
+            input.value = "";
+            syncSeedLabel();
+            if (rawRows.length > 0) {
+                gerarAmostragem();
+            }
+        }
+
+        // --- NORMALIZAÇÃO DE ANO (SOMENTE O ANO, EX: 2020) ---
+        function extractYearOnly(rawAno) {
+            if (rawAno === undefined || rawAno === null) return "";
+
+            if (typeof rawAno === 'number' && !isNaN(rawAno)) {
+                const intVal = Math.floor(rawAno);
+                if (intVal >= 1000 && intVal <= 2999) return String(intVal);
+                if (rawAno > 20000 && rawAno < 80000) {
+                    const dt = XLSX.SSF.parse_date_code(rawAno);
+                    if (dt && dt.y) return String(dt.y);
+                }
+                return String(intVal);
+            }
+
+            if (rawAno instanceof Date && !isNaN(rawAno.getTime())) {
+                return String(rawAno.getFullYear());
+            }
+
+            const str = String(rawAno).trim();
+            if (!str) return "";
+
+            const match4 = str.match(/ (1[89]\d{2}|20\d{2}|21\d{2}) /);
+            if (match4) return match4[1];
+
+            const matchDate = str.match(/(?:^|[\/\-])(\d{4})(?:$|[\/\-T\s])/);
+            if (matchDate) return matchDate[1];
+
+            const any4 = str.match(/(\d{4})/);
+            if (any4) return any4[1];
+
+            return str;
+        }
+
+        function normalizeCodeKey(rawCode) {
+            return String(rawCode ?? "").trim().toUpperCase();
+        }
+
+        function normalizeTypeKey(rawType) {
+            return String(rawType ?? "").trim().toUpperCase();
+        }
+
+        function formatCodeTypeLabel(codigo, tipo) {
+            const c = String(codigo ?? "").trim();
+            const t = String(tipo ?? "").trim();
+            return t ? `${c} — ${t}` : c;
+        }
+
+        function makeCodeTypeKey(codigo, tipo) {
+            return `${normalizeCodeKey(codigo)}::${normalizeTypeKey(tipo)}`;
+        }
+
+        function makePairKey(codigo, tipo, ano) {
+            return `${normalizeCodeKey(codigo)}||${normalizeTypeKey(tipo)}||${extractYearOnly(ano)}`;
+        }
+
+        // --- DETECÇÃO DA COLUNA SN NO CABEÇALHO ---
+        function findSnColumnIndex(header) {
+            const normalizedHeaders = header.map(h =>
+                String(h ?? "")
+                    .toLowerCase()
+                    .normalize("NFD")
+                    .replace(/[̀-ͯ]/g, "")
+                    .trim()
+            );
+
+            for (let i = 0; i < normalizedHeaders.length; i++) {
+                const h = normalizedHeaders[i];
+                if (h === "sn" || h === "s/n" || h === "n sn" || h === "num sn" || h === "nº sn" || h === "no sn" || h.startsWith("sn ")) {
+                    return i;
+                }
+            }
+
+            const reserved = new Set([0, 1, 5, 6, 7]);
+            for (let i = 2; i < Math.max(header.length, 10); i++) {
+                if (!reserved.has(i)) {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        // --- LEITURA DO BANCO DE AMOSTRAS (ATÉ 2 ABAS: ABA 1 LINHA 2+, ABA 2 LINHA 1+; COD Q=16, DATA G=6) ---
+        function parseDatabaseWorkbook(arrayBuffer) {
+            const data = new Uint8Array(arrayBuffer);
+            const workbook = XLSX.read(data, { type: 'array' });
+
+            const dbPairKeys = new Set();
+            let sheetsProcessed = 0;
+
+            const maxSheets = Math.min(workbook.SheetNames.length, 2);
+
+            for (let sIdx = 0; sIdx < maxSheets; sIdx++) {
+                const sheetName = workbook.SheetNames[sIdx];
+                const sheet = workbook.Sheets[sheetName];
+                const matrix = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+                const startRow = sIdx === 0 ? 1 : 0;
+
+                if (matrix.length <= startRow) continue;
+                sheetsProcessed++;
+
+                for (let r = startRow; r < matrix.length; r++) {
+                    const row = matrix[r];
+                    if (!row || !row.some(cell => String(cell ?? "").trim() !== "")) continue;
+
+                    const rawCodigoQ = row[16]; // Coluna Q = índice 16
+                    const rawTipoU = row[20];   // Coluna U = índice 20
+                    const rawDataG = row[6];    // Coluna G = índice 6
+
+                    const codigoLimpo = String(rawCodigoQ ?? "").trim();
+                    const tipoLimpo = String(rawTipoU ?? "").trim();
+                    const anoLimpo = extractYearOnly(rawDataG);
+
+                    if (codigoLimpo && anoLimpo) {
+                        dbPairKeys.add(makePairKey(codigoLimpo, tipoLimpo, anoLimpo));
+                    }
+                }
+            }
+
+            return { dbPairKeys, sheetsProcessed };
+        }
+
+        function handleInitialDbFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const parsed = parseDatabaseWorkbook(e.target.result);
+                initialDbFile = file;
+                initialDbPairKeys = parsed.dbPairKeys;
+                initialDbSheetsCount = parsed.sheetsProcessed;
+
+                document.getElementById('dbDropArea').classList.add('loaded');
+                document.getElementById('dbUploadIcon').className = 'fas fa-check-circle upload-icon';
+                document.getElementById('dbFileName').innerText = `${file.name} (${initialDbPairKeys.size.toLocaleString('pt-BR')} pares únicos)`;
+                document.getElementById('clearDbBtn').classList.add('show');
+
+                refreshComparisonIfReady();
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function clearInitialDb() {
+            initialDbFile = null;
+            initialDbPairKeys = null;
+            initialDbSheetsCount = 0;
+            document.getElementById('initialDbInput').value = "";
+            document.getElementById('dbDropArea').classList.remove('loaded');
+            document.getElementById('dbUploadIcon').className = 'fas fa-database upload-icon';
+            document.getElementById('dbFileName').innerText = "Nenhum banco carregado";
+            document.getElementById('clearDbBtn').classList.remove('show');
+
+            refreshComparisonIfReady();
+        }
+
+        function handlePermDbFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const parsed = parseDatabaseWorkbook(e.target.result);
+                permDbFile = file;
+                permDbPairKeys = parsed.dbPairKeys;
+                permDbSheetsCount = parsed.sheetsProcessed;
+
+                document.getElementById('permDropArea').classList.add('loaded');
+                document.getElementById('permUploadIcon').className = 'fas fa-check-circle upload-icon';
+                document.getElementById('permFileName').innerText = `${file.name} (${permDbPairKeys.size.toLocaleString('pt-BR')} pares únicos)`;
+                document.getElementById('clearPermDbBtn').classList.add('show');
+
+                refreshComparisonIfReady();
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function clearPermDb() {
+            permDbFile = null;
+            permDbPairKeys = null;
+            permDbSheetsCount = 0;
+            document.getElementById('permDbInput').value = "";
+            document.getElementById('permDropArea').classList.remove('loaded');
+            document.getElementById('permUploadIcon').className = 'fas fa-archive upload-icon';
+            document.getElementById('permFileName').innerText = "Nenhuma base carregada";
+            document.getElementById('clearPermDbBtn').classList.remove('show');
+
+            refreshComparisonIfReady();
+        }
+
+        // --- 1. LEITURA DO ARQUIVO DE ENTRADA ---
+        function handleFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            originalFileName = file.name.replace(/\.[^/.]+$/, "");
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+
+                const matrix = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: "" });
+
+                if (matrix.length < 2) {
+                    alert("A planilha precisa ter cabeçalho na linha 1 e dados a partir da linha 2.");
+                    return;
+                }
+
+                rawHeader = matrix[0];
+                rawRows = matrix.slice(1).filter(row => row.some(cell => String(cell ?? "").trim() !== ""));
+
+                document.getElementById('dropArea').classList.add('loaded');
+                document.getElementById('uploadIcon').className = 'fas fa-check-circle upload-icon';
+                document.getElementById('fileName').innerText = `${file.name} (${rawRows.length} linhas carregadas)`;
+
+                gerarAmostragem();
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
+        // --- 2. ROTINA DE AGRUPAMENTO, SORTEIO E ORDENAÇÃO ---
+        function gerarAmostragem() {
+            if (rawRows.length === 0) return;
+
+            const seedInputVal = document.getElementById('seedInput').value.trim();
+            currentSeedUsed = seedInputVal;
+            const rng = createRng(seedInputVal);
+
+            const snIdx = findSnColumnIndex(rawHeader);
+
+            const groups = new Map();
+            let validCount = 0;
+
+            rawRows.forEach((row, rowIdx) => {
+                const boxVal = String(row[0] ?? "").trim();        // Coluna A (índice 0)
+                const anoVal = extractYearOnly(row[1]);             // Coluna B (índice 1) -> somente o ano
+                const tipoVal = String(row[5] ?? "").trim();       // Coluna F (índice 5) -> Tipo documental
+                const codigoVal = String(row[6] ?? "").trim();     // Coluna G (índice 6) -> Código
+                const snVal = snIdx >= 0 ? String(row[snIdx] ?? "").trim() : "";
+                const descVal = String(row[7] ?? "").trim();     // Coluna H (índice 7) -> Descrição
+
+                if (!codigoVal || !anoVal) return;
+
+                validCount++;
+
+                const codeTypeKey = makeCodeTypeKey(codigoVal, tipoVal);
+                const codeTypeLabel = formatCodeTypeLabel(codigoVal, tipoVal);
+
+                if (!groups.has(codeTypeKey)) {
+                    groups.set(codeTypeKey, {
+                        codigo: codigoVal,
+                        tipo: tipoVal,
+                        label: codeTypeLabel,
+                        years: new Map()
+                    });
+                }
+                const yearMap = groups.get(codeTypeKey).years;
+
+                if (!yearMap.has(anoVal)) {
+                    yearMap.set(anoVal, []);
+                }
+
+                yearMap.get(anoVal).push({
+                    sourceRowIndex: rowIdx,
+                    rawRow: row,
+                    box: boxVal,
+                    codigo: codigoVal,
+                    tipo: tipoVal,
+                    ano: anoVal,
+                    sn: snVal,
+                    descricao: descVal
+                });
+            });
+
+            totalValidRecords = validCount;
+
+            const sortedCodeTypeKeys = Array.from(groups.keys()).sort((kA, kB) => {
+                const gA = groups.get(kA);
+                const gB = groups.get(kB);
+                const cmpCode = gA.codigo.localeCompare(gB.codigo, undefined, { numeric: true, sensitivity: 'base' });
+                if (cmpCode !== 0) return cmpCode;
+                return gA.tipo.localeCompare(gB.tipo, undefined, { numeric: true, sensitivity: 'base' });
+            });
+
+            const sampled = [];
+            const summary = [];
+            const codeYears = [];
+
+            sortedCodeTypeKeys.forEach(key => {
+                const groupEntry = groups.get(key);
+                const yearMap = groupEntry.years;
+                const sortedYears = Array.from(yearMap.keys()).sort((a, b) =>
+                    a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
+                );
+
+                codeYears.push({
+                    codigo: groupEntry.codigo,
+                    tipo: groupEntry.tipo,
+                    label: groupEntry.label,
+                    distinctYearsCount: sortedYears.length
+                });
+
+                sortedYears.forEach(ano => {
+                    const recordsList = yearMap.get(ano);
+                    const qty = recordsList.length;
+
+                    summary.push({
+                        codigo: groupEntry.codigo,
+                        tipo: groupEntry.tipo,
+                        ano,
+                        quantidade: qty
+                    });
+
+                    const randomIndex = Math.floor(rng() * qty);
+                    sampled.push(recordsList[randomIndex]);
+                });
+            });
+
+            // Ordena por Box (Coluna A) e, em seguida, por Código (Coluna G)
+            sampled.sort((a, b) => {
+                const cmpBox = a.box.localeCompare(b.box, undefined, { numeric: true, sensitivity: 'base' });
+                if (cmpBox !== 0) return cmpBox;
+                return a.codigo.localeCompare(b.codigo, undefined, { numeric: true, sensitivity: 'base' });
+            });
+
+            selectedItems = sampled;
+            pairSummary = summary;
+            codeYearsSummary = codeYears;
+
+            const distinctCodesTotal = codeYearsSummary.length;
+            const pct = totalValidRecords > 0 ? (selectedItems.length / totalValidRecords) * 100 : 0;
+            const distinctBoxesSample = countDistinctBoxes(selectedItems);
+
+            document.getElementById('activeSeedLabel').innerText = seedInputVal ? seedInputVal : "aleatória (sem semente)";
+            document.getElementById('kpiTotal').innerText = totalValidRecords.toLocaleString('pt-BR');
+            document.getElementById('kpiDistinctCodes').innerText = distinctCodesTotal.toLocaleString('pt-BR');
+            document.getElementById('kpiSelected').innerText = selectedItems.length.toLocaleString('pt-BR');
+            document.getElementById('kpiPercent').innerText = `${pct.toFixed(2).replace('.', ',')}%`;
+            document.getElementById('kpiBoxesSample').innerText = distinctBoxesSample.toLocaleString('pt-BR');
+
+            document.getElementById('kpiGrid').classList.add('show');
+            document.getElementById('toolbar').classList.add('show');
+            document.getElementById('codesSummaryCard').classList.add('show');
+
+            renderCodeYearsList();
+
+            // Executa a busca nas bases carregadas (Banco de Amostras, Guarda Permanente ou ambas)
+            refreshComparisonIfReady();
+        }
+
+        // --- 3. RENDERIZAÇÃO DA LISTA DE CÓDIGOS E Nº DE ANOS DISTINTOS ---
+        function renderCodeYearsList() {
+            const grid = document.getElementById('codesGrid');
+            const badge = document.getElementById('distinctCodesCounterBadge');
+
+            badge.innerText = `${codeYearsSummary.length.toLocaleString('pt-BR')} ${codeYearsSummary.length === 1 ? 'par distinto' : 'pares distintos'}`;
+
+            grid.innerHTML = codeYearsSummary.map(item => {
+                const labelAno = item.distinctYearsCount === 1 ? '1 ano distinto' : `${item.distinctYearsCount} anos distintos`;
+                return `
+                    <div class="code-item">
+                        <span class="code-label">${escapeHtml(item.label)}</span>
+                        <span class="years-badge">${labelAno}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function escapeHtml(str) {
+            return String(str ?? "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;");
+        }
+
+        function formatSampleRowForExcel(item) {
+            return [
+                item.box,
+                item.codigo,
+                item.tipo,
+                /^\d{4}$/.test(item.ano) ? parseInt(item.ano, 10) : item.ano,
+                item.sn,
+                item.descricao
+            ];
+        }
+
+        function countDistinctBoxes(items) {
+            const set = new Set();
+            (items || []).forEach(item => {
+                const b = String(item?.box ?? "").trim();
+                if (b) set.add(b.toUpperCase());
+            });
+            return set.size;
+        }
+
+        function formatPtPercent(val) {
+            return `${val.toFixed(2).replace('.', ',')}%`;
+        }
+
+        // --- 4. VERIFICAÇÃO DE ORIGEM NAS BASES DE REFERÊNCIA ---
+        function getTrioStatus(key, hasSampleDb, hasPermDb) {
+            const inSample = hasSampleDb && initialDbPairKeys && initialDbPairKeys.has(key);
+            const inPerm = hasPermDb && permDbPairKeys && permDbPairKeys.has(key);
+
+            if (inSample && inPerm) return "Já existe em ambos (Banco de Amostras e Guarda Permanente)";
+            if (inSample) return "Já existe no Banco de Amostras";
+            if (inPerm) return "Já existe no Banco de Guarda Permanente";
+            return "Novo trio";
+        }
+
+        function executarComparacaoSemGerarArquivo(dbPairKeys, dbLabelSummary, dbFileSlug, hasSampleDb = true, hasPermDb = false) {
+            const novosRegistros = [];
+            const registrosExistentes = [];
+
+            selectedItems.forEach(item => {
+                const key = makePairKey(item.codigo, item.tipo, item.ano);
+                if (dbPairKeys.has(key)) {
+                    const origemBase = getTrioStatus(key, hasSampleDb, hasPermDb);
+                    registrosExistentes.push({ ...item, origemBase });
+                } else {
+                    novosRegistros.push({ ...item, origemBase: "Novo trio" });
+                }
+            });
+
+            const totalSample = selectedItems.length;
+            const totalInitial = totalValidRecords;
+
+            const boxesSampleCount = countDistinctBoxes(selectedItems);
+            const boxesNewCount = countDistinctBoxes(novosRegistros);
+            const boxesExistingCount = countDistinctBoxes(registrosExistentes);
+
+            const pctNewOverSample = totalSample > 0 ? (novosRegistros.length / totalSample) * 100 : 0;
+            const pctExistingOverSample = totalSample > 0 ? (registrosExistentes.length / totalSample) * 100 : 0;
+
+            const pctNewOverInitial = totalInitial > 0 ? (novosRegistros.length / totalInitial) * 100 : 0;
+            const pctExistingOverInitial = totalInitial > 0 ? (registrosExistentes.length / totalInitial) * 100 : 0;
+
+            lastComparisonData = {
+                novosRegistros,
+                registrosExistentes,
+                hasSampleDb,
+                hasPermDb,
+                dbFileName: dbFileSlug,
+                boxesSampleCount,
+                boxesNewCount,
+                boxesExistingCount,
+                pctNewOverSample,
+                pctExistingOverSample,
+                pctNewOverInitial,
+                pctExistingOverInitial
+            };
+
+            document.getElementById('absNewCount').innerText = novosRegistros.length.toLocaleString('pt-BR');
+            document.getElementById('pctNewOverSample').innerText = `${formatPtPercent(pctNewOverSample)} da amostra`;
+            document.getElementById('subNewOverTotal').innerText = `${formatPtPercent(pctNewOverInitial)} do total inicial`;
+
+            document.getElementById('absExistingCount').innerText = registrosExistentes.length.toLocaleString('pt-BR');
+            document.getElementById('pctExistingOverSample').innerText = `${formatPtPercent(pctExistingOverSample)} da amostra`;
+            document.getElementById('subExistingOverTotal').innerText = `${formatPtPercent(pctExistingOverInitial)} do total inicial`;
+
+            document.getElementById('pctNewOverTotalHighlight').innerText = formatPtPercent(pctNewOverInitial);
+            document.getElementById('subTotalBaseContext').innerText =
+                `${novosRegistros.length.toLocaleString('pt-BR')} novos de ${totalInitial.toLocaleString('pt-BR')} registros iniciais`;
+
+            document.getElementById('compareBoxesText').innerText =
+                `Boxes distintos para extração física: ${boxesSampleCount.toLocaleString('pt-BR')} na amostra total • ${boxesNewCount.toLocaleString('pt-BR')} em registros novos • ${boxesExistingCount.toLocaleString('pt-BR')} em registros já na base.`;
+            document.getElementById('compareMetaText').innerText =
+                `Bases consultadas: ${dbLabelSummary} (${dbPairKeys.size.toLocaleString('pt-BR')} chaves únicas Código [Col. Q] + Tipo [Col. U] + Ano [Col. G]).`;
+            document.getElementById('compareResultCard').classList.add('show');
+        }
+
+        // --- 5. EXPORTAÇÃO UNIFICADA PARA EXCEL (2 ABAS) ---
+        function exportarExcelUnificado() {
+            if (rawRows.length === 0) return;
+
+            const ref = getCombinedReferenceBases();
+            const hasSampleDb = ref ? ref.hasSampleDb : false;
+            const hasPermDb = ref ? ref.hasPermDb : false;
+            const dbPairKeys = ref ? ref.combinedKeys : new Set();
+
+            // Mapeia as amostras selecionadas por índice da linha original (0-based em rawRows)
+            const selectedByRowIndex = new Map();
+            selectedItems.forEach(item => {
+                if (typeof item.sourceRowIndex === 'number' && item.sourceRowIndex >= 0) {
+                    const key = makePairKey(item.codigo, item.tipo, item.ano);
+                    const isAlreadyInBase = dbPairKeys.has(key);
+                    const statusBase = getTrioStatus(key, hasSampleDb, hasPermDb);
+                    selectedByRowIndex.set(item.sourceRowIndex, {
+                        isAlreadyInBase,
+                        statusBase
+                    });
+                }
+            });
+
+            // ABA 1: Todos os registros da planilha de entrada, destacando as amostras selecionadas
+            // (diferenciando visualmente amostras novas das que já constam nas bases carregadas)
+            const statusColIndex = Math.max(rawHeader.length, ...rawRows.map(r => r.length));
+            const baseColIndex = statusColIndex + 1;
+
+            const outHeader = [...rawHeader];
+            while (outHeader.length < baseColIndex) outHeader.push("");
+            outHeader[statusColIndex] = "Status_Amostra";
+            outHeader[baseColIndex] = "Situacao_Bases";
+
+            const outRows = rawRows.map((row, idx) => {
+                const sampleInfo = selectedByRowIndex.get(idx);
+                const copy = [...row];
+                while (copy.length < baseColIndex) copy.push("");
+
+                if (sampleInfo) {
+                    copy[statusColIndex] = sampleInfo.isAlreadyInBase
+                        ? "AMOSTRA SELECIONADA (JÁ NA BASE)"
+                        : "AMOSTRA SELECIONADA (NOVA)";
+                    copy[baseColIndex] = sampleInfo.statusBase;
+                } else {
+                    copy[statusColIndex] = "";
+                    copy[baseColIndex] = "";
+                }
+                return copy;
+            });
+
+            const wsEntrada = XLSX.utils.aoa_to_sheet([outHeader, ...outRows]);
+
+            // Estilização das linhas de amostras selecionadas na Aba 1
+            const range = XLSX.utils.decode_range(wsEntrada['!ref'] || "A1");
+            for (let r = 1; r <= range.e.r; r++) {
+                const sourceIdx = r - 1;
+                const sampleInfo = selectedByRowIndex.get(sourceIdx);
+                if (!sampleInfo) continue;
+
+                // Verde suave para amostra nova (necessária) | Âmbar suave para amostra já existente nas bases
+                const fillRgb = sampleInfo.isAlreadyInBase ? "FEF3C7" : "DCFCE7";
+                const fontRgb = sampleInfo.isAlreadyInBase ? "78350F" : "14532D";
+                const borderRgb = sampleInfo.isAlreadyInBase ? "FDE68A" : "BBF7D0";
+
+                for (let c = 0; c <= range.e.c; c++) {
+                    const addr = XLSX.utils.encode_cell({ r, c });
+                    if (!wsEntrada[addr]) wsEntrada[addr] = { t: 's', v: '' };
+                    wsEntrada[addr].s = {
+                        fill: {
+                            patternType: "solid",
+                            fgColor: { rgb: fillRgb }
+                        },
+                        font: {
+                            bold: c === statusColIndex,
+                            color: { rgb: fontRgb }
+                        },
+                        border: {
+                            top: { style: "thin", color: { rgb: borderRgb } },
+                            bottom: { style: "thin", color: { rgb: borderRgb } },
+                            left: { style: "thin", color: { rgb: borderRgb } },
+                            right: { style: "thin", color: { rgb: borderRgb } }
+                        }
+                    };
+                }
+            }
+
+            // ABA 2: Todos os trios (COD, TIPO, ANO) distintos da planilha de entrada + situação nas bases
+            const seenTrios = new Set();
+            const distinctTrios = [];
+
+            rawRows.forEach(row => {
+                const anoStr = extractYearOnly(row[1]);        // Coluna B -> Ano
+                const tipoStr = String(row[5] ?? "").trim();   // Coluna F -> Tipo
+                const codStr = String(row[6] ?? "").trim();    // Coluna G -> Código
+
+                if (!codStr || !anoStr) return;
+
+                const normKey = makePairKey(codStr, tipoStr, anoStr);
+                if (!seenTrios.has(normKey)) {
+                    seenTrios.add(normKey);
+                    distinctTrios.push({
+                        codigo: codStr,
+                        tipo: tipoStr,
+                        ano: /^\d{4}$/.test(anoStr) ? parseInt(anoStr, 10) : anoStr,
+                        situacao: getTrioStatus(normKey, hasSampleDb, hasPermDb)
+                    });
+                }
+            });
+
+            distinctTrios.sort((a, b) => {
+                const cmpCod = String(a.codigo).localeCompare(String(b.codigo), undefined, { numeric: true, sensitivity: 'base' });
+                if (cmpCod !== 0) return cmpCod;
+                const cmpTipo = String(a.tipo).localeCompare(String(b.tipo), undefined, { numeric: true, sensitivity: 'base' });
+                if (cmpTipo !== 0) return cmpTipo;
+                return String(a.ano).localeCompare(String(b.ano), undefined, { numeric: true, sensitivity: 'base' });
+            });
+
+            const triosSheetData = [
+                ["COD", "TIPO", "ANO", "Situação nas Bases"],
+                ...distinctTrios.map(t => [t.codigo, t.tipo, t.ano, t.situacao])
+            ];
+            const wsTrios = XLSX.utils.aoa_to_sheet(triosSheetData);
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, wsEntrada, "Entrada_Amostras_Destacadas");
+            XLSX.utils.book_append_sheet(wb, wsTrios, "Trios_Distintos_Situacao");
+
+            const seedSuffix = currentSeedUsed ? `_${currentSeedUsed.replace(/[^a-zA-Z0-9_-]/g, "_")}` : "";
+            const dbSuffix = ref ? `_${ref.fileSlug.replace(/[^a-zA-Z0-9_-]/g, "_")}` : "";
+            XLSX.writeFile(wb, `${originalFileName}_Resultado_Amostragem${seedSuffix}${dbSuffix}.xlsx`);
+        }
+    </script>
+</body>
+</html>
