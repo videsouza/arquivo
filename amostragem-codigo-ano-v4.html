@@ -181,12 +181,47 @@
         .clear-db-btn:hover { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
 
         /* CARDS DE RESUMO */
-        .kpi-grid {
+        .kpi-section-wrapper {
             display: none;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 16px;
             margin-bottom: 25px;
             animation: fadeIn 0.4s ease;
+        }
+        .kpi-section-wrapper.show { display: block; }
+        .kpi-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .kpi-section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .kpi-section-title i { color: var(--primary); }
+        .kpi-section-badge {
+            font-size: 12px;
+            font-weight: 600;
+            color: #4b5563;
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            padding: 4px 10px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .kpi-section-badge i { color: var(--primary); }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
         }
         @media (max-width: 1080px) { .kpi-grid { grid-template-columns: repeat(3, 1fr); } }
         @media (max-width: 760px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
@@ -561,26 +596,36 @@
             </div>
 
             <!-- 2. KPIS -->
-            <div class="kpi-grid" id="kpiGrid">
-                <div class="kpi-card">
-                    <span>Registros Válidos Lidos</span>
-                    <strong id="kpiTotal">0</strong>
+            <div class="kpi-section-wrapper" id="kpiGrid">
+                <div class="kpi-section-header">
+                    <div class="kpi-section-title">
+                        <i class="fas fa-file-alt"></i> Resumo da Planilha de Entrada (Bruta)
+                    </div>
+                    <span class="kpi-section-badge">
+                        <i class="fas fa-info-circle"></i> Valores relativos apenas à planilha de entrada, sem checagem de pertencimento nas demais bases
+                    </span>
                 </div>
-                <div class="kpi-card highlight">
-                    <span>Pares Código+Tipo Distintos</span>
-                    <strong id="kpiDistinctCodes">0</strong>
-                </div>
-                <div class="kpi-card">
-                    <span>Amostra Selecionada</span>
-                    <strong id="kpiSelected">0</strong>
-                </div>
-                <div class="kpi-card">
-                    <span>% da Amostra / Total</span>
-                    <strong id="kpiPercent">0,00%</strong>
-                </div>
-                <div class="kpi-card highlight">
-                    <span>Boxes a Analisar (Amostra)</span>
-                    <strong id="kpiBoxesSample">0</strong>
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <span>Registros Válidos Lidos</span>
+                        <strong id="kpiTotal">0</strong>
+                    </div>
+                    <div class="kpi-card highlight">
+                        <span>Pares Código+Tipo Distintos</span>
+                        <strong id="kpiDistinctCodes">0</strong>
+                    </div>
+                    <div class="kpi-card">
+                        <span>Amostra Selecionada</span>
+                        <strong id="kpiSelected">0</strong>
+                    </div>
+                    <div class="kpi-card">
+                        <span>% da Amostra / Total</span>
+                        <strong id="kpiPercent">0,00%</strong>
+                    </div>
+                    <div class="kpi-card highlight">
+                        <span>Boxes a Analisar (Amostra)</span>
+                        <strong id="kpiBoxesSample">0</strong>
+                    </div>
                 </div>
             </div>
 
