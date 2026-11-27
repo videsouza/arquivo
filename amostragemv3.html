@@ -1287,92 +1287,14 @@
         }
 
         // --- 5. EXPORTAÇÃO UNIFICADA PARA EXCEL (2 ABAS) ---
+// --- 5. EXPORTAÇÃO PARA EXCEL (SOMENTE TRIOS E SITUAÇÕES) ---
         function exportarExcelUnificado() {
             if (rawRows.length === 0) return;
 
             const ref = getCombinedReferenceBases();
             const hasSampleDb = ref ? ref.hasSampleDb : false;
             const hasPermDb = ref ? ref.hasPermDb : false;
-            const dbPairKeys = ref ? ref.combinedKeys : new Set();
 
-            // Mapeia as amostras selecionadas por índice da linha original (0-based em rawRows)
-            const selectedByRowIndex = new Map();
-            selectedItems.forEach(item => {
-                if (typeof item.sourceRowIndex === 'number' && item.sourceRowIndex >= 0) {
-                    const key = makePairKey(item.codigo, item.tipo, item.ano);
-                    const isAlreadyInBase = dbPairKeys.has(key);
-                    const statusBase = getTrioStatus(key, hasSampleDb, hasPermDb);
-                    selectedByRowIndex.set(item.sourceRowIndex, {
-                        isAlreadyInBase,
-                        statusBase
-                    });
-                }
-            });
-
-            // ABA 1: Todos os registros da planilha de entrada, destacando as amostras selecionadas
-            // (diferenciando visualmente amostras novas das que já constam nas bases carregadas)
-            const statusColIndex = Math.max(rawHeader.length, ...rawRows.map(r => r.length));
-            const baseColIndex = statusColIndex + 1;
-
-            const outHeader = [...rawHeader];
-            while (outHeader.length < baseColIndex) outHeader.push("");
-            outHeader[statusColIndex] = "Status_Amostra";
-            outHeader[baseColIndex] = "Situacao_Bases";
-
-            const outRows = rawRows.map((row, idx) => {
-                const sampleInfo = selectedByRowIndex.get(idx);
-                const copy = [...row];
-                while (copy.length < baseColIndex) copy.push("");
-
-                if (sampleInfo) {
-                    copy[statusColIndex] = sampleInfo.isAlreadyInBase
-                        ? "AMOSTRA SELECIONADA (JÁ NA BASE)"
-                        : "AMOSTRA SELECIONADA (NOVA)";
-                    copy[baseColIndex] = sampleInfo.statusBase;
-                } else {
-                    copy[statusColIndex] = "";
-                    copy[baseColIndex] = "";
-                }
-                return copy;
-            });
-
-            const wsEntrada = XLSX.utils.aoa_to_sheet([outHeader, ...outRows]);
-
-            // Estilização das linhas de amostras selecionadas na Aba 1
-            const range = XLSX.utils.decode_range(wsEntrada['!ref'] || "A1");
-            for (let r = 1; r <= range.e.r; r++) {
-                const sourceIdx = r - 1;
-                const sampleInfo = selectedByRowIndex.get(sourceIdx);
-                if (!sampleInfo) continue;
-
-                // Verde suave para amostra nova (necessária) | Âmbar suave para amostra já existente nas bases
-                const fillRgb = sampleInfo.isAlreadyInBase ? "FEF3C7" : "DCFCE7";
-                const fontRgb = sampleInfo.isAlreadyInBase ? "78350F" : "14532D";
-                const borderRgb = sampleInfo.isAlreadyInBase ? "FDE68A" : "BBF7D0";
-
-                for (let c = 0; c <= range.e.c; c++) {
-                    const addr = XLSX.utils.encode_cell({ r, c });
-                    if (!wsEntrada[addr]) wsEntrada[addr] = { t: 's', v: '' };
-                    wsEntrada[addr].s = {
-                        fill: {
-                            patternType: "solid",
-                            fgColor: { rgb: fillRgb }
-                        },
-                        font: {
-                            bold: c === statusColIndex,
-                            color: { rgb: fontRgb }
-                        },
-                        border: {
-                            top: { style: "thin", color: { rgb: borderRgb } },
-                            bottom: { style: "thin", color: { rgb: borderRgb } },
-                            left: { style: "thin", color: { rgb: borderRgb } },
-                            right: { style: "thin", color: { rgb: borderRgb } }
-                        }
-                    };
-                }
-            }
-
-            // ABA 2: Todos os trios (COD, TIPO, ANO) distintos da planilha de entrada + situação nas bases
             const seenTrios = new Set();
             const distinctTrios = [];
 
@@ -1410,12 +1332,11 @@
             const wsTrios = XLSX.utils.aoa_to_sheet(triosSheetData);
 
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, wsEntrada, "Entrada_Amostras_Destacadas");
             XLSX.utils.book_append_sheet(wb, wsTrios, "Trios_Distintos_Situacao");
 
             const seedSuffix = currentSeedUsed ? `_${currentSeedUsed.replace(/[^a-zA-Z0-9_-]/g, "_")}` : "";
             const dbSuffix = ref ? `_${ref.fileSlug.replace(/[^a-zA-Z0-9_-]/g, "_")}` : "";
-            XLSX.writeFile(wb, `${originalFileName}_Resultado_Amostragem${seedSuffix}${dbSuffix}.xlsx`);
+            XLSX.writeFile(wb, `${originalFileName}_Trios_Situacoes${seedSuffix}${dbSuffix}.xlsx`);
         }
     </script>
 </body>
